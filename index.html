@@ -5,225 +5,495 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zapisy do Ligi F1 - Sezon 2026/27</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@500;700;900&display=swap');
+
         :root {
             --f1-red: #e10600;
-            --dark-bg: #15151e;
-            --card-bg: #1f1f27;
-            --text-light: #ffffff;
-            --text-muted: #949498;
+            --f1-red-glow: rgba(225, 6, 0, 0.4);
+            --dark-bg: #0a0a0f;
+            --card-bg: rgba(25, 25, 33, 0.6);
+            --text-light: #f0f0f5;
+            --text-muted: #8b8b99;
             --admin-blue: #0063e5;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --success-green: #4ade80;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
             background-color: var(--dark-bg);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(225, 6, 0, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(0, 99, 229, 0.05), transparent 25%);
+            background-attachment: fixed;
             color: var(--text-light);
+            font-family: 'Inter', sans-serif;
             line-height: 1.6;
             padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
 
         .container {
-            max-width: 750px;
+            width: 100%;
+            max-width: 900px;
             margin: 40px auto;
             background: var(--card-bg);
-            border-radius: 12px;
-            border-top: 6px solid var(--f1-red);
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            border-top: 4px solid var(--f1-red);
+            padding: 45px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(180deg, rgba(225, 6, 0, 0.05) 0%, transparent 100%);
+            pointer-events: none;
         }
 
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 45px;
+            position: relative;
+            z-index: 1;
         }
 
         header h1 {
-            font-size: 2rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #fff, #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255,255,255,0.1);
         }
 
         header p {
             color: var(--text-muted);
-            font-size: 0.95rem;
+            font-size: 1.05rem;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        /* LICZNIK: Stylizacja paska stanu zajętości miejsc */
+        .grid-status-tracker {
+            background: rgba(10, 10, 15, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 35px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tracker-info {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tracker-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .tracker-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff5e57, var(--f1-red));
+            box-shadow: 0 0 10px var(--f1-red-glow);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group.hidden {
+            display: none;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
+            margin-bottom: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 500;
+            font-size: 0.8rem;
+            color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+
+        .form-group:focus-within label {
+            color: var(--text-light);
         }
 
         input[type="text"],
-        input[type="password"],
         select {
             width: 100%;
-            padding: 12px;
-            background: #15151e;
-            border: 1px solid #38383f;
-            border-radius: 6px;
+            padding: 16px;
+            background: rgba(10, 10, 15, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
             color: var(--text-light);
+            font-family: 'Inter', sans-serif;
             font-size: 1rem;
-            transition: border-color 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         input:focus, select:focus {
             outline: none;
             border-color: var(--f1-red);
+            background: rgba(15, 15, 20, 0.8);
+            box-shadow: 0 0 0 4px var(--f1-red-glow), inset 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        input::placeholder {
+            color: #555566;
+        }
+
+        select option {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            padding: 10px;
+        }
+
+        select option:disabled {
+            color: #444455;
+            background-color: rgba(0, 0, 0, 0.5);
         }
 
         .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 25px;
         }
 
         .radio-group {
             display: flex;
-            gap: 15px;
-            background: #15151e;
-            padding: 12px;
-            border: 1px solid #38383f;
-            border-radius: 6px;
+            gap: 25px;
+            background: rgba(10, 10, 15, 0.6);
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
         }
 
         .radio-option {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 10px;
             cursor: pointer;
+            text-transform: none;
+            font-weight: 400;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-light);
         }
 
         .radio-option input {
             accent-color: var(--f1-red);
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-top: 35px;
+            padding: 20px;
+            background: linear-gradient(90deg, rgba(225, 6, 0, 0.1) 0%, rgba(225, 6, 0, 0.02) 100%);
+            border-radius: 10px;
+            border-left: 4px solid var(--f1-red);
+        }
+
+        .checkbox-group input {
+            accent-color: var(--f1-red);
+            width: 22px;
+            height: 22px;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            text-transform: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 300;
+            line-height: 1.5;
+            color: #d0d0d5;
+            margin-bottom: 0;
+            cursor: pointer;
         }
 
         .btn-submit {
             display: block;
             width: 100%;
-            padding: 15px;
+            padding: 20px;
             background: var(--f1-red);
             color: white;
             border: none;
-            border-radius: 6px;
-            font-size: 1.1rem;
-            font-weight: bold;
+            border-radius: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            margin-top: 30px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 40px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(225, 6, 0, 0.3);
         }
 
         .btn-submit:hover {
-            background: #b80500;
+            background: #ff1a12;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(225, 6, 0, 0.5);
         }
 
         .btn-submit:disabled {
-            background: #555;
+            background: #333;
+            color: #777;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
-        .success-message, .error-message {
+        .success-message, .error-message, .info-message {
             display: none;
-            padding: 15px;
-            border-radius: 6px;
+            padding: 20px;
+            border-radius: 10px;
             text-align: center;
-            margin-bottom: 20px;
-            font-weight: 600;
+            margin-bottom: 30px;
+            font-weight: 500;
+            animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .success-message { background: #107c41; color: white; }
-        .error-message { background: #a80000; color: white; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .success-message { background: rgba(16, 124, 65, 0.15); border: 1px solid rgba(16, 124, 65, 0.3); color: var(--success-green); }
+        .error-message { background: rgba(168, 0, 0, 0.15); border: 1px solid rgba(168, 0, 0, 0.3); color: #ff8a8a; }
+        .info-message { background: rgba(251, 146, 60, 0.15); border: 1px solid rgba(251, 146, 60, 0.3); color: #fb923c; }
 
         .admin-trigger {
             text-align: center;
-            margin-top: 40px;
+            margin-top: 60px;
+            font-family: 'Orbitron', sans-serif;
             font-size: 0.8rem;
-            color: var(--text-muted);
+            color: #444455;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             cursor: pointer;
-            text-decoration: underline;
+            transition: color 0.3s;
+        }
+        
+        .admin-trigger:hover {
+            color: var(--text-muted);
         }
 
         .admin-section {
             display: none;
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 2px dashed #38383f;
+            margin-top: 50px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .admin-card {
-            background: #15151e;
-            padding: 20px;
+            background: rgba(15, 15, 20, 0.8);
+            padding: 35px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            border-top: 3px solid var(--admin-blue);
+        }
+
+        .admin-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .admin-controls h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #5bb0ff;
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .dash-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.03);
+            padding: 15px;
             border-radius: 8px;
-            border-left: 4px solid var(--admin-blue);
+            font-size: 0.85rem;
+        }
+
+        .dash-box-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .dash-box-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .search-bar {
+            flex-grow: 1;
+            max-width: 350px;
+            position: relative;
+        }
+        
+        .search-bar input {
+            padding-left: 40px;
+            border-radius: 30px;
+            border-color: rgba(0, 99, 229, 0.3);
+        }
+
+        .search-bar::before {
+            content: '⌕';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--admin-blue);
+            font-size: 1.2rem;
         }
 
         .admin-table-wrapper {
             overflow-x: auto;
-            margin-top: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(0,0,0,0.2);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
             font-size: 0.9rem;
+            white-space: nowrap;
         }
 
         th, td {
-            padding: 10px;
+            padding: 16px 20px;
             text-align: left;
-            border-bottom: 1px solid #38383f;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        tr:hover td {
+            background-color: rgba(255,255,255,0.02);
         }
 
         th {
-            background-color: #262631;
-            color: var(--text-light);
+            background-color: rgba(0,0,0,0.4);
+            color: var(--text-muted);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 500;
             text-transform: uppercase;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
         }
 
         .btn-admin {
-            padding: 8px 12px;
+            padding: 12px 20px;
             background: var(--admin-blue);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
             cursor: pointer;
             font-size: 0.85rem;
-            margin-right: 5px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.2s;
         }
 
-        .btn-danger {
-            background: #a80000;
-        }
+        .btn-admin:hover { background: #0052c0; transform: translateY(-2px); }
+        .btn-danger { background: rgba(168, 0, 0, 0.8); border: 1px solid #a80000; }
+        .btn-danger:hover { background: #e10600; border-color: #ff1a12; }
 
         .admin-actions {
-            margin-top: 15px;
+            margin-top: 25px;
             display: flex;
-            gap: 10px;
+            gap: 15px;
         }
 
-        @media (max-width: 600px) {
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
+
+        .badge-number { background: var(--f1-red); color: white; }
+        .badge-number-none { background: #33333e; color: #8b8b99; border: 1px dashed rgba(255,255,255,0.1); }
+        .badge-main { background: rgba(74, 222, 128, 0.2); color: var(--success-green); border: 1px solid rgba(74, 222, 128, 0.4); }
+        .badge-reserve { background: rgba(251, 146, 60, 0.2); color: #fb923c; border: 1px solid rgba(251, 146, 60, 0.4); }
+
+        @media (max-width: 768px) {
             .grid-2 {
                 grid-template-columns: 1fr;
                 gap: 0;
             }
+            .container { padding: 25px; margin: 20px auto; }
+            header h1 { font-size: 1.8rem; }
+            .admin-controls { flex-direction: column; align-items: stretch; }
+            .search-bar { max-width: 100%; }
         }
     </style>
 </head>
@@ -235,23 +505,37 @@
         <p>Oficjalne zapisy do nowego sezonu ligowego F1 2026/27</p>
     </header>
 
-    <div id="successAlert" class="success-message">
-        Zgłoszenie zostało wysłane pomyślnie! Do zobaczenia na torze.
+    <div class="grid-status-tracker">
+        <div class="tracker-info">
+            <span>Fotele w składzie podstawowym</span>
+            <span id="liveTrackerText">Pobieranie statusu padoku...</span>
+        </div>
+        <div class="tracker-bar-bg">
+            <div id="liveTrackerBar" class="tracker-bar-fill"></div>
+        </div>
     </div>
 
-    <div id="errorAlert" class="error-message">
-        Wystąpił błąd podczas wysyłania zgłoszenia. Spróbuj ponownie później.
-    </div>
+    <div id="successAlert" class="success-message"></div>
+    <div id="errorAlert" class="error-message"></div>
+    <div id="infoAlert" class="info-message"></div>
 
     <form id="registrationForm">
+        <div class="form-group">
+            <label for="driverRole">Typ Zgłoszenia / Rola</label>
+            <select id="driverRole" required onchange="handleRoleChangeLive()">
+                <option value="Główny" id="optMain">Kierowca Podstawowy (Stały etat, wymagany numer)</option>
+                <option value="Rezerwowy" id="optReserve">Kierowca Rezerwowy (Okazyjne starty, bez stałego numeru)</option>
+            </select>
+        </div>
+
         <div class="grid-2">
             <div class="form-group">
                 <label for="firstname">Imię</label>
-                <input type="text" id="firstname" placeholder="np. Jan" required>
+                <input type="text" id="firstname" placeholder="np. Jan" required minlength="2">
             </div>
             <div class="form-group">
                 <label for="lastname">Nazwisko</label>
-                <input type="text" id="lastname" placeholder="np. Kowalski" required>
+                <input type="text" id="lastname" placeholder="np. Kowalski" required minlength="2">
             </div>
         </div>
 
@@ -262,26 +546,35 @@
             </div>
             <div class="form-group">
                 <label for="discordTag">Discord ID</label>
-                <input type="text" id="discordTag" placeholder="Wklej swoje numeryczne ID (np. 511295...)" required>
+                <input type="text" id="discordTag" placeholder="Skopiuj numeryczne ID (np. 511295...)" required pattern="[0-9]+" title="Tylko cyfry z Twojego Discord ID">
             </div>
         </div>
 
         <div class="grid-2">
-            <div class="form-group">
+            <div class="form-group" id="raceNumberContainer">
                 <label for="raceNumber">Numer Startowy</label>
                 <select id="raceNumber" required>
                     <option value="" disabled selected>Pobieranie wolnych numerów...</option>
                 </select>
             </div>
-            <div class="form-group">
+            <div class="form-group" id="platformContainer">
                 <label for="platform">Platforma</label>
                 <select id="platform" required>
-                    <option value="" disabled selected>Wybierz...</option>
+                    <option value="" disabled selected>Gdzie grasz?</option>
                     <option value="PC">PC (Steam / EA App)</option>
                     <option value="PS5">PlayStation 5</option>
                     <option value="Xbox">Xbox Series X/S</option>
                 </select>
             </div>
+        </div>
+
+        <div class="form-group">
+            <label for="asysty">Poziom asyst</label>
+            <select id="asysty" required>
+                <option value="Brak">Brak asyst (Hardcore)</option>
+                <option value="Częściowe">Dozwolone częściowe (ABS / Średnia trakcja)</option>
+                <option value="Pełne">Pełne asysty (Casual)</option>
+            </select>
         </div>
 
         <div class="form-group">
@@ -296,47 +589,67 @@
             </div>
         </div>
 
-        <div class="form-group">
-            <label for="asysty">Poziom asyst (ABS / Kontrola trakcji)</label>
-            <select id="asysty" required>
-                <option value="Brak">Brak asyst (Hardcore)</option>
-                <option value="Częściowe">Dozwolone częściowe (ABS / Średnia trakcja)</option>
-                <option value="Pełne">Pełne asysty</option>
-            </select>
+        <div class="checkbox-group">
+            <input type="checkbox" id="rulesAccept" required>
+            <label for="rulesAccept">Akceptuję regulamin ligi i zobowiązuję się do czystej jazdy na torze. Rozumiem, że celowe powodowanie kolizji grozi dyskwalifikacją.</label>
         </div>
 
         <button type="submit" id="submitBtn" class="btn-submit">Wyślij zgłoszenie</button>
     </form>
 
-    <div class="admin-trigger" onclick="toggleAdminPanel()">Panel Administratora (Zarządzanie)</div>
+    <div class="admin-trigger" onclick="toggleAdminPanel()">Zarządzanie Ligą (Tylko Admin)</div>
 
     <div id="adminPanel" class="admin-section">
         <div class="admin-card">
-            <h2 style="color: var(--admin-blue); margin-bottom: 10px;">Zarządzanie Zgłoszeniami</h2>
-            <p id="statsCounter">Liczba zapisanych kierowców: Ładowanie...</p>
+            <div class="admin-controls">
+                <div>
+                    <h2>Panel Kontrolny Wyścigu</h2>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="adminSearch" placeholder="Szukaj kierowcy, roli, platformy..." onkeyup="filterAdminTable()">
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="dash-box">
+                    <div class="dash-box-title">Zgłoszenia w bazie</div>
+                    <div class="dash-box-value" id="dashTotal">0</div>
+                </div>
+                <div class="dash-box">
+                    <div class="dash-box-title">Podział na role</div>
+                    <div class="dash-box-value" id="dashStatusSplit">Główni: 0 / 20 | Rezerwa: 0</div>
+                </div>
+                <div class="dash-box">
+                    <div class="dash-box-title">Kontrolery (Kierownica / Pad)</div>
+                    <div class="dash-box-value" id="dashHardware">0 / 0</div>
+                </div>
+                <div class="dash-box">
+                    <div class="dash-box-title">Platformy (PC / PS5 / XBX)</div>
+                    <div class="dash-box-value" id="dashPlatforms">0 / 0 / 0</div>
+                </div>
+            </div>
             
             <div class="admin-table-wrapper">
                 <table>
                     <thead>
                         <tr>
-                            <th>Numer</th>
+                            <th>Nr</th>
+                            <th>Status</th>
                             <th>Kierowca</th>
                             <th>Gamertag</th>
                             <th>Discord</th>
-                            <th>Platforma</th>
                             <th>Sprzęt</th>
-                            <th>Asysty</th>
                             <th>Akcja</th>
                         </tr>
                     </thead>
                     <tbody id="adminTableBody">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
 
             <div class="admin-actions">
-                <button class="btn-admin" onclick="exportToTXT()">Pobierz listę (.txt)</button>
-                <button class="btn-admin btn-danger" onclick="clearAllDrivers()">Wyczyść wszystko</button>
+                <button class="btn-admin" onclick="exportToTXT()">Eksportuj do .txt</button>
+                <button class="btn-admin btn-danger" onclick="clearAllDrivers()">Reset Sezonu</button>
             </div>
         </div>
     </div>
@@ -351,40 +664,95 @@
         2, 7, 8, 9, 13, 15, 17, 19, 21, 25, 26, 28, 29, 32, 33, 34, 35, 36, 37, 38, 39, 40, 42, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 56, 57, 58, 59, 60, 61, 62, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 78, 79, 80, 82, 83, 84, 85, 86, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99
     ];
 
-    // Główny obiekt przechowujący pobranych kierowców w pamięci podręcznej aplikacji
     let globalDriversList = [];
 
     document.addEventListener("DOMContentLoaded", () => {
         fetchDriversFromFirebase();
     });
 
-    // Pobieranie danych z bazy Firebase
+    function handleRoleChangeLive() {
+        const role = document.getElementById('driverRole').value;
+        const numberContainer = document.getElementById('raceNumberContainer');
+        const numberSelect = document.getElementById('raceNumber');
+        const gridParent = numberContainer.parentElement;
+
+        if (role === 'Rezerwowy') {
+            numberContainer.classList.add('hidden');
+            numberSelect.removeAttribute('required');
+            numberSelect.value = ""; 
+            gridParent.style.gridTemplateColumns = "1fr"; 
+        } else {
+            numberContainer.classList.remove('hidden');
+            numberSelect.setAttribute('required', 'required');
+            gridParent.style.gridTemplateColumns = "1fr 1fr"; 
+        }
+    }
+
     function fetchDriversFromFirebase() {
         fetch(`${firebaseBaseUrl}drivers.json`)
         .then(res => res.json())
         .then(data => {
             globalDriversList = [];
             if (data) {
-                // Firebase zwraca obiekt z losowymi kluczami, mapujemy go na tablicę zachowując identyfikator ID
                 globalDriversList = Object.keys(data).map(key => ({
                     id: key,
                     ...data[key]
                 }));
-                // Sortowanie po numerze startowym
-                globalDriversList.sort((a, b) => parseInt(a.raceNumber) - parseInt(b.raceNumber));
+                globalDriversList.sort((a, b) => {
+                    if (a.driverStatus === b.driverStatus) return 0;
+                    return a.driverStatus === "Główny" ? -1 : 1;
+                });
             }
+            // LICZNIK: Aktualizacja paska stanu i dostępności ról po załadowaniu danych
+            updateGridSlotsTracker();
             refreshNumbersSelect();
             renderAdminTable();
+            calculateDashboardStats();
         })
         .catch(err => {
-            console.error("Błąd pobierania danych z Firebase:", err);
+            console.error("Błąd połączenia z bazą danych:", err);
             refreshNumbersSelect();
         });
     }
 
+    // LICZNIK: Główna funkcja zarządzająca limitami miejsc podstawowych (max 20)
+    function updateGridSlotsTracker() {
+        const mainDriversCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
+        const percentage = (mainDriversCount / 20) * 100;
+        
+        document.getElementById('liveTrackerBar').style.width = `${percentage}%`;
+        
+        const trackerText = document.getElementById('liveTrackerText');
+        const infoAlert = document.getElementById('infoAlert');
+        const roleSelect = document.getElementById('driverRole');
+        const optMain = document.getElementById('optMain');
+
+        if (mainDriversCount >= 20) {
+            // Brak miejsc podstawowych -> Wymuszenie zapisu do rezerwy
+            trackerText.innerHTML = `<span style="color:#fb923c; font-weight:600;">Główny skład pełny (20/20)</span>`;
+            
+            infoAlert.innerText = `📋 Wszystkie stałe etaty (20/20) zostały obsadzone. Rejestracja jest teraz otwarta wyłącznie dla kierowców rezerwowych.`;
+            infoAlert.style.display = 'block';
+            
+            optMain.disabled = true;
+            roleSelect.value = "Rezerwowy"; // Automatyczne przełączenie roli
+        } else {
+            // Są wolne miejsca podstawowe
+            const freeSlots = 20 - mainDriversCount;
+            trackerText.innerHTML = `<span style="color:var(--success-green); font-weight:600;">Zostało ${freeSlots} wolnych etatów</span>`;
+            infoAlert.style.display = 'none';
+            
+            optMain.disabled = false;
+        }
+        
+        handleRoleChangeLive(); // Odświeżenie widoczności pól formularza na podstawie przypisanej roli
+    }
+
     function refreshNumbersSelect() {
         const select = document.getElementById('raceNumber');
-        const takenNumbers = globalDriversList.map(d => parseInt(d.raceNumber));
+        const takenNumbers = globalDriversList
+            .filter(d => d.driverStatus === "Główny" && d.raceNumber)
+            .map(d => parseInt(d.raceNumber));
 
         select.innerHTML = '<option value="" disabled selected>Wybierz wolny numer...</option>';
 
@@ -405,45 +773,73 @@
         const successAlert = document.getElementById('successAlert');
         const errorAlert = document.getElementById('errorAlert');
 
-        const firstname = document.getElementById('firstname').value;
-        const lastname = document.getElementById('lastname').value;
-        const gamertag = document.getElementById('gamertag').value;
+        const driverStatus = document.getElementById('driverRole').value;
+        
+        // Bezpiecznik: jeśli jakimś cudem skrypt przepuściłby zgłoszenie główne przy pełnej bazie
+        const mainDriversCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
+        if (driverStatus === "Główny" && mainDriversCount >= 20) {
+            alert("Niestety, limit kierowców głównych został wyczerpany przed momentem. Zmień rolę na rezerwowego.");
+            fetchDriversFromFirebase();
+            return;
+        }
+
+        const firstname = document.getElementById('firstname').value.trim();
+        const lastname = document.getElementById('lastname').value.trim();
+        const gamertag = document.getElementById('gamertag').value.trim();
         
         let discordTag = document.getElementById('discordTag').value.trim();
-        discordTag = discordTag.replace(/[<@>]/g, '');
+        discordTag = discordTag.replace(/[^0-9]/g, ''); 
 
-        const raceNumber = document.getElementById('raceNumber').value;
+        const raceNumber = driverStatus === "Główny" ? document.getElementById('raceNumber').value : "Brak";
         const platform = document.getElementById('platform').value;
         const device = document.querySelector('input[name="input_device"]:checked').value;
         const asysty = document.getElementById('asysty').value;
 
+        const duplicateGamertag = globalDriversList.some(d => d.gamertag.toLowerCase() === gamertag.toLowerCase());
+        const duplicateDiscord = globalDriversList.some(d => d.discordTag === discordTag);
+
+        if (duplicateGamertag) {
+            errorAlert.innerText = "❌ Wybrany Gamertag figuruje już na liście startowej.";
+            errorAlert.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
+        if (duplicateDiscord) {
+            errorAlert.innerText = "❌ To Discord ID wysłało już swoje zgłoszenie do sezonu.";
+            errorAlert.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
         submitBtn.disabled = true;
-        submitBtn.innerText = "Wysyłanie...";
+        submitBtn.innerText = "ZAPISYWANIE W BAZIE...";
 
-        const newDriver = { firstname, lastname, gamertag, discordTag, raceNumber, platform, device, asysty };
+        const newDriver = { firstname, lastname, gamertag, discordTag, raceNumber, platform, device, asysty, driverStatus };
 
-        // 1. Najpierw zapisujemy dane do bazy Firebase
         fetch(`${firebaseBaseUrl}drivers.json`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newDriver)
         })
         .then(res => {
-            if (!res.ok) throw new Error('Błąd zapisu do Firebase');
+            if (!res.ok) throw new Error('Błąd serwera bazy danych');
             return res.json();
         })
         .then(() => {
-            // 2. Po udanym zapisie w bazie danych wysyłamy webhook na Discorda
+            const statusEmoji = driverStatus === "Główny" ? "🟢 SKŁAD GŁÓWNY" : "🟠 KIEROWCA REZERWOWY";
+            const numDisplay = raceNumber === "Brak" ? "❌ Brak (Rezerwa)" : `**#${raceNumber}**`;
+            
             const discordPayload = {
-                content: `🔔 Nowe zgłoszenie do ligi!`,
+                content: `🔔 Nowe zgłoszenie! Rola: **${driverStatus.toUpperCase()}**`,
                 embeds: [{
-                    title: `🏎️ Nowe zgłoszenie do sezonu 2026/27!`,
-                    color: 14747136,
+                    title: `🏎️ Nowy profil w bazie: ${gamertag}`,
+                    color: driverStatus === "Główny" ? 3066993 : 15105570,
                     fields: [
-                        { name: "🔢 Numer Startowy", value: `**#${raceNumber}**`, inline: true },
-                        { name: "🎮 Nick / Gamertag", value: `**${gamertag}**`, inline: true },
+                        { name: "📋 Przydzielona funkcja", value: statusEmoji, inline: false },
+                        { name: "🔢 Numer startowy", value: numDisplay, inline: true },
                         { name: "📱 Discord ID", value: `<@${discordTag}>`, inline: true },
-                        { name: "👤 Kierowca", value: `${firstname} ${lastname}`, inline: true },
+                        { name: "👤 Nazwisko", value: `${firstname} ${lastname}`, inline: true },
                         { name: "💻 Platforma", value: platform, inline: true },
                         { name: "🕹️ Kontroler", value: device, inline: true },
                         { name: "🛠️ Asysty", value: asysty, inline: true }
@@ -460,26 +856,29 @@
         })
         .then(response => {
             if (response.ok) {
+                successAlert.innerText = `Pomyślnie zarejestrowano profil kierowcy z rolą: ${driverStatus}.`;
                 successAlert.style.display = 'block';
                 errorAlert.style.display = 'none';
                 document.getElementById('registrationForm').reset();
-                fetchDriversFromFirebase(); // Odśwież listę i numery bezpośrednio z Firebase
+                fetchDriversFromFirebase();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
-                throw new Error('Błąd serwera Discord');
+                throw new Error('Problem z wysłaniem logu Discord');
             }
         })
         .catch(error => {
+            errorAlert.innerText = "Wystąpił nieoczekiwany problem z łącznością. Dane nie zostały wysłane.";
             errorAlert.style.display = 'block';
             successAlert.style.display = 'none';
             console.error(error);
         })
         .finally(() => {
             submitBtn.disabled = false;
-            submitBtn.innerText = "Wyślij zgłoszenie";
+            submitBtn.innerText = "WYŚLIJ ZGŁOSZENIE";
             setTimeout(() => {
                 successAlert.style.display = 'none';
                 errorAlert.style.display = 'none';
-            }, 5000);
+            }, 8000);
         });
     });
 
@@ -487,74 +886,109 @@
         const panel = document.getElementById('adminPanel');
         if (panel.style.display === 'block') {
             panel.style.display = 'none';
+            document.getElementById('adminSearch').value = '';
         } else {
-            const password = prompt("Podaj hasło administratora:");
+            const password = prompt("Autoryzacja administratora ligi. Podaj hasło:");
             if (password === ADMIN_PASSWORD) {
                 panel.style.display = 'block';
                 renderAdminTable();
+                panel.scrollIntoView({ behavior: 'smooth' });
             } else if (password !== null) {
-                alert("Błędne hasło!");
+                alert("Hasło niepoprawne.");
             }
         }
     }
 
-    function renderAdminTable() {
-        const tbody = document.getElementById('adminTableBody');
-        const counter = document.getElementById('statsCounter');
+    function calculateDashboardStats() {
+        const total = globalDriversList.length;
+        const main = globalDriversList.filter(d => d.driverStatus === "Główny").length;
+        const reserve = globalDriversList.filter(d => d.driverStatus === "Rezerwowy").length;
         
+        const wheel = globalDriversList.filter(d => d.device === "Kierownica").length;
+        const pad = globalDriversList.filter(d => d.device === "Pad").length;
+
+        const pc = globalDriversList.filter(d => d.platform === "PC").length;
+        const ps5 = globalDriversList.filter(d => d.platform === "PS5").length;
+        const xbox = globalDriversList.filter(d => d.platform === "Xbox").length;
+
+        document.getElementById('dashTotal').innerText = `${total} kierowców`;
+        document.getElementById('dashStatusSplit').innerText = `Główni: ${main} / 20 | Rezerwa: ${reserve}`;
+        document.getElementById('dashHardware').innerText = `Kierownica: ${wheel} | Pad: ${pad}`;
+        document.getElementById('dashPlatforms').innerText = `PC: ${pc} | PS5: ${ps5} | XBX: ${xbox}`;
+    }
+
+    function renderAdminTable(filterText = '') {
+        const tbody = document.getElementById('adminTableBody');
         tbody.innerHTML = '';
-        counter.innerText = `Liczba zapisanych kierowców: ${globalDriversList.length}`;
 
         if (globalDriversList.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Brak zgłoszeń w bazie danych.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color:var(--text-muted);">Baza danych jest pusta.</td></tr>`;
             return;
         }
 
-        globalDriversList.forEach((driver) => {
+        const lowerFilter = filterText.toLowerCase();
+        const filteredDrivers = globalDriversList.filter(d => 
+            d.gamertag.toLowerCase().includes(lowerFilter) || 
+            d.raceNumber.toString().includes(lowerFilter) ||
+            d.firstname.toLowerCase().includes(lowerFilter) ||
+            d.lastname.toLowerCase().includes(lowerFilter) ||
+            d.platform.toLowerCase().includes(lowerFilter) ||
+            d.driverStatus.toLowerCase().includes(lowerFilter)
+        );
+
+        filteredDrivers.forEach((driver) => {
+            const statusClass = driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve";
+            const numberBadge = driver.raceNumber === "Brak" 
+                ? `<span class="badge badge-number-none">REZERWA</span>`
+                : `<span class="badge badge-number">#${driver.raceNumber}</span>`;
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><span style="color:var(--f1-red); font-weight:bold;">#${driver.raceNumber}</span></td>
-                <td>${driver.firstname} ${driver.lastname}</td>
-                <td><strong>${driver.gamertag}</strong></td>
-                <td><span style="color:var(--text-muted);">${driver.discordTag}</span></td>
-                <td>${driver.platform}</td>
-                <td>${driver.device}</td>
-                <td>${driver.asysty}</td>
-                <td><button class="btn-admin btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.raceNumber}')">Usuń</button></td>
+                <td>${numberBadge}</td>
+                <td><span class="badge ${statusClass}">${driver.driverStatus}</span></td>
+                <td><div style="font-weight:500;">${driver.firstname} ${driver.lastname}</div></td>
+                <td><strong style="color:white;">${driver.gamertag}</strong></td>
+                <td><span style="color:var(--text-muted); font-size: 0.8rem; font-family: monospace;">${driver.discordTag}</span></td>
+                <td><div style="font-size:0.85rem;">${driver.platform} <span style="color:#8b8b99;">(${driver.device})</span></div></td>
+                <td><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.raceNumber}', '${driver.gamertag}')">Usuń</button></td>
             `;
             tbody.appendChild(tr);
         });
     }
 
-    // Usunięcie wybranego kierowcy bezpośrednio z Firebase
-    function deleteDriver(firebaseId, raceNumber) {
-        if(confirm(`Czy na pewno chcesz usunąć kierowcę z numerem #${raceNumber} z bazy danych?`)) {
+    function filterAdminTable() {
+        const searchVal = document.getElementById('adminSearch').value;
+        renderAdminTable(searchVal);
+    }
+
+    function deleteDriver(firebaseId, raceNumber, gamertag) {
+        const msg = raceNumber === "Brak" ? `kierowcę rezerwowego ${gamertag}` : `kierowcę ${gamertag} (#${raceNumber})`;
+        if(confirm(`Czy na pewno usunąć ${msg} z bazy danych ligi?`)) {
             fetch(`${firebaseBaseUrl}drivers/${firebaseId}.json`, {
                 method: 'DELETE'
             })
             .then(res => {
-                if(!res.ok) throw new Error('Nie udało się usunąć wpisu z Firebase');
-                fetchDriversFromFirebase(); // Pobierz świeże dane po usunięciu
+                if(!res.ok) throw new Error('Błąd bazy danych');
+                fetchDriversFromFirebase();
             })
             .catch(err => {
-                alert("Wystąpił błąd podczas usuwania z bazy danych cloud.");
+                alert("Błąd synchronizacji.");
                 console.error(err);
             });
         }
     }
 
-    // Wyczyszczenie całej bazy danych w Firebase
     function clearAllDrivers() {
-        if(confirm("⚠️ UWAGA! Czy na pewno chcesz skasować WSZYSTKIE zgłoszenia z chmury Firebase?")) {
+        if(confirm("⚠️ UWAGA! Czy chcesz bezpowrotnie usunąć wszystkich zapisanych zawodników?")) {
             fetch(`${firebaseBaseUrl}drivers.json`, {
                 method: 'DELETE'
             })
             .then(res => {
-                if(!res.ok) throw new Error('Nie udało się wyczyścić bazy');
+                if(!res.ok) throw new Error('Nie czyszczono bazy');
                 fetchDriversFromFirebase();
             })
             .catch(err => {
-                alert("Wystąpił błąd podczas czyszczenia bazy danych.");
+                alert("Błąd podczas operacji czyszczenia serwera.");
                 console.error(err);
             });
         }
@@ -562,21 +996,21 @@
 
     function exportToTXT() {
         if(globalDriversList.length === 0) {
-            alert("Brak danych do eksportu!");
+            alert("Brak danych telemetrii do pobrania.");
             return;
         }
 
-        let txtContent = "LISTA ZAPISANYCH KIEROWCÓW F1 - SEZON 2026/27\n";
-        txtContent += "==================================================\n\n";
+        let txtContent = "=== EKSPORT BAZY KIEROWCÓW LIGI F1 ===\n\n";
 
         globalDriversList.forEach((d) => {
-            txtContent += `#${d.raceNumber.padEnd(4)} | Nick: ${d.gamertag.padEnd(15)} | Discord ID: ${d.discordTag.padEnd(15)} | Kierowca: ${d.firstname} ${d.lastname.padEnd(15)} | Platforma: ${d.platform} | Sprzęt: ${d.device} | Asysty: ${d.asysty}\n`;
+            const numString = d.raceNumber === "Brak" ? "BRAK (REZERWA)" : `#${d.raceNumber}`;
+            txtContent += `[${numString.padEnd(14)}] Status: ${d.driverStatus.padEnd(10)} | Nick: ${d.gamertag.padEnd(16)} | ID: ${d.discordTag.padEnd(19)} | Dane: ${d.firstname} ${d.lastname.padEnd(15)} | ${d.platform} (${d.device})\n`;
         });
 
         const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = 'zapisy_f1_2026_27.txt';
+        link.download = 'lista_kierowcow_podzial_role.txt';
         link.click();
     }
 </script>
