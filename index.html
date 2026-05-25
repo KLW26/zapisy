@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zapisy do Ligi F1 - Sezon 2026/27</title>
+    <style>
+        :root {
+            --f1-red: #e10600;
+            --dark-bg: #15151e;
+            --card-bg: #1f1f27;
+            --text-light: #ffffff;
+            --text-muted: #949498;
+            --admin-blue: #0063e5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 40px auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border-top: 6px solid var(--f1-red);
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 12px;
+            background: #15151e;
+            border: 1px solid #38383f;
+            border-radius: 6px;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--f1-red);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            background: #15151e;
+            padding: 12px;
+            border: 1px solid #38383f;
+            border-radius: 6px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .radio-option input {
+            accent-color: var(--f1-red);
+        }
+
+        .btn-submit {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: var(--f1-red);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 30px;
+        }
+
+        .btn-submit:hover {
+            background: #b80500;
+        }
+
+        .btn-submit:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        .success-message, .error-message {
+            display: none;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .success-message { background: #107c41; color: white; }
+        .error-message { background: #a80000; color: white; }
+
+        .admin-trigger {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .admin-section {
+            display: none;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px dashed #38383f;
+        }
+
+        .admin-card {
+            background: #15151e;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--admin-blue);
+        }
+
+        .admin-table-wrapper {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #38383f;
+        }
+
+        th {
+            background-color: #262631;
+            color: var(--text-light);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .btn-admin {
+            padding: 8px 12px;
+            background: var(--admin-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-right: 5px;
+        }
+
+        .btn-danger {
+            background: #a80000;
+        }
+
+        .admin-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Formularz Zgłoszeniowy</h1>
+        <p>Oficjalne zapisy do nowego sezonu ligowego F1 2026/27</p>
+    </header>
+
+    <div id="successAlert" class="success-message">
+        Zgłoszenie zostało wysłane pomyślnie! Do zobaczenia na torze.
+    </div>
+
+    <div id="errorAlert" class="error-message">
+        Wystąpił błąd podczas wysyłania zgłoszenia. Spróbuj ponownie później.
+    </div>
+
+    <form id="registrationForm">
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="firstname">Imię</label>
+                <input type="text" id="firstname" placeholder="np. Jan" required>
+            </div>
+            <div class="form-group">
+                <label for="lastname">Nazwisko</label>
+                <input type="text" id="lastname" placeholder="np. Kowalski" required>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="gamertag">Nick / Gamertag (w grze)</label>
+                <input type="text" id="gamertag" placeholder="np. DriverX_F1" required>
+            </div>
+            <div class="form-group">
+                <label for="discordTag">Discord ID</label>
+                <input type="text" id="discordTag" placeholder="Wklej swoje numeryczne ID (np. 511295...)" required>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="raceNumber">Numer Startowy</label>
+                <select id="raceNumber" required>
+                    <option value="" disabled selected>Pobieranie wolnych numerów...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="platform">Platforma</label>
+                <select id="platform" required>
+                    <option value="" disabled selected>Wybierz...</option>
+                    <option value="PC">PC (Steam / EA App)</option>
+                    <option value="PS5">PlayStation 5</option>
+                    <option value="Xbox">Xbox Series X/S</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Kontroler</label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="input_device" value="Kierownica" checked> Kierownica
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="input_device" value="Pad"> Pad
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="asysty">Poziom asyst (ABS / Kontrola trakcji)</label>
+            <select id="asysty" required>
+                <option value="Brak">Brak asyst (Hardcore)</option>
+                <option value="Częściowe">Dozwolone częściowe (ABS / Średnia trakcja)</option>
+                <option value="Pełne">Pełne asysty</option>
+            </select>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn-submit">Wyślij zgłoszenie</button>
+    </form>
+
+    <div class="admin-trigger" onclick="toggleAdminPanel()">Panel Administratora (Zarządzanie)</div>
+
+    <div id="adminPanel" class="admin-section">
+        <div class="admin-card">
+            <h2 style="color: var(--admin-blue); margin-bottom: 10px;">Zarządzanie Zgłoszeniami</h2>
+            <p id="statsCounter">Liczba zapisanych kierowców: Ładowanie...</p>
+            
+            <div class="admin-table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Numer</th>
+                            <th>Kierowca</th>
+                            <th>Gamertag</th>
+                            <th>Discord</th>
+                            <th>Platforma</th>
+                            <th>Sprzęt</th>
+                            <th>Asysty</th>
+                            <th>Akcja</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="admin-actions">
+                <button class="btn-admin" onclick="exportToTXT()">Pobierz listę (.txt)</button>
+                <button class="btn-admin btn-danger" onclick="clearAllDrivers()">Wyczyść wszystko</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const webhookUrl = "https://discord.com/api/webhooks/1503438755510489221/HZ7LUI880rI1rBOiXbLi6msxsG2L_tKnb-VN76jTHp0LUcRv4MaPqC2bhFvBcyFcPK8h";
+    const firebaseBaseUrl = "https://zapisy-4af51-default-rtdb.europe-west1.firebasedatabase.app/";
+    const ADMIN_PASSWORD = "admin123";
+
+    const availableF1Numbers = [
+        2, 3, 5, 6, 7, 8, 9, 12, 13, 14, 15, 17, 19, 21, 25, 26, 27, 28, 29, 30, 
+        32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 45, 46, 47, 48, 49, 50, 
+        51, 52, 53, 54, 56, 57, 58, 59, 60, 61, 62, 64, 65, 66, 67, 68, 69, 70, 
+        71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 82, 83, 84, 85, 86, 87, 88, 89, 
+        90, 91, 92, 93, 94, 95, 96, 97, 98, 99
+    ];
+
+    // Główny obiekt przechowujący pobranych kierowców w pamięci podręcznej aplikacji
+    let globalDriversList = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        fetchDriversFromFirebase();
+    });
+
+    // Pobieranie danych z bazy Firebase
+    function fetchDriversFromFirebase() {
+        fetch(`${firebaseBaseUrl}drivers.json`)
+        .then(res => res.json())
+        .then(data => {
+            globalDriversList = [];
+            if (data) {
+                // Firebase zwraca obiekt z losowymi kluczami, mapujemy go na tablicę zachowując identyfikator ID
+                globalDriversList = Object.keys(data).map(key => ({
+                    id: key,
+                    ...data[key]
+                }));
+                // Sortowanie po numerze startowym
+                globalDriversList.sort((a, b) => parseInt(a.raceNumber) - parseInt(b.raceNumber));
+            }
+            refreshNumbersSelect();
+            renderAdminTable();
+        })
+        .catch(err => {
+            console.error("Błąd pobierania danych z Firebase:", err);
+            refreshNumbersSelect();
+        });
+    }
+
+    function refreshNumbersSelect() {
+        const select = document.getElementById('raceNumber');
+        const takenNumbers = globalDriversList.map(d => parseInt(d.raceNumber));
+
+        select.innerHTML = '<option value="" disabled selected>Wybierz wolny numer...</option>';
+
+        availableF1Numbers.forEach(num => {
+            if (!takenNumbers.includes(num)) {
+                const opt = document.createElement('option');
+                opt.value = num;
+                opt.innerText = `#${num}`;
+                select.appendChild(opt);
+            }
+        });
+    }
+
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const submitBtn = document.getElementById('submitBtn');
+        const successAlert = document.getElementById('successAlert');
+        const errorAlert = document.getElementById('errorAlert');
+
+        const firstname = document.getElementById('firstname').value;
+        const lastname = document.getElementById('lastname').value;
+        const gamertag = document.getElementById('gamertag').value;
+        
+        let discordTag = document.getElementById('discordTag').value.trim();
+        discordTag = discordTag.replace(/[<@>]/g, '');
+
+        const raceNumber = document.getElementById('raceNumber').value;
+        const platform = document.getElementById('platform').value;
+        const device = document.querySelector('input[name="input_device"]:checked').value;
+        const asysty = document.getElementById('asysty').value;
+
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Wysyłanie...";
+
+        const newDriver = { firstname, lastname, gamertag, discordTag, raceNumber, platform, device, asysty };
+
+        // 1. Najpierw zapisujemy dane do bazy Firebase
+        fetch(`${firebaseBaseUrl}drivers.json`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newDriver)
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Błąd zapisu do Firebase');
+            return res.json();
+        })
+        .then(() => {
+            // 2. Po udanym zapisie w bazie danych wysyłamy webhook na Discorda
+            const discordPayload = {
+                content: `🔔 Nowe zgłoszenie do ligi!`,
+                embeds: [{
+                    title: `🏎️ Nowe zgłoszenie do sezonu 2026/27!`,
+                    color: 14747136,
+                    fields: [
+                        { name: "🔢 Numer Startowy", value: `**#${raceNumber}**`, inline: true },
+                        { name: "🎮 Nick / Gamertag", value: `**${gamertag}**`, inline: true },
+                        { name: "📱 Discord ID", value: `<@${discordTag}>`, inline: true },
+                        { name: "👤 Kierowca", value: `${firstname} ${lastname}`, inline: true },
+                        { name: "💻 Platforma", value: platform, inline: true },
+                        { name: "🕹️ Kontroler", value: device, inline: true },
+                        { name: "🛠️ Asysty", value: asysty, inline: true }
+                    ],
+                    timestamp: new Date().toISOString()
+                }]
+            };
+
+            return fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(discordPayload)
+            });
+        })
+        .then(response => {
+            if (response.ok) {
+                successAlert.style.display = 'block';
+                errorAlert.style.display = 'none';
+                document.getElementById('registrationForm').reset();
+                fetchDriversFromFirebase(); // Odśwież listę i numery bezpośrednio z Firebase
+            } else {
+                throw new Error('Błąd serwera Discord');
+            }
+        })
+        .catch(error => {
+            errorAlert.style.display = 'block';
+            successAlert.style.display = 'none';
+            console.error(error);
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Wyślij zgłoszenie";
+            setTimeout(() => {
+                successAlert.style.display = 'none';
+                errorAlert.style.display = 'none';
+            }, 5000);
+        });
+    });
+
+    function toggleAdminPanel() {
+        const panel = document.getElementById('adminPanel');
+        if (panel.style.display === 'block') {
+            panel.style.display = 'none';
+        } else {
+            const password = prompt("Podaj hasło administratora:");
+            if (password === ADMIN_PASSWORD) {
+                panel.style.display = 'block';
+                renderAdminTable();
+            } else if (password !== null) {
+                alert("Błędne hasło!");
+            }
+        }
+    }
+
+    function renderAdminTable() {
+        const tbody = document.getElementById('adminTableBody');
+        const counter = document.getElementById('statsCounter');
+        
+        tbody.innerHTML = '';
+        counter.innerText = `Liczba zapisanych kierowców: ${globalDriversList.length}`;
+
+        if (globalDriversList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Brak zgłoszeń w bazie danych.</td></tr>`;
+            return;
+        }
+
+        globalDriversList.forEach((driver) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span style="color:var(--f1-red); font-weight:bold;">#${driver.raceNumber}</span></td>
+                <td>${driver.firstname} ${driver.lastname}</td>
+                <td><strong>${driver.gamertag}</strong></td>
+                <td><span style="color:var(--text-muted);">${driver.discordTag}</span></td>
+                <td>${driver.platform}</td>
+                <td>${driver.device}</td>
+                <td>${driver.asysty}</td>
+                <td><button class="btn-admin btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.raceNumber}')">Usuń</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Usunięcie wybranego kierowcy bezpośrednio z Firebase
+    function deleteDriver(firebaseId, raceNumber) {
+        if(confirm(`Czy na pewno chcesz usunąć kierowcę z numerem #${raceNumber} z bazy danych?`)) {
+            fetch(`${firebaseBaseUrl}drivers/${firebaseId}.json`, {
+                method: 'DELETE'
+            })
+            .then(res => {
+                if(!res.ok) throw new Error('Nie udało się usunąć wpisu z Firebase');
+                fetchDriversFromFirebase(); // Pobierz świeże dane po usunięciu
+            })
+            .catch(err => {
+                alert("Wystąpił błąd podczas usuwania z bazy danych cloud.");
+                console.error(err);
+            });
+        }
+    }
+
+    // Wyczyszczenie całej bazy danych w Firebase
+    function clearAllDrivers() {
+        if(confirm("⚠️ UWAGA! Czy na pewno chcesz skasować WSZYSTKIE zgłoszenia z chmury Firebase?")) {
+            fetch(`${firebaseBaseUrl}drivers.json`, {
+                method: 'DELETE'
+            })
+            .then(res => {
+                if(!res.ok) throw new Error('Nie udało się wyczyścić bazy');
+                fetchDriversFromFirebase();
+            })
+            .catch(err => {
+                alert("Wystąpił błąd podczas czyszczenia bazy danych.");
+                console.error(err);
+            });
+        }
+    }
+
+    function exportToTXT() {
+        if(globalDriversList.length === 0) {
+            alert("Brak danych do eksportu!");
+            return;
+        }
+
+        let txtContent = "LISTA ZAPISANYCH KIEROWCÓW F1 - SEZON 2026/27\n";
+        txtContent += "==================================================\n\n";
+
+        globalDriversList.forEach((d) => {
+            txtContent += `#${d.raceNumber.padEnd(4)} | Nick: ${d.gamertag.padEnd(15)} | Discord ID: ${d.discordTag.padEnd(15)} | Kierowca: ${d.firstname} ${d.lastname.padEnd(15)} | Platforma: ${d.platform} | Sprzęt: ${d.device} | Asysty: ${d.asysty}\n`;
+        });
+
+        const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'zapisy_f1_2026_27.txt';
+        link.click();
+    }
+</script>
+
+</body>
+</html>
