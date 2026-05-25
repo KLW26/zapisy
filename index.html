@@ -705,6 +705,7 @@
         const infoAlert = document.getElementById('infoAlert');
         const roleSelect = document.getElementById('driverRole');
         const optMain = document.getElementById('optMain');
+        const optReserve = document.getElementById('optReserve');
 
         if (mainDriversCount >= 22) {
             trackerText.innerHTML = `<span style="color:#fb923c; font-weight:600;">Główny skład pełny (22/22)</span>`;
@@ -713,6 +714,7 @@
             infoAlert.style.display = 'block';
             
             optMain.disabled = true;
+            optReserve.disabled = false;
             roleSelect.value = "Rezerwowy"; 
         } else {
             const freeSlots = 22 - mainDriversCount;
@@ -720,6 +722,8 @@
             infoAlert.style.display = 'none';
             
             optMain.disabled = false;
+            optReserve.disabled = true;
+            roleSelect.value = "Główny"; 
         }
     }
 
