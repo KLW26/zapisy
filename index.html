@@ -95,7 +95,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* LICZNIK: Stylizacja paska stanu zajętości miejsc */
         .grid-status-tracker {
             background: rgba(10, 10, 15, 0.4);
             border: 1px solid var(--glass-border);
@@ -522,9 +521,9 @@
     <form id="registrationForm">
         <div class="form-group">
             <label for="driverRole">Typ Zgłoszenia / Rola</label>
-            <select id="driverRole" required onchange="handleRoleChangeLive()">
+            <select id="driverRole" required>
                 <option value="Główny" id="optMain">Kierowca Podstawowy (Stały etat, wymagany numer)</option>
-                <option value="Rezerwowy" id="optReserve">Kierowca Rezerwowy (Okazyjne starty, bez stałego numeru)</option>
+                <option value="Rezerwowy" id="optReserve">Kierowca Rezerwowy (Okazyjne starty, wymagany numer)</option>
             </select>
         </div>
 
@@ -617,7 +616,7 @@
                 </div>
                 <div class="dash-box">
                     <div class="dash-box-title">Podział na role</div>
-                    <div class="dash-box-value" id="dashStatusSplit">Główni: 0 / 20 | Rezerwa: 0</div>
+                    <div class="dash-box-value" id="dashStatusSplit">Główni: 0 / 22 | Rezerwa: 0</div>
                 </div>
                 <div class="dash-box">
                     <div class="dash-box-title">Kontrolery (Kierownica / Pad)</div>
@@ -670,24 +669,6 @@
         fetchDriversFromFirebase();
     });
 
-    function handleRoleChangeLive() {
-        const role = document.getElementById('driverRole').value;
-        const numberContainer = document.getElementById('raceNumberContainer');
-        const numberSelect = document.getElementById('raceNumber');
-        const gridParent = numberContainer.parentElement;
-
-        if (role === 'Rezerwowy') {
-            numberContainer.classList.add('hidden');
-            numberSelect.removeAttribute('required');
-            numberSelect.value = ""; 
-            gridParent.style.gridTemplateColumns = "1fr"; 
-        } else {
-            numberContainer.classList.remove('hidden');
-            numberSelect.setAttribute('required', 'required');
-            gridParent.style.gridTemplateColumns = "1fr 1fr"; 
-        }
-    }
-
     function fetchDriversFromFirebase() {
         fetch(`${firebaseBaseUrl}drivers.json`)
         .then(res => res.json())
@@ -703,7 +684,6 @@
                     return a.driverStatus === "Główny" ? -1 : 1;
                 });
             }
-            // LICZNIK: Aktualizacja paska stanu i dostępności ról po załadowaniu danych
             updateGridSlotsTracker();
             refreshNumbersSelect();
             renderAdminTable();
@@ -715,10 +695,9 @@
         });
     }
 
-    // LICZNIK: Główna funkcja zarządzająca limitami miejsc podstawowych (max 20)
     function updateGridSlotsTracker() {
         const mainDriversCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
-        const percentage = (mainDriversCount / 20) * 100;
+        const percentage = (mainDriversCount / 22) * 100;
         
         document.getElementById('liveTrackerBar').style.width = `${percentage}%`;
         
@@ -727,31 +706,27 @@
         const roleSelect = document.getElementById('driverRole');
         const optMain = document.getElementById('optMain');
 
-        if (mainDriversCount >= 20) {
-            // Brak miejsc podstawowych -> Wymuszenie zapisu do rezerwy
-            trackerText.innerHTML = `<span style="color:#fb923c; font-weight:600;">Główny skład pełny (20/20)</span>`;
+        if (mainDriversCount >= 22) {
+            trackerText.innerHTML = `<span style="color:#fb923c; font-weight:600;">Główny skład pełny (22/22)</span>`;
             
-            infoAlert.innerText = `📋 Wszystkie stałe etaty (20/20) zostały obsadzone. Rejestracja jest teraz otwarta wyłącznie dla kierowców rezerwowych.`;
+            infoAlert.innerText = `📋 Wszystkie stałe etaty (22/22) zostały obsadzone. Rejestracja jest teraz otwarta wyłącznie dla kierowców rezerwowych.`;
             infoAlert.style.display = 'block';
             
             optMain.disabled = true;
-            roleSelect.value = "Rezerwowy"; // Automatyczne przełączenie roli
+            roleSelect.value = "Rezerwowy"; 
         } else {
-            // Są wolne miejsca podstawowe
-            const freeSlots = 20 - mainDriversCount;
+            const freeSlots = 22 - mainDriversCount;
             trackerText.innerHTML = `<span style="color:var(--success-green); font-weight:600;">Zostało ${freeSlots} wolnych etatów</span>`;
             infoAlert.style.display = 'none';
             
             optMain.disabled = false;
         }
-        
-        handleRoleChangeLive(); // Odświeżenie widoczności pól formularza na podstawie przypisanej roli
     }
 
     function refreshNumbersSelect() {
         const select = document.getElementById('raceNumber');
         const takenNumbers = globalDriversList
-            .filter(d => d.driverStatus === "Główny" && d.raceNumber)
+            .filter(d => d.raceNumber && d.raceNumber !== "Brak")
             .map(d => parseInt(d.raceNumber));
 
         select.innerHTML = '<option value="" disabled selected>Wybierz wolny numer...</option>';
@@ -775,9 +750,8 @@
 
         const driverStatus = document.getElementById('driverRole').value;
         
-        // Bezpiecznik: jeśli jakimś cudem skrypt przepuściłby zgłoszenie główne przy pełnej bazie
         const mainDriversCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
-        if (driverStatus === "Główny" && mainDriversCount >= 20) {
+        if (driverStatus === "Główny" && mainDriversCount >= 22) {
             alert("Niestety, limit kierowców głównych został wyczerpany przed momentem. Zmień rolę na rezerwowego.");
             fetchDriversFromFirebase();
             return;
@@ -790,7 +764,7 @@
         let discordTag = document.getElementById('discordTag').value.trim();
         discordTag = discordTag.replace(/[^0-9]/g, ''); 
 
-        const raceNumber = driverStatus === "Główny" ? document.getElementById('raceNumber').value : "Brak";
+        const raceNumber = document.getElementById('raceNumber').value;
         const platform = document.getElementById('platform').value;
         const device = document.querySelector('input[name="input_device"]:checked').value;
         const asysty = document.getElementById('asysty').value;
@@ -828,7 +802,7 @@
         })
         .then(() => {
             const statusEmoji = driverStatus === "Główny" ? "🟢 SKŁAD GŁÓWNY" : "🟠 KIEROWCA REZERWOWY";
-            const numDisplay = raceNumber === "Brak" ? "❌ Brak (Rezerwa)" : `**#${raceNumber}**`;
+            const numDisplay = `**#${raceNumber}**`;
             
             const discordPayload = {
                 content: `🔔 Nowe zgłoszenie! Rola: **${driverStatus.toUpperCase()}**`,
@@ -912,7 +886,7 @@
         const xbox = globalDriversList.filter(d => d.platform === "Xbox").length;
 
         document.getElementById('dashTotal').innerText = `${total} kierowców`;
-        document.getElementById('dashStatusSplit').innerText = `Główni: ${main} / 20 | Rezerwa: ${reserve}`;
+        document.getElementById('dashStatusSplit').innerText = `Główni: ${main} / 22 | Rezerwa: ${reserve}`;
         document.getElementById('dashHardware').innerText = `Kierownica: ${wheel} | Pad: ${pad}`;
         document.getElementById('dashPlatforms').innerText = `PC: ${pc} | PS5: ${ps5} | XBX: ${xbox}`;
     }
@@ -929,7 +903,7 @@
         const lowerFilter = filterText.toLowerCase();
         const filteredDrivers = globalDriversList.filter(d => 
             d.gamertag.toLowerCase().includes(lowerFilter) || 
-            d.raceNumber.toString().includes(lowerFilter) ||
+            (d.raceNumber && d.raceNumber.toString().includes(lowerFilter)) ||
             d.firstname.toLowerCase().includes(lowerFilter) ||
             d.lastname.toLowerCase().includes(lowerFilter) ||
             d.platform.toLowerCase().includes(lowerFilter) ||
