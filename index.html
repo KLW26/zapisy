@@ -484,6 +484,76 @@
         .badge-main { background: rgba(74, 222, 128, 0.2); color: var(--success-green); border: 1px solid rgba(74, 222, 128, 0.4); }
         .badge-reserve { background: rgba(251, 146, 60, 0.2); color: #fb923c; border: 1px solid rgba(251, 146, 60, 0.4); }
 
+        .file-upload-area {
+            width: 100%;
+            padding: 30px 20px;
+            background: rgba(10, 10, 15, 0.6);
+            border: 1.5px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .file-upload-area:hover, .file-upload-area.drag-over {
+            border-color: var(--f1-red);
+            background: rgba(225, 6, 0, 0.05);
+            box-shadow: 0 0 0 4px var(--f1-red-glow);
+        }
+
+        .file-upload-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .file-upload-text {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .file-upload-hint {
+            font-size: 0.78rem;
+            color: #555566;
+        }
+
+        .file-preview {
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: rgba(74, 222, 128, 0.08);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+            color: var(--success-green);
+        }
+
+        .file-preview-thumb {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .file-preview-info { flex: 1; text-align: left; }
+        .file-preview-name { font-weight: 600; color: var(--text-light); font-size: 0.9rem; word-break: break-all; }
+        .file-preview-size { font-size: 0.78rem; color: var(--text-muted); }
+
+        .file-remove-btn {
+            background: none;
+            border: none;
+            color: #ff8a8a;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .file-remove-btn:hover { color: var(--f1-red); }
+
         @media (max-width: 768px) {
             .grid-2 {
                 grid-template-columns: 1fr;
@@ -549,22 +619,14 @@
             </div>
         </div>
 
-        <div class="grid-2">
-            <div class="form-group" id="raceNumberContainer">
-                <label for="raceNumber">Numer Startowy</label>
-                <select id="raceNumber" required>
-                    <option value="" disabled selected>Pobieranie wolnych numerów...</option>
-                </select>
-            </div>
-            <div class="form-group" id="platformContainer">
-                <label for="platform">Platforma</label>
-                <select id="platform" required>
-                    <option value="" disabled selected>Gdzie grasz?</option>
-                    <option value="PC">PC (Steam / EA App)</option>
-                    <option value="PS5">PlayStation 5</option>
-                    <option value="Xbox">Xbox Series X/S</option>
-                </select>
-            </div>
+        <div class="form-group" id="platformContainer">
+            <label for="platform">Platforma</label>
+            <select id="platform" required>
+                <option value="" disabled selected>Gdzie grasz?</option>
+                <option value="PC">PC (Steam / EA App)</option>
+                <option value="PS5">PlayStation 5</option>
+                <option value="Xbox">Xbox Series X/S</option>
+            </select>
         </div>
 
         <div class="form-group">
@@ -586,6 +648,17 @@
                     <input type="radio" name="input_device" value="Pad"> Pad
                 </label>
             </div>
+        </div>
+
+        <div class="form-group">
+            <label for="fileUpload">Załącznik (opcjonalny)</label>
+            <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileUpload').click()">
+                <input type="file" id="fileUpload" accept="image/*,.pdf" style="display:none;" onchange="handleFileSelect(this)">
+                <div class="file-upload-icon">📎</div>
+                <div class="file-upload-text">Kliknij lub przeciągnij plik tutaj</div>
+                <div class="file-upload-hint">Obsługiwane: JPG, PNG, PDF (maks. 5 MB)</div>
+            </div>
+            <div id="filePreview" class="file-preview" style="display:none;"></div>
         </div>
 
         <div class="checkbox-group">
@@ -632,7 +705,6 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Nr</th>
                             <th>Status</th>
                             <th>Kierowca</th>
                             <th>Gamertag</th>
@@ -659,10 +731,6 @@
     const firebaseBaseUrl = "https://zapisy-4af51-default-rtdb.europe-west1.firebasedatabase.app/";
     const ADMIN_PASSWORD = "admin123";
 
-    const availableF1Numbers = [
-        2, 7, 8, 9, 13, 15, 17, 19, 21, 25, 26, 28, 29, 32, 33, 34, 35, 36, 37, 38, 39, 40, 42, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 56, 57, 58, 59, 60, 61, 62, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 78, 79, 80, 82, 83, 84, 85, 86, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99
-    ];
-
     let globalDriversList = [];
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -685,13 +753,11 @@
                 });
             }
             updateGridSlotsTracker();
-            refreshNumbersSelect();
             renderAdminTable();
             calculateDashboardStats();
         })
         .catch(err => {
             console.error("Błąd połączenia z bazą danych:", err);
-            refreshNumbersSelect();
         });
     }
 
@@ -723,24 +789,6 @@
         }
     }
 
-    function refreshNumbersSelect() {
-        const select = document.getElementById('raceNumber');
-        const takenNumbers = globalDriversList
-            .filter(d => d.raceNumber && d.raceNumber !== "Brak")
-            .map(d => parseInt(d.raceNumber));
-
-        select.innerHTML = '<option value="" disabled selected>Wybierz wolny numer...</option>';
-
-        availableF1Numbers.forEach(num => {
-            if (!takenNumbers.includes(num)) {
-                const opt = document.createElement('option');
-                opt.value = num;
-                opt.innerText = `#${num}`;
-                select.appendChild(opt);
-            }
-        });
-    }
-
     document.getElementById('registrationForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -764,7 +812,6 @@
         let discordTag = document.getElementById('discordTag').value.trim();
         discordTag = discordTag.replace(/[^0-9]/g, ''); 
 
-        const raceNumber = document.getElementById('raceNumber').value;
         const platform = document.getElementById('platform').value;
         const device = document.querySelector('input[name="input_device"]:checked').value;
         const asysty = document.getElementById('asysty').value;
@@ -789,7 +836,7 @@
         submitBtn.disabled = true;
         submitBtn.innerText = "ZAPISYWANIE W BAZIE...";
 
-        const newDriver = { firstname, lastname, gamertag, discordTag, raceNumber, platform, device, asysty, driverStatus };
+        const newDriver = { firstname, lastname, gamertag, discordTag, platform, device, asysty, driverStatus };
 
         fetch(`${firebaseBaseUrl}drivers.json`, {
             method: 'POST',
@@ -802,7 +849,6 @@
         })
         .then(() => {
             const statusEmoji = driverStatus === "Główny" ? "🟢 SKŁAD GŁÓWNY" : "🟠 KIEROWCA REZERWOWY";
-            const numDisplay = `**#${raceNumber}**`;
             
             const discordPayload = {
                 content: `🔔 Nowe zgłoszenie! Rola: **${driverStatus.toUpperCase()}**`,
@@ -811,7 +857,6 @@
                     color: driverStatus === "Główny" ? 3066993 : 15105570,
                     fields: [
                         { name: "📋 Przydzielona funkcja", value: statusEmoji, inline: false },
-                        { name: "🔢 Numer startowy", value: numDisplay, inline: true },
                         { name: "📱 Discord ID", value: `<@${discordTag}>`, inline: true },
                         { name: "👤 Nazwisko", value: `${firstname} ${lastname}`, inline: true },
                         { name: "💻 Platforma", value: platform, inline: true },
@@ -856,7 +901,77 @@
         });
     });
 
-    function toggleAdminPanel() {
+    // --- Obsługa pliku ---
+    let selectedFile = null;
+
+    function handleFileSelect(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert("Plik jest za duży. Maksymalny rozmiar to 5 MB.");
+            input.value = '';
+            return;
+        }
+
+        selectedFile = file;
+        showFilePreview(file);
+    }
+
+    function showFilePreview(file) {
+        const preview = document.getElementById('filePreview');
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        const isImage = file.type.startsWith('image/');
+
+        let thumbHTML = '';
+        if (isImage) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = preview.querySelector('.file-preview-thumb');
+                if (img) img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            thumbHTML = `<img class="file-preview-thumb" src="" alt="podgląd">`;
+        } else {
+            thumbHTML = `<span style="font-size:2rem;">📄</span>`;
+        }
+
+        preview.innerHTML = `
+            ${thumbHTML}
+            <div class="file-preview-info">
+                <div class="file-preview-name">${file.name}</div>
+                <div class="file-preview-size">${sizeMB} MB</div>
+            </div>
+            <button class="file-remove-btn" onclick="removeFile()" title="Usuń plik">✕</button>
+        `;
+        preview.style.display = 'flex';
+    }
+
+    function removeFile() {
+        selectedFile = null;
+        document.getElementById('fileUpload').value = '';
+        document.getElementById('filePreview').style.display = 'none';
+    }
+
+    // Drag & drop
+    const uploadArea = document.getElementById('fileUploadArea');
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
+    uploadArea.addEventListener('drop', e => {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            const input = document.getElementById('fileUpload');
+            input.files = dt.files;
+            handleFileSelect(input);
+        }
+    });
+
+
         const panel = document.getElementById('adminPanel');
         if (panel.style.display === 'block') {
             panel.style.display = 'none';
@@ -896,14 +1011,13 @@
         tbody.innerHTML = '';
 
         if (globalDriversList.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color:var(--text-muted);">Baza danych jest pusta.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px; color:var(--text-muted);">Baza danych jest pusta.</td></tr>`;
             return;
         }
 
         const lowerFilter = filterText.toLowerCase();
         const filteredDrivers = globalDriversList.filter(d => 
             d.gamertag.toLowerCase().includes(lowerFilter) || 
-            (d.raceNumber && d.raceNumber.toString().includes(lowerFilter)) ||
             d.firstname.toLowerCase().includes(lowerFilter) ||
             d.lastname.toLowerCase().includes(lowerFilter) ||
             d.platform.toLowerCase().includes(lowerFilter) ||
@@ -912,19 +1026,15 @@
 
         filteredDrivers.forEach((driver) => {
             const statusClass = driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve";
-            const numberBadge = driver.raceNumber === "Brak" 
-                ? `<span class="badge badge-number-none">REZERWA</span>`
-                : `<span class="badge badge-number">#${driver.raceNumber}</span>`;
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${numberBadge}</td>
                 <td><span class="badge ${statusClass}">${driver.driverStatus}</span></td>
                 <td><div style="font-weight:500;">${driver.firstname} ${driver.lastname}</div></td>
                 <td><strong style="color:white;">${driver.gamertag}</strong></td>
                 <td><span style="color:var(--text-muted); font-size: 0.8rem; font-family: monospace;">${driver.discordTag}</span></td>
                 <td><div style="font-size:0.85rem;">${driver.platform} <span style="color:#8b8b99;">(${driver.device})</span></div></td>
-                <td><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.raceNumber}', '${driver.gamertag}')">Usuń</button></td>
+                <td><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>
             `;
             tbody.appendChild(tr);
         });
@@ -935,9 +1045,8 @@
         renderAdminTable(searchVal);
     }
 
-    function deleteDriver(firebaseId, raceNumber, gamertag) {
-        const msg = raceNumber === "Brak" ? `kierowcę rezerwowego ${gamertag}` : `kierowcę ${gamertag} (#${raceNumber})`;
-        if(confirm(`Czy na pewno usunąć ${msg} z bazy danych ligi?`)) {
+    function deleteDriver(firebaseId, gamertag) {
+        if(confirm(`Czy na pewno usunąć kierowcę ${gamertag} z bazy danych ligi?`)) {
             fetch(`${firebaseBaseUrl}drivers/${firebaseId}.json`, {
                 method: 'DELETE'
             })
@@ -977,8 +1086,7 @@
         let txtContent = "=== EKSPORT BAZY KIEROWCÓW LIGI F1 ===\n\n";
 
         globalDriversList.forEach((d) => {
-            const numString = d.raceNumber === "Brak" ? "BRAK (REZERWA)" : `#${d.raceNumber}`;
-            txtContent += `[${numString.padEnd(14)}] Status: ${d.driverStatus.padEnd(10)} | Nick: ${d.gamertag.padEnd(16)} | ID: ${d.discordTag.padEnd(19)} | Dane: ${d.firstname} ${d.lastname.padEnd(15)} | ${d.platform} (${d.device})\n`;
+            txtContent += `Status: ${d.driverStatus.padEnd(10)} | Nick: ${d.gamertag.padEnd(16)} | ID: ${d.discordTag.padEnd(19)} | Dane: ${d.firstname} ${d.lastname.padEnd(15)} | ${d.platform} (${d.device})\n`;
         });
 
         const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
