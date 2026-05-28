@@ -710,6 +710,7 @@
                             <th>Gamertag</th>
                             <th>Discord</th>
                             <th>Sprzęt</th>
+                            <th>Załącznik</th>
                             <th>Akcja</th>
                         </tr>
                     </thead>
@@ -727,22 +728,27 @@
 </div>
 
 <script>
-    const webhookUrl = "https://discord.com/api/webhooks/1508544444893237359/MNYyzhcHQNKd2b8LA82hbazQ_WdUWHz-AdA9Hbu_4wAZpVGX21BdBmTYOqBPPQZL5b_q";
-    const firebaseBaseUrl = "https://kalendarzklw-default-rtdb.europe-west1.firebasedatabase.app/";
+    const webhookUrl = "https://discord.com/api/webhooks/1509593767202652374/8KuLi0Pj8cy6WhNd4FJcBrRp1YgSeP059TwhjsfOiJkGNXklkoJgp60Zy6jyS4CA_XRP";
+    const firebaseBaseUrl = "https://zapisy-4af51-default-rtdb.europe-west1.firebasedatabase.app/";
     const ADMIN_PASSWORD = "admin123";
 
     let globalDriversList = [];
 
     document.addEventListener("DOMContentLoaded", () => {
+        // Pokaż stan ładowania zanim przyjdą dane z Firebase
+        document.getElementById('liveTrackerText').innerHTML = `<span style="color:var(--text-muted);">Pobieranie statusu padoku...</span>`;
+        document.getElementById('freeSlotsCounter').innerHTML = '';
         fetchDriversFromFirebase();
     });
 
-    function fetchDriversFromFirebase() {
-        fetch(`${firebaseBaseUrl}drivers.json`)
-        .then(res => res.json())
-        .then(data => {
+    async function fetchDriversFromFirebase() {
+
+        try {
+            const res = await fetch(`${firebaseBaseUrl}drivers.json`);
+            const data = await res.json();
+
             globalDriversList = [];
-            if (data) {
+            if (data && typeof data === 'object') {
                 globalDriversList = Object.keys(data).map(key => ({
                     id: key,
                     ...data[key]
@@ -755,13 +761,14 @@
             updateGridSlotsTracker();
             renderAdminTable();
             calculateDashboardStats();
-        })
-        .catch(err => {
+        } catch (err) {
             console.error("Błąd połączenia z bazą danych:", err);
-        });
+            globalDriversList = [];
+            updateGridSlotsTracker();
+        }
     }
 
-    function updateGridSlotsTracker() {
+        function updateGridSlotsTracker() {
         const mainDriversCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
         const percentage = (mainDriversCount / 22) * 100;
         
@@ -840,69 +847,62 @@
         submitBtn.disabled = true;
         submitBtn.innerText = "ZAPISYWANIE W BAZIE...";
 
-        const newDriver = { firstname, lastname, gamertag, discordTag, platform, device, asysty, driverStatus };
-
-        fetch(`${firebaseBaseUrl}drivers.json`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newDriver)
-        })
-        .then(res => {
-            if (!res.ok) throw new Error('Błąd serwera bazy danych');
-            return res.json();
-        })
-        .then(() => {
-            const statusEmoji = driverStatus === "Główny" ? "🟢 SKŁAD GŁÓWNY" : "🟠 KIEROWCA REZERWOWY";
-            
-            const discordPayload = {
-                content: `🔔 Nowe zgłoszenie! Rola: **${driverStatus.toUpperCase()}**`,
-                embeds: [{
-                    title: `🏎️ Nowy profil w bazie: ${gamertag}`,
-                    color: driverStatus === "Główny" ? 3066993 : 15105570,
-                    fields: [
-                        { name: "📋 Przydzielona funkcja", value: statusEmoji, inline: false },
-                        { name: "📱 Discord ID", value: `<@${discordTag}>`, inline: true },
-                        { name: "👤 Nazwisko", value: `${firstname} ${lastname}`, inline: true },
-                        { name: "💻 Platforma", value: platform, inline: true },
-                        { name: "🕹️ Kontroler", value: device, inline: true },
-                        { name: "🛠️ Asysty", value: asysty, inline: true }
-                    ],
-                    timestamp: new Date().toISOString()
-                }]
+        // Jeśli jest plik — najpierw zakoduj go jako base64, potem zapisz
+        function doSave(attachmentData, attachmentName, attachmentType) {
+            const newDriver = { firstname, lastname, gamertag, discordTag, platform, device, asysty, driverStatus,
+                attachmentData: attachmentData || null,
+                attachmentName: attachmentName || null,
+                attachmentType: attachmentType || null
             };
 
-            return fetch(webhookUrl, {
+            fetch(`${firebaseBaseUrl}drivers.json`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(discordPayload)
-            });
-        })
-        .then(response => {
-            if (response.ok) {
-                successAlert.innerText = `Pomyślnie zarejestrowano profil kierowcy z rolą: ${driverStatus}.`;
+                body: JSON.stringify(newDriver)
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Błąd serwera bazy danych');
+                return res.json();
+            })
+            .then(() => {
+                successAlert.innerText = `✅ Pomyślnie zarejestrowano profil kierowcy z rolą: ${driverStatus}.`;
                 successAlert.style.display = 'block';
                 errorAlert.style.display = 'none';
+                // Wyślij Discord przed removeFile() — selectedFile musi być dostępny
+                sendDiscordNotification(driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty);
                 document.getElementById('registrationForm').reset();
+                removeFile();
                 fetchDriversFromFirebase();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-            } else {
-                throw new Error('Problem z wysłaniem logu Discord');
-            }
-        })
+            })
         .catch(error => {
-            errorAlert.innerText = "Wystąpił nieoczekiwany problem z łącznością. Dane nie zostały wysłane.";
-            errorAlert.style.display = 'block';
-            successAlert.style.display = 'none';
-            console.error(error);
-        })
-        .finally(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "WYŚLIJ ZGŁOSZENIE";
-            setTimeout(() => {
+                errorAlert.innerText = "❌ Wystąpił nieoczekiwany problem z łącznością. Dane nie zostały wysłane.";
+                errorAlert.style.display = 'block';
                 successAlert.style.display = 'none';
-                errorAlert.style.display = 'none';
-            }, 8000);
-        });
+                console.error(error);
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "WYŚLIJ ZGŁOSZENIE";
+                setTimeout(() => {
+                    successAlert.style.display = 'none';
+                    errorAlert.style.display = 'none';
+                }, 8000);
+            });
+        }
+
+        if (selectedFile) {
+            submitBtn.innerText = "KODOWANIE PLIKU...";
+            const reader = new FileReader();
+            reader.onload = e => {
+                const base64 = e.target.result.split(',')[1];
+                doSave(base64, selectedFile.name, selectedFile.type);
+            };
+            reader.onerror = () => doSave(null, null, null);
+            reader.readAsDataURL(selectedFile);
+        } else {
+            doSave(null, null, null);
+        }
     });
 
     // --- Obsługa pliku ---
@@ -975,7 +975,7 @@
         }
     });
 
-
+    function toggleAdminPanel() {
         const panel = document.getElementById('adminPanel');
         if (panel.style.display === 'block') {
             panel.style.display = 'none';
@@ -985,6 +985,7 @@
             if (password === ADMIN_PASSWORD) {
                 panel.style.display = 'block';
                 renderAdminTable();
+                calculateDashboardStats();
                 panel.scrollIntoView({ behavior: 'smooth' });
             } else if (password !== null) {
                 alert("Hasło niepoprawne.");
@@ -1015,7 +1016,7 @@
         tbody.innerHTML = '';
 
         if (globalDriversList.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px; color:var(--text-muted);">Baza danych jest pusta.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color:var(--text-muted);">Baza danych jest pusta.</td></tr>`;
             return;
         }
 
@@ -1031,6 +1032,14 @@
         filteredDrivers.forEach((driver) => {
             const statusClass = driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve";
 
+            const attachmentCell = driver.attachmentData
+                ? driver.attachmentType && driver.attachmentType.startsWith('image/')
+                    ? `<a href="data:${driver.attachmentType};base64,${driver.attachmentData}" download="${driver.attachmentName}" title="${driver.attachmentName}" style="display:inline-block;">
+                        <img src="data:${driver.attachmentType};base64,${driver.attachmentData}" style="width:40px;height:40px;object-fit:cover;border-radius:5px;border:1px solid rgba(255,255,255,0.1);cursor:pointer;" title="Kliknij aby pobrać: ${driver.attachmentName}">
+                       </a>`
+                    : `<a href="data:${driver.attachmentType};base64,${driver.attachmentData}" download="${driver.attachmentName}" style="color:#5bb0ff;font-size:0.8rem;text-decoration:none;" title="Pobierz ${driver.attachmentName}">📄 ${driver.attachmentName}</a>`
+                : `<span style="color:#444455;font-size:0.75rem;">—</span>`;
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><span class="badge ${statusClass}">${driver.driverStatus}</span></td>
@@ -1038,6 +1047,7 @@
                 <td><strong style="color:white;">${driver.gamertag}</strong></td>
                 <td><span style="color:var(--text-muted); font-size: 0.8rem; font-family: monospace;">${driver.discordTag}</span></td>
                 <td><div style="font-size:0.85rem;">${driver.platform} <span style="color:#8b8b99;">(${driver.device})</span></div></td>
+                <td>${attachmentCell}</td>
                 <td><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>
             `;
             tbody.appendChild(tr);
@@ -1062,6 +1072,49 @@
                 alert("Błąd synchronizacji.");
                 console.error(err);
             });
+        }
+    }
+
+    function sendDiscordNotification(driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty) {
+        const statusEmoji = driverStatus === "Główny" ? "🟢 SKŁAD GŁÓWNY" : "🟠 KIEROWCA REZERWOWY";
+        const mainCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
+        const freeSlots = Math.max(0, 22 - mainCount);
+
+        const discordPayload = {
+            content: `🔔 Nowe zgłoszenie! Rola: **${driverStatus.toUpperCase()}**`,
+            embeds: [{
+                title: `🏎️ Nowy profil w bazie: ${gamertag}`,
+                color: driverStatus === "Główny" ? 3066993 : 15105570,
+                fields: [
+                    { name: "📋 Przydzielona funkcja", value: statusEmoji, inline: false },
+                    { name: "📱 Discord ID", value: `<@${discordTag}>`, inline: true },
+                    { name: "👤 Kierowca", value: `${firstname} ${lastname}`, inline: true },
+                    { name: "💻 Platforma", value: platform, inline: true },
+                    { name: "🕹️ Kontroler", value: device, inline: true },
+                    { name: "🛠️ Asysty", value: asysty, inline: true },
+                    { name: "🪑 Wolne miejsca (skład główny)", value: `${freeSlots} / 22`, inline: true }
+                ],
+                footer: { text: "Liga F1 · System rejestracji" },
+                timestamp: new Date().toISOString()
+            }]
+        };
+
+        // Jeśli jest plik załącznika — wyślij jako multipart/form-data
+        if (selectedFile) {
+            const formData = new FormData();
+            formData.append('payload_json', JSON.stringify(discordPayload));
+            formData.append('file', selectedFile, selectedFile.name);
+            fetch(webhookUrl, { method: 'POST', body: formData })
+                .then(r => { if (!r.ok) console.warn('Discord webhook (plik): błąd', r.status); })
+                .catch(err => console.warn('Discord webhook (plik): brak połączenia', err));
+        } else {
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(discordPayload)
+            })
+            .then(r => { if (!r.ok) console.warn('Discord webhook: błąd', r.status); })
+            .catch(err => console.warn('Discord webhook: brak połączenia', err));
         }
     }
 
