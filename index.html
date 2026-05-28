@@ -590,10 +590,10 @@
 
     <form id="registrationForm">
         <div class="form-group">
-            <label for="driverRole">Typ Zgłoszenia / Rola</label>
+            <label for="driverRole">Typ Zgłoszenia / Rola &nbsp;<span id="freeSlotsCounter" style="font-size:0.75rem; color:var(--success-green); font-family:'Inter',sans-serif; text-transform:none; letter-spacing:0; font-weight:500;"></span></label>
             <select id="driverRole" required>
-                <option value="Główny" id="optMain">Kierowca Podstawowy (Stały etat, wymagany numer)</option>
-                <option value="Rezerwowy" id="optReserve">Kierowca Rezerwowy (Okazyjne starty, wymagany numer)</option>
+                <option value="Główny" id="optMain">Kierowca Podstawowy (Stały etat)</option>
+                <option value="Rezerwowy" id="optReserve">Kierowca Rezerwowy (Okazyjne starty)</option>
             </select>
         </div>
 
@@ -772,6 +772,8 @@
         const roleSelect = document.getElementById('driverRole');
         const optMain = document.getElementById('optMain');
 
+        const freeSlotsCounter = document.getElementById('freeSlotsCounter');
+
         if (mainDriversCount >= 22) {
             trackerText.innerHTML = `<span style="color:#fb923c; font-weight:600;">Główny skład pełny (22/22)</span>`;
             
@@ -779,13 +781,15 @@
             infoAlert.style.display = 'block';
             
             optMain.disabled = true;
-            roleSelect.value = "Rezerwowy"; 
+            roleSelect.value = "Rezerwowy";
+            if (freeSlotsCounter) freeSlotsCounter.innerHTML = `<span style="color:#fb923c;">(skład pełny · 0 wolnych miejsc)</span>`;
         } else {
             const freeSlots = 22 - mainDriversCount;
             trackerText.innerHTML = `<span style="color:var(--success-green); font-weight:600;">Zostało ${freeSlots} wolnych etatów</span>`;
             infoAlert.style.display = 'none';
             
             optMain.disabled = false;
+            if (freeSlotsCounter) freeSlotsCounter.innerHTML = `(${freeSlots} wolnych miejsc w składzie podstawowym)`;
         }
     }
 
