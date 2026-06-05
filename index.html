@@ -44,8 +44,8 @@
             --dark-bg: #f4f4f9;
             --card-bg: #ffffff;
             --text-light: #121214;
-            --text-muted: #374151; /* Znacznie ciemniejszy szary dla lepszego kontrastu */
-            --glass-border: rgba(0, 0, 0, 0.15); /* Wyraźniejsze ramki */
+            --text-muted: #374151;
+            --glass-border: rgba(0, 0, 0, 0.15);
             --body-glow-1: rgba(225, 6, 0, 0.04);
             --body-glow-2: rgba(0, 99, 229, 0.03);
             --h1-gradient: linear-gradient(to right, #e10600, #121214);
@@ -82,7 +82,7 @@
             background-attachment: fixed;
             color: var(--text-light);
             font-family: 'Inter', sans-serif;
-            -webkit-font-smoothing: antialiased; /* Wyostrzenie czcionek na ekranach */
+            -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             line-height: 1.6;
             padding: 20px;
@@ -177,11 +177,8 @@
             transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* =============================================
-           ZMODERNIZOWANY LICZNIK BLOKADY (KONTRAST & WYOSTRZENIE)
-           ============================================= */
         .locked-overlay {
-            display: none; /* Całkowicie ukryty domyślnie, włącza się tylko przy aktywnej dacie */
+            display: none;
             background: rgba(16, 16, 24, 0.85);
             border: 1px solid var(--glass-border);
             border-top: 4px solid var(--f1-red);
@@ -221,7 +218,7 @@
         }
         
         [data-theme="light"] .locked-title {
-            color: #111827; /* Maksymalnie ostry czarny */
+            color: #111827;
         }
 
         .locked-subtitle {
@@ -253,8 +250,8 @@
         }
         
         [data-theme="light"] .countdown-box {
-            background: #fef2f2; /* Jasnoczerwone czyste tło */
-            border: 2px solid #f87171; /* Bardzo wyraźna, ostra ramka */
+            background: #fef2f2;
+            border: 2px solid #f87171;
             box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
 
@@ -272,7 +269,7 @@
         }
         
         [data-theme="light"] .countdown-value {
-            color: #b91c1c; /* Głęboka, wyostrzona czerwień dla perfekcyjnego kontrastu */
+            color: #b91c1c;
         }
 
         .countdown-label {
@@ -285,9 +282,8 @@
         }
         
         [data-theme="light"] .countdown-label {
-            color: #1f2937; /* Ciemny, czytelny napis pod cyframi */
+            color: #1f2937;
         }
-        /* ============================================= */
 
         .form-group {
             margin-bottom: 25px;
@@ -832,7 +828,6 @@
     <div id="errorAlert" class="error-message"></div>
     <div id="infoAlert" class="info-message"></div>
 
-    <!-- Sekcja blokady (uruchamiana warunkowo przez JS) -->
     <div id="lockedOverlay" class="locked-overlay">
         <div class="locked-icon">🔒</div>
         <div class="locked-title">Zapisy są jeszcze zamknięte</div>
@@ -1011,6 +1006,7 @@
 
 <script>
     const webhookUrl = "https://discord.com/api/webhooks/1509593767202652374/8KuLi0Pj8cy6WhNd4FJcBrRp1YgSeP059TwhjsfOiJkGNXklkoJgp60Zy6jyS4CA_XRP";
+    const countdownWebhookUrl = "https://discord.com/api/webhooks/1512476781502791780/3UgyLFL65LlUTKhPBIbFqYzHuwtlfG1FEKKpTqowpVtI7mA9F6qf1dyYKLd0v3PQ2MTR";
     const firebaseBaseUrl = "https://zapisy-4af51-default-rtdb.europe-west1.firebasedatabase.app/";
     const ADMIN_PASSWORD = "admin123";
 
@@ -1021,7 +1017,6 @@
         const themeToggleBtn = document.getElementById('themeToggleBtn');
         const themeToggleIcon = document.getElementById('themeToggleIcon');
         const themeToggleText = document.getElementById('themeToggleText');
-        
         const savedTheme = localStorage.getItem('theme') || 'dark';
         
         if (savedTheme === 'light') {
@@ -1063,7 +1058,6 @@
 
         updateAdminUnlockInfo(unlockDateStr);
 
-        // Jeśli w bazie danych NIE MA ustawionej daty – licznik całkowicie znika ze struktury strony
         if (!unlockDateStr) {
             overlay.classList.remove('visible');
             form.style.display = '';
@@ -1080,8 +1074,9 @@
             form.style.display = '';
             submitBtn.disabled = false;
             clearInterval(countdownInterval);
+            triggerAutomaticOpenNotification();
+            return;
         } else {
-            // Licznik aktywuje się dopiero w tym miejscu, gdy data z bazy faktycznie blokuje rejestrację
             overlay.classList.add('visible');
             form.style.display = 'none';
 
@@ -1096,6 +1091,7 @@
                     clearInterval(countdownInterval);
                     overlay.classList.remove('visible');
                     form.style.display = '';
+                    triggerAutomaticOpenNotification();
                     return;
                 }
                 const d = Math.floor(remaining / (1000 * 60 * 60 * 24));
@@ -1107,6 +1103,24 @@
                 document.getElementById('cdMinutes').textContent = String(m).padStart(2, '0');
                 document.getElementById('cdSeconds').textContent = String(s).padStart(2, '0');
             }, 1000);
+        }
+    }
+
+    async function triggerAutomaticOpenNotification() {
+        try {
+            const res = await fetch(`${firebaseBaseUrl}settings/openNotificationSent.json`);
+            const sent = await res.json();
+            
+            if (sent === false) {
+                await fetch(`${firebaseBaseUrl}settings/openNotificationSent.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(true)
+                });
+                sendDiscordOpenNotification();
+            }
+        } catch (e) {
+            console.warn("Błąd sprawdzania statusu automatycznego powiadomienia:", e);
         }
     }
 
@@ -1136,12 +1150,16 @@
 
         const isoDate = new Date(val).toISOString();
         try {
-            const res = await fetch(`${firebaseBaseUrl}settings/unlockDate.json`, {
+            await fetch(`${firebaseBaseUrl}settings/unlockDate.json`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(isoDate)
             });
-            if (!res.ok) throw new Error();
+            await fetch(`${firebaseBaseUrl}settings/openNotificationSent.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(false)
+            });
             alert(`✅ Ustawiono datę otwarcia zapisów: ${new Date(val).toLocaleString('pl-PL')}`);
             sendDiscordCountdownNotification(val);
             checkRegistrationLock();
@@ -1153,10 +1171,12 @@
     async function clearUnlockDate() {
         if (!confirm("Czy na pewno usunąć blokadę? Zapisy będą natychmiast otwarte.")) return;
         try {
-            const res = await fetch(`${firebaseBaseUrl}settings/unlockDate.json`, {
-                method: 'DELETE'
+            await fetch(`${firebaseBaseUrl}settings/unlockDate.json`, { method: 'DELETE' });
+            await fetch(`${firebaseBaseUrl}settings/openNotificationSent.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(true)
             });
-            if (!res.ok) throw new Error();
             alert("✅ Blokada usunięta. Zapisy są teraz otwarte.");
             sendDiscordOpenNotification();
             checkRegistrationLock();
@@ -1168,7 +1188,7 @@
     function sendDiscordCountdownNotification(dateString) {
         const unixSeconds = Math.floor(new Date(dateString).getTime() / 1000);
         const discordPayload = {
-            content: "⏳ **ZAPISY DO LIGI F1 ZOSTAŁY ZAPLANOWANE!**",
+            content: "@everyone ⏳ **ZAPISY DO LIGI F1 ZOSTAŁY ZAPLANOWANE!**",
             embeds: [{
                 title: "🏁 Odliczanie do otwarcia rejestracji",
                 color: 14747136,
@@ -1177,21 +1197,21 @@
                 timestamp: new Date().toISOString()
             }]
         };
-        fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) }).catch(err => console.warn(err));
+        fetch(countdownWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) }).catch(err => console.warn(err));
     }
 
     function sendDiscordOpenNotification() {
         const discordPayload = {
-            content: "🟢 **ZAPISY ZOSTAŁY WŁAŚNIE OTWARTE!**",
+            content: "@everyone 🟢 **ZAPISY ZOSTAŁY WŁAŚNIE OTWARTE!**",
             embeds: [{
                 title: "🚀 Zielone światło nad padokiem!",
                 color: 4890208,
-                description: "Blokada czasowa została zdjęta przez koordynatora wyścigu. Formularz rejestracyjny jest już w pełni aktywny – rezerwujcie wolne fotele!",
+                description: "Blokada czasowa została zdjęta. Formularz rejestracyjny jest już w pełni aktywny – rezerwujcie wolne fotele!",
                 footer: { text: "Liga F1 · Baza danych aktywna" },
                 timestamp: new Date().toISOString()
             }]
         };
-        fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) }).catch(err => console.warn(err));
+        fetch(countdownWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) }).catch(err => console.warn(err));
     }
 
     document.addEventListener("DOMContentLoaded", () => {
