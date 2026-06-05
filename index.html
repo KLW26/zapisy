@@ -526,7 +526,7 @@
             font-size: 0.85rem;
         }
         [data-theme="light"] .dash-box {
-            border: 1px solid rgba(0,0,0,0.08);
+            border: 1px solid rgba(0, 0, 0, 0.08);
         }
 
         .dash-box-title {
@@ -803,20 +803,23 @@
 <body>
 
 <div class="container">
-    <div style="position: absolute; top: 20px; right: 25px; z-index: 10;">
+    <div style="position: absolute; top: 20px; right: 25px; z-index: 10; display: flex; gap: 10px;">
+        <button type="button" id="langToggleBtn" style="background: var(--tracker-bg); border: 1px solid var(--glass-border); color: var(--text-light); padding: 8px 14px; border-radius: 20px; font-family: 'Orbitron', sans-serif; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            🌐 <span id="langToggleText">PL</span>
+        </button>
         <button type="button" id="themeToggleBtn" style="background: var(--tracker-bg); border: 1px solid var(--glass-border); color: var(--text-light); padding: 8px 14px; border-radius: 20px; font-family: 'Orbitron', sans-serif; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
             <span id="themeToggleIcon">🌙</span> <span id="themeToggleText">Ciemny</span>
         </button>
     </div>
 
     <header>
-        <h1>Formularz Zgłoszeniowy</h1>
-        <p>Oficjalne zapisy do nowego sezonu ligowego F1 2026/27</p>
+        <h1 data-i18n="headerTitle">Formularz Zgłoszeniowy</h1>
+        <p data-i18n="headerSubtitle">Oficjalne zapisy do nowego sezonu ligowego F1 2026/27</p>
     </header>
 
     <div class="grid-status-tracker">
         <div class="tracker-info">
-            <span>Fotele w składzie podstawowym</span>
+            <span data-i18n="trackerLabel">Fotele w składzie podstawowym</span>
             <span id="liveTrackerText">Pobieranie statusu padoku...</span>
         </div>
         <div class="tracker-bar-bg">
@@ -830,63 +833,63 @@
 
     <div id="lockedOverlay" class="locked-overlay">
         <div class="locked-icon">🔒</div>
-        <div class="locked-title">Zapisy są jeszcze zamknięte</div>
+        <div class="locked-title" data-i18n="lockedTitle">Zapisy są jeszcze zamknięte</div>
         <div class="locked-subtitle" id="lockedSubtitle">Rejestracja otworzy się za:</div>
         <div class="countdown-grid">
             <div class="countdown-box">
                 <div class="countdown-value" id="cdDays">--</div>
-                <div class="countdown-label">Dni</div>
+                <div class="countdown-label" data-i18n="cdDays">Dni</div>
             </div>
             <div class="countdown-box">
                 <div class="countdown-value" id="cdHours">--</div>
-                <div class="countdown-label">Godziny</div>
+                <div class="countdown-label" data-i18n="cdHours">Godziny</div>
             </div>
             <div class="countdown-box">
                 <div class="countdown-value" id="cdMinutes">--</div>
-                <div class="countdown-label">Minuty</div>
+                <div class="countdown-label" data-i18n="cdMinutes">Minuty</div>
             </div>
             <div class="countdown-box">
                 <div class="countdown-value" id="cdSeconds">--</div>
-                <div class="countdown-label">Sekundy</div>
+                <div class="countdown-label" data-i18n="cdSeconds">Sekundy</div>
             </div>
         </div>
     </div>
 
     <form id="registrationForm">
         <div class="form-group">
-            <label for="driverRole">Typ Zgłoszenia / Rola &nbsp;<span id="freeSlotsCounter" style="font-size:0.75rem; color:var(--success-green); font-family:'Inter',sans-serif; text-transform:none; letter-spacing:0; font-weight:600;"></span></label>
+            <label for="driverRole"><span data-i18n="lblRole">Typ Zgłoszenia / Rola</span> &nbsp;<span id="freeSlotsCounter" style="font-size:0.75rem; color:var(--success-green); font-family:'Inter',sans-serif; text-transform:none; letter-spacing:0; font-weight:600;"></span></label>
             <select id="driverRole" required>
-                <option value="Główny" id="optMain">Kierowca Podstawowy (Stały etat)</option>
-                <option value="Rezerwowy" id="optReserve">Kierowca Rezerwowy (Okazyjne starty)</option>
+                <option value="Główny" id="optMain" data-i18n="optMain">Kierowca Podstawowy (Stały etat)</option>
+                <option value="Rezerwowy" id="optReserve" data-i18n="optReserve">Kierowca Rezerwowy (Okazyjne starty)</option>
             </select>
         </div>
 
         <div class="grid-2">
             <div class="form-group">
-                <label for="firstname">Imię</label>
+                <label for="firstname" data-i18n="lblFirstname">Imię</label>
                 <input type="text" id="firstname" placeholder="np. Jan" required minlength="2">
             </div>
             <div class="form-group">
-                <label for="lastname">Nazwisko</label>
+                <label for="lastname" data-i18n="lblLastname">Nazwisko</label>
                 <input type="text" id="lastname" placeholder="np. Kowalski" required minlength="2">
             </div>
         </div>
 
         <div class="grid-2">
             <div class="form-group">
-                <label for="gamertag">Nick / Gamertag (w grze)</label>
+                <label for="gamertag" data-i18n="lblGamertag">Nick / Gamertag (w grze)</label>
                 <input type="text" id="gamertag" placeholder="np. DriverX_F1" required>
             </div>
             <div class="form-group">
-                <label for="discordTag">Discord ID</label>
+                <label for="discordTag" data-i18n="lblDiscord">Discord ID</label>
                 <input type="text" id="discordTag" placeholder="Skopiuj numeryczne ID (np. 511295...)" required pattern="[0-9]+" title="Tylko cyfry z Twojego Discord ID">
             </div>
         </div>
 
         <div class="form-group" id="platformContainer">
-            <label for="platform">Platforma</label>
+            <label for="platform" data-i18n="lblPlatform">Platforma</label>
             <select id="platform" required>
-                <option value="" disabled selected>Gdzie grasz?</option>
+                <option value="" disabled selected data-i18n="optPlatformDef">Gdzie grasz?</option>
                 <option value="PC">PC (Steam / EA App)</option>
                 <option value="PS5">PlayStation 5</option>
                 <option value="Xbox">Xbox Series X/S</option>
@@ -894,46 +897,46 @@
         </div>
 
         <div class="form-group">
-            <label for="asysty">Poziom asyst</label>
+            <label for="asysty" data-i18n="lblAssists">Poziom asyst</label>
             <select id="asysty" required>
-                <option value="Brak">Brak asyst (Hardcore)</option>
-                <option value="Częściowe">Dozwolone częściowe (ABS / Średnia trakcja)</option>
-                <option value="Pełne">Pełne asysty (Casual)</option>
+                <option value="Brak" data-i18n="optAssistsNone">Brak asyst (Hardcore)</option>
+                <option value="Częściowe" data-i18n="optAssistsPart">Dozwolone częściowe (ABS / Średnia trakcja)</option>
+                <option value="Pełne" data-i18n="optAssistsFull">Pełne asysty (Casual)</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label>Kontroler</label>
+            <label data-i18n="lblDevice">Kontroler</label>
             <div class="radio-group">
                 <label class="radio-option">
-                    <input type="radio" name="input_device" value="Kierownica" checked> Kierownica
+                    <input type="radio" name="input_device" value="Kierownica" checked> <span data-i18n="lblWheel">Kierownica</span>
                 </label>
                 <label class="radio-option">
-                    <input type="radio" name="input_device" value="Pad"> Pad
+                    <input type="radio" name="input_device" value="Pad"> <span data-i18n="lblPad">Pad</span>
                 </label>
             </div>
         </div>
 
         <div class="form-group">
-            <label for="fileUpload">Załącznik (opcjonalny)</label>
+            <label for="fileUpload" data-i18n="lblFile">Załącznik (opcjonalny)</label>
             <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileUpload').click()">
                 <input type="file" id="fileUpload" accept="image/*,.pdf" style="display:none;" onchange="handleFileSelect(this)">
                 <div class="file-upload-icon">📎</div>
-                <div class="file-upload-text">Kliknij lub przeciągnij plik tutaj</div>
-                <div class="file-upload-hint">Obsługiwane: JPG, PNG, PDF (maks. 5 MB)</div>
+                <div class="file-upload-text" id="fileUploadText" data-i18n="fileUploadText">Kliknij lub przeciągnij plik tutaj</div>
+                <div class="file-upload-hint" id="fileUploadHint" data-i18n="fileUploadHint">Obsługiwane: JPG, PNG, PDF (maks. 5 MB)</div>
             </div>
             <div id="filePreview" class="file-preview" style="display:none;"></div>
         </div>
 
         <div class="checkbox-group">
             <input type="checkbox" id="rulesAccept" required>
-            <label for="rulesAccept">Akceptuję regulamin ligi i zobowiązuję się do czystej jazdy na torze. Rozumiem, że celowe powodowanie kolizji grozi dyskwalifikacją.</label>
+            <label for="rulesAccept" data-i18n="lblRules">Akceptuję regulamin ligi i zobowiązuję się do czystej jazdy na torze. Rozumiem, że celowe powodowanie kolizji grozi dyskwalifikacją.</label>
         </div>
 
-        <button type="submit" id="submitBtn" class="btn-submit">Wyślij zgłoszenie</button>
+        <button type="submit" id="submitBtn" class="btn-submit" data-i18n="btnSubmit">Wyślij zgłoszenie</button>
     </form>
 
-    <div class="admin-trigger" onclick="toggleAdminPanel()">Zarządzanie Ligą (Tylko Admin)</div>
+    <div class="admin-trigger" onclick="toggleAdminPanel()" data-i18n="adminTrigger">Zarządzanie Ligą (Tylko Admin)</div>
 
     <div id="adminPanel" class="admin-section">
         <div class="admin-card">
@@ -1012,6 +1015,141 @@
 
     let globalDriversList = [];
     let countdownInterval = null;
+    let currentLang = 'pl';
+
+    const langData = {
+        pl: {
+            headerTitle: "Formularz Zgłoszeniowy",
+            headerSubtitle: "Oficjalne zapisy do nowego sezonu ligowego F1 2026/27",
+            trackerLabel: "Fotele w składzie podstawowym",
+            lockedTitle: "Zapisy są jeszcze zamknięte",
+            cdDays: "Dni",
+            cdHours: "Godziny",
+            cdMinutes: "Minuty",
+            cdSeconds: "Sekundy",
+            lblRole: "Typ Zgłoszenia / Rola",
+            optMain: "Kierowca Podstawowy (Stały etat)",
+            optReserve: "Kierowca Rezerwowy (Okazyjne starty)",
+            lblFirstname: "Imię",
+            lblLastname: "Nazwisko",
+            lblGamertag: "Nick / Gamertag (w grze)",
+            lblDiscord: "Discord ID",
+            lblPlatform: "Platforma",
+            optPlatformDef: "Gdzie grasz?",
+            lblAssists: "Poziom asyst",
+            optAssistsNone: "Brak asyst (Hardcore)",
+            optAssistsPart: "Dozwolone częściowe (ABS / Średnia trakcja)",
+            optAssistsFull: "Pełne asysty (Casual)",
+            lblDevice: "Kontroler",
+            lblWheel: "Kierownica",
+            lblPad: "Pad",
+            lblFile: "Załącznik (opcjonalny)",
+            fileUploadText: "Kliknij lub przeciągnij plik tutaj",
+            fileUploadHint: "Obsługiwane: JPG, PNG, PDF (maks. 5 MB)",
+            lblRules: "Akceptuję regulamin ligi i zobowiązuję się do czystej jazdy na torze. Rozumiem, że celowe powodowanie kolizji grozi dyskwalifikacją.",
+            btnSubmit: "Wyślij zgłoszenie",
+            adminTrigger: "Zarządzanie Ligą (Tylko Admin)",
+            
+            // Placedholders & Dynamic text
+            phFirstname: "np. Jan",
+            phLastname: "np. Kowalski",
+            phGamertag: "np. DriverX_F1",
+            phDiscord: "Skopiuj numeryczne ID (np. 511295...)",
+            statusFetching: "Pobieranie statusu padoku...",
+            statusFull: "Główny skład pełny (22/22)",
+            statusLeft: "Zostało {wolne} wolnych etatów",
+            infoFull: "📋 Wszystkie stałe etaty (22/22) zostały obsadzone. Rejestracja jest teraz otwarta wyłącznie dla kierowców rezerwowych.",
+            counterFull: "(skład pełny · 0 wolnych miejsc)",
+            counterLeft: "({wolne} wolnych miejsc w składzie podstawowym)",
+            alertClosed: "Rejestracja otworzy się {data}. Pozostały czas:",
+            errGamer: "❌ Wybrany Gamertag figuruje już na liście startowej.",
+            errDiscord: "❌ To Discord ID wysłało już swoje zgłoszenie do sezonu.",
+            btnSaving: "ZAPISYWANIE W BAZIE...",
+            btnEncoding: "KODOWANIE PLIKU...",
+            successReg: "✅ Pomyślnie zarejestrowano profil kierowcy z rolą: {rola}."
+        },
+        en: {
+            headerTitle: "Registration Form",
+            headerSubtitle: "Official registration for the new F1 2026/27 league season",
+            trackerLabel: "Grid slots in main lineup",
+            lockedTitle: "Registration is not open yet",
+            cdDays: "Days",
+            cdHours: "Hours",
+            cdMinutes: "Minutes",
+            cdSeconds: "Seconds",
+            lblRole: "Registration Type / Role",
+            optMain: "Main Driver (Full-time slot)",
+            optReserve: "Reserve Driver (Occasional starts)",
+            lblFirstname: "First Name",
+            lblLastname: "Last Name",
+            lblGamertag: "Nick / Gamertag (in-game)",
+            lblDiscord: "Discord ID",
+            lblPlatform: "Platform",
+            optPlatformDef: "Where do you play?",
+            lblAssists: "Assists Level",
+            optAssistsNone: "No assists (Hardcore)",
+            optAssistsPart: "Partial allowed (ABS / Medium traction)",
+            optAssistsFull: "Full assists (Casual)",
+            lblDevice: "Input Device",
+            lblWheel: "Wheel",
+            lblPad: "Pad",
+            lblFile: "Attachment (optional)",
+            fileUploadText: "Click or drag file here",
+            fileUploadHint: "Supported: JPG, PNG, PDF (max 5 MB)",
+            lblRules: "I accept the league regulations and commit to clean racing on track. I understand that intentionally causing collisions results in disqualification.",
+            btnSubmit: "Submit application",
+            adminTrigger: "League Management (Admin Only)",
+            
+            // Placeholders & Dynamic text
+            phFirstname: "e.g. John",
+            phLastname: "e.g. Smith",
+            phGamertag: "e.g. DriverX_F1",
+            phDiscord: "Copy numerical ID (e.g. 511295...)",
+            statusFetching: "Fetching paddock status...",
+            statusFull: "Main lineup full (22/22)",
+            statusLeft: "{wolne} free slots left",
+            infoFull: "📋 All full-time seats (22/22) are occupied. Registration is currently open only for reserve drivers.",
+            counterFull: "(lineup full · 0 free slots)",
+            counterLeft: "({wolne} free slots in main lineup)",
+            alertClosed: "Registration opens on {data}. Time left:",
+            errGamer: "❌ Selected Gamertag is already on the grid list.",
+            errDiscord: "❌ This Discord ID has already submitted an application.",
+            btnSaving: "SAVING IN DATABASE...",
+            btnEncoding: "ENCODING FILE...",
+            successReg: "✅ Successfully registered driver profile as: {rola}."
+        }
+    };
+
+    function initLanguage() {
+        currentLang = localStorage.getItem('lang') || 'pl';
+        updateLanguageUI();
+
+        document.getElementById('langToggleBtn').addEventListener('click', () => {
+            currentLang = currentLang === 'pl' ? 'en' : 'pl';
+            localStorage.setItem('lang', currentLang);
+            updateLanguageUI();
+            updateGridSlotsTracker();
+            checkRegistrationLock();
+        });
+    }
+
+    function updateLanguageUI() {
+        document.getElementById('langToggleText').textContent = currentLang.toUpperCase();
+        
+        // Translate elements with data-i18n attribute
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (langData[currentLang][key]) {
+                el.textContent = langData[currentLang][key];
+            }
+        });
+
+        // Translate placeholders
+        document.getElementById('firstname').placeholder = langData[currentLang].phFirstname;
+        document.getElementById('lastname').placeholder = langData[currentLang].phLastname;
+        document.getElementById('gamertag').placeholder = langData[currentLang].phGamertag;
+        document.getElementById('discordTag').placeholder = langData[currentLang].phDiscord;
+    }
 
     function initTheme() {
         const themeToggleBtn = document.getElementById('themeToggleBtn');
@@ -1081,8 +1219,9 @@
             form.style.display = 'none';
 
             const unlockDate = new Date(unlockDateStr);
-            const formatted = unlockDate.toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-            document.getElementById('lockedSubtitle').textContent = `Rejestracja otworzy się ${formatted}. Pozostały czas:`;
+            const formatted = unlockDate.toLocaleString(currentLang === 'pl' ? 'pl-PL' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            
+            document.getElementById('lockedSubtitle').textContent = langData[currentLang].alertClosed.replace('{data}', formatted);
 
             clearInterval(countdownInterval);
             countdownInterval = setInterval(() => {
@@ -1216,7 +1355,8 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         initTheme();
-        document.getElementById('liveTrackerText').innerHTML = `<span style="color:var(--text-muted);">Pobieranie statusu padoku...</span>`;
+        initLanguage();
+        document.getElementById('liveTrackerText').innerHTML = `<span style="color:var(--text-muted);">${langData[currentLang].statusFetching}</span>`;
         fetchDriversFromFirebase();
         checkRegistrationLock();
     });
@@ -1252,18 +1392,18 @@
         const freeSlotsCounter = document.getElementById('freeSlotsCounter');
 
         if (mainDriversCount >= 22) {
-            trackerText.innerHTML = `<span style="color:#fb923c; font-weight:700;">Główny skład pełny (22/22)</span>`;
-            infoAlert.innerText = `📋 Wszystkie stałe etaty (22/22) zostały obsadzone. Rejestracja jest teraz otwarta wyłącznie dla kierowców rezerwowych.`;
+            trackerText.innerHTML = `<span style="color:#fb923c; font-weight:700;">${langData[currentLang].statusFull}</span>`;
+            infoAlert.innerText = langData[currentLang].infoFull;
             infoAlert.style.display = 'block';
             optMain.disabled = true;
             roleSelect.value = "Rezerwowy";
-            if (freeSlotsCounter) freeSlotsCounter.innerHTML = `<span style="color:#fb923c;">(skład pełny · 0 wolnych miejsc)</span>`;
+            if (freeSlotsCounter) freeSlotsCounter.innerHTML = `<span style="color:#fb923c;">${langData[currentLang].counterFull}</span>`;
         } else {
             const freeSlots = 22 - mainDriversCount;
-            trackerText.innerHTML = `<span style="color:var(--success-green); font-weight:700;">Zostało ${freeSlots} wolnych etatów</span>`;
+            trackerText.innerHTML = `<span style="color:var(--success-green); font-weight:700;">${langData[currentLang].statusLeft.replace('{wolne}', freeSlots)}</span>`;
             infoAlert.style.display = 'none';
             optMain.disabled = false;
-            if (freeSlotsCounter) freeSlotsCounter.innerHTML = `(${freeSlots} wolnych miejsc w składzie podstawowym)`;
+            if (freeSlotsCounter) freeSlotsCounter.innerHTML = langData[currentLang].counterLeft.replace('{wolne}', freeSlots);
         }
     }
 
@@ -1276,7 +1416,7 @@
         
         const mainDriversCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
         if (driverStatus === "Główny" && mainDriversCount >= 22) {
-            alert("Niestety, limit kierowców głównych został wyczerpany przed momentem. Zmień rolę na rezerwowego.");
+            alert(currentLang === 'pl' ? "Niestety, limit kierowców głównych został wyczerpany przed momentem. Zmień rolę na rezerwowego." : "Unfortunately, the main driver limit has just been reached. Please change role to reserve.");
             fetchDriversFromFirebase();
             return;
         }
@@ -1287,28 +1427,28 @@
         let discordTag = document.getElementById('discordTag').value.trim().replace(/[^0-9]/g, '');
 
         if (globalDriversList.some(d => d.gamertag.toLowerCase() === gamertag.toLowerCase())) {
-            errorAlert.innerText = "❌ Wybrany Gamertag figuruje już na liście startowej.";
+            errorAlert.innerText = langData[currentLang].errGamer;
             errorAlert.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
 
         if (globalDriversList.some(d => d.discordTag === discordTag)) {
-            errorAlert.innerText = "❌ To Discord ID wysłało już swoje zgłoszenie do sezonu.";
+            errorAlert.innerText = langData[currentLang].errDiscord;
             errorAlert.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
 
         submitBtn.disabled = true;
-        submitBtn.innerText = "ZAPISYWANIE W BAZIE...";
+        submitBtn.innerText = langData[currentLang].btnSaving;
 
         function doSave(attachmentData, attachmentName, attachmentType) {
             const newDriver = { firstname, lastname, gamertag, discordTag, platform: document.getElementById('platform').value, device: document.querySelector('input[name="input_device"]:checked').value, asysty: document.getElementById('asysty').value, driverStatus, attachmentData: attachmentData || null, attachmentName: attachmentName || null, attachmentType: attachmentType || null };
             fetch(`${firebaseBaseUrl}drivers.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newDriver) })
             .then(res => { if (!res.ok) throw new Error(); return res.json(); })
             .then(() => {
-                successAlert.innerText = `✅ Pomyślnie zarejestrowano profil kierowcy z rolą: ${driverStatus}.`;
+                successAlert.innerText = langData[currentLang].successReg.replace('{rola}', driverStatus === "Główny" ? (currentLang === 'pl' ? 'Główny' : 'Main') : (currentLang === 'pl' ? 'Rezerwowy' : 'Reserve'));
                 successAlert.style.display = 'block';
                 errorAlert.style.display = 'none';
                 sendDiscordNotification(driverStatus, gamertag, discordTag, firstname, lastname, newDriver.platform, newDriver.device, newDriver.asysty);
@@ -1318,18 +1458,18 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             })
             .catch(() => {
-                errorAlert.innerText = "❌ Wystąpił nieoczekiwany problem z łącznością. Dane nie zostały wysłane.";
+                errorAlert.innerText = currentLang === 'pl' ? "❌ Wystąpił nieoczekiwany problem z łącznością. Dane nie zostały wysłane." : "❌ An unexpected connection issue occurred. Data was not sent.";
                 errorAlert.style.display = 'block';
             })
             .finally(() => {
                 submitBtn.disabled = false;
-                submitBtn.innerText = "WYŚLIJ ZGŁOSZENIE";
+                submitBtn.innerText = langData[currentLang].btnSubmit;
                 setTimeout(() => { successAlert.style.display = 'none'; errorAlert.style.display = 'none'; }, 8000);
             });
         }
 
         if (selectedFile) {
-            submitBtn.innerText = "KODOWANIE PLIKU...";
+            submitBtn.innerText = langData[currentLang].btnEncoding;
             const reader = new FileReader();
             reader.onload = e => doSave(e.target.result.split(',')[1], selectedFile.name, selectedFile.type);
             reader.readAsDataURL(selectedFile);
@@ -1340,7 +1480,7 @@
     function handleFileSelect(input) {
         const file = input.files[0];
         if (!file) return;
-        if (file.size > 5 * 1024 * 1024) { alert("Plik jest za duży. Maksymalny rozmiar to 5 MB."); input.value = ''; return; }
+        if (file.size > 5 * 1024 * 1024) { alert(currentLang === 'pl' ? "Plik jest za duży. Maksymalny rozmiar to 5 MB." : "File is too large. Maximum size is 5 MB."); input.value = ''; return; }
         selectedFile = file;
         showFilePreview(file);
     }
