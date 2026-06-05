@@ -5,18 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zapisy do Ligi F1 - Sezon 2026/27</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap');
 
         :root {
             --f1-red: #e10600;
             --f1-red-glow: rgba(225, 6, 0, 0.4);
             --dark-bg: #0a0a0f;
-            --card-bg: rgba(25, 25, 33, 0.6);
+            --card-bg: rgba(20, 20, 28, 0.65);
             --text-light: #f0f0f5;
-            --text-muted: #8b8b99;
+            --text-muted: #9a9aan;
             --admin-blue: #0063e5;
             --glass-border: rgba(255, 255, 255, 0.08);
             --success-green: #4ade80;
+            
+            --body-glow-1: rgba(225, 6, 0, 0.08);
+            --body-glow-2: rgba(0, 99, 229, 0.05);
+            --h1-gradient: linear-gradient(to right, #ffffff, #b0b0bf);
+            --h1-shadow: 0 0 30px rgba(255,255,255,0.1);
+            --tracker-bg: rgba(10, 10, 15, 0.5);
+            --input-bg: rgba(10, 10, 15, 0.6);
+            --input-border: rgba(255, 255, 255, 0.1);
+            --input-focus-bg: rgba(15, 15, 20, 0.9);
+            --option-bg: #0a0a0f;
+            --radio-bg: rgba(10, 10, 15, 0.6);
+            --placeholder-color: #555566;
+            --admin-card-bg: rgba(15, 15, 20, 0.85);
+            --dash-box-bg: rgba(0, 0, 0, 0.3);
+            --table-wrapper-bg: rgba(0,0,0,0.2);
+            --table-th-bg: rgba(0,0,0,0.4);
+            --row-hover-bg: rgba(255,255,255,0.02);
+            --font-weight-title: 900;
+            --letter-spacing-title: 2px;
+            --color-scheme: dark;
+            --box-shadow-overlay: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        [data-theme="light"] {
+            --dark-bg: #f4f4f9;
+            --card-bg: #ffffff;
+            --text-light: #121214;
+            --text-muted: #374151; /* Znacznie ciemniejszy szary dla lepszego kontrastu */
+            --glass-border: rgba(0, 0, 0, 0.15); /* Wyraźniejsze ramki */
+            --body-glow-1: rgba(225, 6, 0, 0.04);
+            --body-glow-2: rgba(0, 99, 229, 0.03);
+            --h1-gradient: linear-gradient(to right, #e10600, #121214);
+            --h1-shadow: none;
+            --tracker-bg: rgba(229, 231, 235, 0.8);
+            --input-bg: #ffffff;
+            --input-border: rgba(0, 0, 0, 0.2);
+            --input-focus-bg: #ffffff;
+            --option-bg: #ffffff;
+            --radio-bg: #ffffff;
+            --placeholder-color: #71717a;
+            --admin-card-bg: #ffffff;
+            --dash-box-bg: rgba(0, 0, 0, 0.05);
+            --table-wrapper-bg: rgba(0, 0, 0, 0.02);
+            --table-th-bg: rgba(0, 0, 0, 0.06);
+            --row-hover-bg: rgba(0, 0, 0, 0.03);
+            --font-weight-title: 700;
+            --letter-spacing-title: 1px;
+            --color-scheme: light;
+            --box-shadow-overlay: 0 10px 30px rgba(0,0,0,0.08);
         }
 
         * {
@@ -28,17 +77,20 @@
         body {
             background-color: var(--dark-bg);
             background-image: 
-                radial-gradient(circle at 15% 50%, rgba(225, 6, 0, 0.08), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(0, 99, 229, 0.05), transparent 25%);
+                radial-gradient(circle at 15% 50%, var(--body-glow-1), transparent 25%),
+                radial-gradient(circle at 85% 30%, var(--body-glow-2), transparent 25%);
             background-attachment: fixed;
             color: var(--text-light);
             font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased; /* Wyostrzenie czcionek na ekranach */
+            -moz-osx-font-smoothing: grayscale;
             line-height: 1.6;
             padding: 20px;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: flex-start;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .container {
@@ -46,73 +98,63 @@
             max-width: 900px;
             margin: 40px auto;
             background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
             border: 1px solid var(--glass-border);
-            border-top: 4px solid var(--f1-red);
+            border-top: 5px solid var(--f1-red);
             padding: 45px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05);
             position: relative;
             overflow: hidden;
-        }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 100px;
-            background: linear-gradient(180deg, rgba(225, 6, 0, 0.05) 0%, transparent 100%);
-            pointer-events: none;
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
 
         header {
             text-align: center;
-            margin-bottom: 45px;
+            margin-bottom: 40px;
             position: relative;
             z-index: 1;
         }
 
         header h1 {
             font-family: 'Orbitron', sans-serif;
-            font-size: 2.5rem;
-            font-weight: 900;
+            font-size: 2.6rem;
+            font-weight: var(--font-weight-title);
             text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-            background: linear-gradient(to right, #fff, #aaa);
+            letter-spacing: var(--letter-spacing-title);
+            margin-bottom: 12px;
+            background: var(--h1-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(255,255,255,0.1);
+            text-shadow: var(--h1-shadow);
         }
 
         header p {
             color: var(--text-muted);
             font-size: 1.05rem;
-            font-weight: 300;
-            letter-spacing: 0.5px;
+            font-weight: 500;
         }
 
         .grid-status-tracker {
-            background: rgba(10, 10, 15, 0.4);
+            background: var(--tracker-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 10px;
-            padding: 15px 20px;
+            border-radius: 12px;
+            padding: 16px 22px;
             margin-bottom: 35px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
 
         .tracker-info {
             display: flex;
             justify-content: space-between;
             font-family: 'Orbitron', sans-serif;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: 700;
         }
 
         .tracker-bar-bg {
@@ -122,47 +164,158 @@
             border-radius: 3px;
             overflow: hidden;
         }
+        
+        [data-theme="light"] .tracker-bar-bg {
+            background: rgba(0,0,0,0.1);
+        }
 
         .tracker-bar-fill {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #ff5e57, var(--f1-red));
-            box-shadow: 0 0 10px var(--f1-red-glow);
-            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(90deg, #ff4d4d, var(--f1-red));
+            box-shadow: 0 0 12px var(--f1-red-glow);
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        /* =============================================
+           ZMODERNIZOWANY LICZNIK BLOKADY (KONTRAST & WYOSTRZENIE)
+           ============================================= */
+        .locked-overlay {
+            display: none; /* Całkowicie ukryty domyślnie, włącza się tylko przy aktywnej dacie */
+            background: rgba(16, 16, 24, 0.85);
+            border: 1px solid var(--glass-border);
+            border-top: 4px solid var(--f1-red);
+            border-radius: 16px;
+            padding: 45px 30px;
+            text-align: center;
+            margin-bottom: 35px;
+            box-shadow: var(--box-shadow-overlay);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+        }
+
+        .locked-overlay.visible { 
+            display: block; 
+            animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        [data-theme="light"] .locked-overlay {
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            border-top: 4px solid var(--f1-red);
+        }
+
+        .locked-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .locked-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+        
+        [data-theme="light"] .locked-title {
+            color: #111827; /* Maksymalnie ostry czarny */
+        }
+
+        .locked-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 35px;
+        }
+        
+        [data-theme="light"] .locked-subtitle {
+            color: #4b5563;
+        }
+
+        .countdown-grid {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .countdown-box {
+            background: rgba(225, 6, 0, 0.08);
+            border: 1px solid rgba(225, 6, 0, 0.4);
+            border-radius: 14px;
+            padding: 20px;
+            min-width: 105px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        [data-theme="light"] .countdown-box {
+            background: #fef2f2; /* Jasnoczerwone czyste tło */
+            border: 2px solid #f87171; /* Bardzo wyraźna, ostra ramka */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .countdown-box:hover {
+            transform: translateY(-2px);
+        }
+
+        .countdown-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.6rem;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1;
+            letter-spacing: 1px;
+        }
+        
+        [data-theme="light"] .countdown-value {
+            color: #b91c1c; /* Głęboka, wyostrzona czerwień dla perfekcyjnego kontrastu */
+        }
+
+        .countdown-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--f1-red);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 10px;
+        }
+        
+        [data-theme="light"] .countdown-label {
+            color: #1f2937; /* Ciemny, czytelny napis pod cyframi */
+        }
+        /* ============================================= */
 
         .form-group {
             margin-bottom: 25px;
             position: relative;
         }
 
-        .form-group.hidden {
-            display: none;
-        }
-
         label {
             display: block;
             margin-bottom: 10px;
             font-family: 'Orbitron', sans-serif;
-            font-weight: 500;
+            font-weight: 700;
             font-size: 0.8rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
-            transition: color 0.3s;
         }
-
-        .form-group:focus-within label {
-            color: var(--text-light);
+        
+        [data-theme="light"] label {
+            color: #1f2937;
         }
 
         input[type="text"],
         select {
             width: 100%;
             padding: 16px;
-            background: rgba(10, 10, 15, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
             color: var(--text-light);
             font-family: 'Inter', sans-serif;
             font-size: 1rem;
@@ -172,23 +325,17 @@
         input:focus, select:focus {
             outline: none;
             border-color: var(--f1-red);
-            background: rgba(15, 15, 20, 0.8);
-            box-shadow: 0 0 0 4px var(--f1-red-glow), inset 0 1px 2px rgba(0,0,0,0.5);
+            box-shadow: 0 0 0 4px var(--f1-red-glow);
         }
 
         input::placeholder {
-            color: #555566;
+            color: var(--placeholder-color);
         }
 
         select option {
-            background-color: var(--dark-bg);
+            background-color: var(--option-bg);
             color: var(--text-light);
             padding: 10px;
-        }
-
-        select option:disabled {
-            color: #444455;
-            background-color: rgba(0, 0, 0, 0.5);
         }
 
         .grid-2 {
@@ -200,10 +347,10 @@
         .radio-group {
             display: flex;
             gap: 25px;
-            background: rgba(10, 10, 15, 0.6);
+            background: var(--radio-bg);
             padding: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
         }
 
         .radio-option {
@@ -211,17 +358,14 @@
             align-items: center;
             gap: 10px;
             cursor: pointer;
-            text-transform: none;
-            font-weight: 400;
-            font-family: 'Inter', sans-serif;
             color: var(--text-light);
+            font-weight: 500;
         }
 
         .radio-option input {
             accent-color: var(--f1-red);
             width: 20px;
             height: 20px;
-            cursor: pointer;
         }
 
         .checkbox-group {
@@ -230,9 +374,14 @@
             gap: 15px;
             margin-top: 35px;
             padding: 20px;
-            background: linear-gradient(90deg, rgba(225, 6, 0, 0.1) 0%, rgba(225, 6, 0, 0.02) 100%);
-            border-radius: 10px;
+            background: linear-gradient(90deg, rgba(225, 6, 0, 0.08) 0%, rgba(225, 6, 0, 0.01) 100%);
+            border-radius: 12px;
             border-left: 4px solid var(--f1-red);
+        }
+        
+        [data-theme="light"] .checkbox-group {
+            background: linear-gradient(90deg, #fef2f2 0%, rgba(255,255,255,0) 100%);
+            border-left: 4px solid #b91c1c;
         }
 
         .checkbox-group input {
@@ -247,11 +396,9 @@
             text-transform: none;
             font-family: 'Inter', sans-serif;
             font-size: 0.95rem;
-            font-weight: 300;
+            font-weight: 500;
             line-height: 1.5;
-            color: #d0d0d5;
-            margin-bottom: 0;
-            cursor: pointer;
+            color: var(--text-light);
         }
 
         .btn-submit {
@@ -261,7 +408,7 @@
             background: var(--f1-red);
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-family: 'Orbitron', sans-serif;
             font-size: 1.2rem;
             font-weight: 700;
@@ -270,58 +417,64 @@
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             margin-top: 40px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 8px 20px rgba(225, 6, 0, 0.3);
+            box-shadow: 0 8px 25px rgba(225, 6, 0, 0.3);
         }
 
         .btn-submit:hover {
             background: #ff1a12;
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(225, 6, 0, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(225, 6, 0, 0.45);
         }
-
-        .btn-submit:disabled {
-            background: #333;
-            color: #777;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+        
+        [data-theme="light"] .btn-submit {
+            background: #b91c1c;
+            box-shadow: 0 6px 20px rgba(185, 28, 28, 0.25);
+        }
+        [data-theme="light"] .btn-submit:hover {
+            background: #e10600;
+            box-shadow: 0 10px 25px rgba(225, 6, 0, 0.35);
         }
 
         .success-message, .error-message, .info-message {
             display: none;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 12px;
             text-align: center;
             margin-bottom: 30px;
-            font-weight: 500;
-            animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-weight: 600;
+            animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
+            from { opacity: 0; transform: translateY(-15px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .success-message { background: rgba(16, 124, 65, 0.15); border: 1px solid rgba(16, 124, 65, 0.3); color: var(--success-green); }
-        .error-message { background: rgba(168, 0, 0, 0.15); border: 1px solid rgba(168, 0, 0, 0.3); color: #ff8a8a; }
+        .success-message { background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.3); color: var(--success-green); }
+        .error-message { background: rgba(225, 6, 0, 0.12); border: 1px solid rgba(225, 6, 0, 0.25); color: #ff8a8a; }
         .info-message { background: rgba(251, 146, 60, 0.15); border: 1px solid rgba(251, 146, 60, 0.3); color: #fb923c; }
+        
+        [data-theme="light"] .success-message { background: #f0fdf4; border: 1.5px solid #22c55e; color: #166534; }
+        [data-theme="light"] .error-message { background: #fef2f2; border: 1.5px solid #ef4444; color: #991b1b; }
+        [data-theme="light"] .info-message { background: #fff7ed; border: 1.5px solid #f97316; color: #9a3412; }
 
         .admin-trigger {
             text-align: center;
             margin-top: 60px;
             font-family: 'Orbitron', sans-serif;
             font-size: 0.8rem;
-            color: #444455;
+            color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 2px;
             cursor: pointer;
             transition: color 0.3s;
+            opacity: 0.6;
+            font-weight: 700;
         }
         
         .admin-trigger:hover {
-            color: var(--text-muted);
+            opacity: 1;
+            color: var(--f1-red);
         }
 
         .admin-section {
@@ -336,11 +489,11 @@
         }
 
         .admin-card {
-            background: rgba(15, 15, 20, 0.8);
+            background: var(--admin-card-bg);
             padding: 35px;
-            border-radius: 12px;
+            border-radius: 16px;
             border: 1px solid var(--glass-border);
-            border-top: 3px solid var(--admin-blue);
+            border-top: 4px solid var(--admin-blue);
         }
 
         .admin-controls {
@@ -358,6 +511,9 @@
             font-size: 1.4rem;
             letter-spacing: 1px;
         }
+        [data-theme="light"] .admin-controls h2 {
+            color: var(--admin-blue);
+        }
 
         .dashboard-grid {
             display: grid;
@@ -367,11 +523,14 @@
         }
 
         .dash-box {
-            background: rgba(0, 0, 0, 0.3);
+            background: var(--dash-box-bg);
             border: 1px solid rgba(255,255,255,0.03);
-            padding: 15px;
-            border-radius: 8px;
+            padding: 18px;
+            border-radius: 10px;
             font-size: 0.85rem;
+        }
+        [data-theme="light"] .dash-box {
+            border: 1px solid rgba(0,0,0,0.08);
         }
 
         .dash-box-title {
@@ -380,12 +539,13 @@
             font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
+            font-weight: 700;
         }
 
         .dash-box-value {
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 1.15rem;
+            font-weight: 700;
             color: var(--text-light);
         }
 
@@ -413,9 +573,9 @@
 
         .admin-table-wrapper {
             overflow-x: auto;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.05);
-            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: var(--table-wrapper-bg);
         }
 
         table {
@@ -430,16 +590,19 @@
             text-align: left;
             border-bottom: 1px solid rgba(255,255,255,0.03);
         }
+        [data-theme="light"] th, [data-theme="light"] td {
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
 
         tr:hover td {
-            background-color: rgba(255,255,255,0.02);
+            background-color: var(--row-hover-bg);
         }
 
         th {
-            background-color: rgba(0,0,0,0.4);
+            background-color: var(--table-th-bg);
             color: var(--text-muted);
             font-family: 'Orbitron', sans-serif;
-            font-weight: 500;
+            font-weight: 700;
             text-transform: uppercase;
             font-size: 0.7rem;
             letter-spacing: 1px;
@@ -450,7 +613,7 @@
             background: var(--admin-blue);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-family: 'Orbitron', sans-serif;
             cursor: pointer;
             font-size: 0.85rem;
@@ -472,24 +635,25 @@
 
         .badge {
             display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 4px 10px;
+            border-radius: 6px;
             font-family: 'Orbitron', sans-serif;
             font-weight: bold;
             font-size: 0.75rem;
         }
 
-        .badge-number { background: var(--f1-red); color: white; }
-        .badge-number-none { background: #33333e; color: #8b8b99; border: 1px dashed rgba(255,255,255,0.1); }
-        .badge-main { background: rgba(74, 222, 128, 0.2); color: var(--success-green); border: 1px solid rgba(74, 222, 128, 0.4); }
-        .badge-reserve { background: rgba(251, 146, 60, 0.2); color: #fb923c; border: 1px solid rgba(251, 146, 60, 0.4); }
+        .badge-main { background: rgba(74, 222, 128, 0.15); color: var(--success-green); border: 1px solid rgba(74, 222, 128, 0.3); }
+        .badge-reserve { background: rgba(251, 146, 60, 0.15); color: #fb923c; border: 1px solid rgba(251, 146, 60, 0.3); }
+        
+        [data-theme="light"] .badge-main { background: #e6f4ea; color: #137333; border: 1px solid #137333; }
+        [data-theme="light"] .badge-reserve { background: #fef7e0; color: #b06000; border: 1px solid #b06000; }
 
         .file-upload-area {
             width: 100%;
             padding: 30px 20px;
-            background: rgba(10, 10, 15, 0.6);
-            border: 1.5px dashed rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
+            background: var(--input-bg);
+            border: 1.5px dashed var(--glass-border);
+            border-radius: 12px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -497,44 +661,36 @@
 
         .file-upload-area:hover, .file-upload-area.drag-over {
             border-color: var(--f1-red);
-            background: rgba(225, 6, 0, 0.05);
-            box-shadow: 0 0 0 4px var(--f1-red-glow);
+            background: rgba(225, 6, 0, 0.04);
         }
 
-        .file-upload-icon {
-            font-size: 2rem;
-            margin-bottom: 8px;
-        }
-
-        .file-upload-text {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
-        .file-upload-hint {
-            font-size: 0.78rem;
-            color: #555566;
-        }
+        .file-upload-icon { font-size: 2rem; margin-bottom: 8px; }
+        .file-upload-text { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 500; }
+        .file-upload-hint { font-size: 0.78rem; color: var(--placeholder-color); }
 
         .file-preview {
             margin-top: 12px;
             padding: 12px 16px;
             background: rgba(74, 222, 128, 0.08);
             border: 1px solid rgba(74, 222, 128, 0.2);
-            border-radius: 8px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             gap: 12px;
             font-size: 0.9rem;
             color: var(--success-green);
         }
+        [data-theme="light"] .file-preview {
+            background: #f0fdf4;
+            border-color: #22c55e;
+            color: #166534;
+        }
 
         .file-preview-thumb {
             width: 48px;
             height: 48px;
             object-fit: cover;
-            border-radius: 6px;
+            border-radius: 8px;
             border: 1px solid rgba(255,255,255,0.1);
         }
 
@@ -549,26 +705,114 @@
             cursor: pointer;
             font-size: 1.1rem;
             padding: 4px;
-            transition: color 0.2s;
+        }
+        [data-theme="light"] .file-remove-btn { color: #b91c1c; }
+
+        .admin-unlock-section {
+            margin-top: 25px;
+            padding: 25px;
+            background: rgba(0, 99, 229, 0.05);
+            border: 1px solid rgba(0, 99, 229, 0.2);
+            border-radius: 12px;
         }
 
-        .file-remove-btn:hover { color: var(--f1-red); }
+        .admin-unlock-section h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #5bb0ff;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+        [data-theme="light"] .admin-unlock-section h3 { color: var(--admin-blue); }
+
+        .unlock-controls {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .unlock-controls .form-group {
+            margin-bottom: 0;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        input[type="datetime-local"] {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+            color: var(--text-light);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            color-scheme: var(--color-scheme);
+        }
+
+        .btn-set-unlock {
+            padding: 14px 22px;
+            background: var(--admin-blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-clear-unlock {
+            padding: 14px 18px;
+            background: transparent;
+            color: #ff8a8a;
+            border: 1px solid rgba(255, 138, 138, 0.3);
+            border-radius: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        [data-theme="light"] .btn-clear-unlock { color: #b91c1c; border-color: rgba(185,28,28,0.4); }
+        .btn-clear-unlock:hover { background: rgba(225, 6, 0, 0.12); border-color: var(--f1-red); }
+
+        .current-unlock-info {
+            margin-top: 12px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .current-unlock-info span { color: #5bb0ff; font-style: normal; font-weight: 600; }
+        [data-theme="light"] .current-unlock-info span { color: var(--admin-blue); }
 
         @media (max-width: 768px) {
-            .grid-2 {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
+            .grid-2 { grid-template-columns: 1fr; gap: 0; }
             .container { padding: 25px; margin: 20px auto; }
-            header h1 { font-size: 1.8rem; }
+            header h1 { font-size: 1.9rem; }
             .admin-controls { flex-direction: column; align-items: stretch; }
             .search-bar { max-width: 100%; }
+            .countdown-grid { gap: 12px; }
+            .countdown-box { min-width: 80px; padding: 15px 10px; }
+            .countdown-value { font-size: 1.9rem; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div style="position: absolute; top: 20px; right: 25px; z-index: 10;">
+        <button type="button" id="themeToggleBtn" style="background: var(--tracker-bg); border: 1px solid var(--glass-border); color: var(--text-light); padding: 8px 14px; border-radius: 20px; font-family: 'Orbitron', sans-serif; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            <span id="themeToggleIcon">🌙</span> <span id="themeToggleText">Ciemny</span>
+        </button>
+    </div>
+
     <header>
         <h1>Formularz Zgłoszeniowy</h1>
         <p>Oficjalne zapisy do nowego sezonu ligowego F1 2026/27</p>
@@ -588,9 +832,34 @@
     <div id="errorAlert" class="error-message"></div>
     <div id="infoAlert" class="info-message"></div>
 
+    <!-- Sekcja blokady (uruchamiana warunkowo przez JS) -->
+    <div id="lockedOverlay" class="locked-overlay">
+        <div class="locked-icon">🔒</div>
+        <div class="locked-title">Zapisy są jeszcze zamknięte</div>
+        <div class="locked-subtitle" id="lockedSubtitle">Rejestracja otworzy się za:</div>
+        <div class="countdown-grid">
+            <div class="countdown-box">
+                <div class="countdown-value" id="cdDays">--</div>
+                <div class="countdown-label">Dni</div>
+            </div>
+            <div class="countdown-box">
+                <div class="countdown-value" id="cdHours">--</div>
+                <div class="countdown-label">Godziny</div>
+            </div>
+            <div class="countdown-box">
+                <div class="countdown-value" id="cdMinutes">--</div>
+                <div class="countdown-label">Minuty</div>
+            </div>
+            <div class="countdown-box">
+                <div class="countdown-value" id="cdSeconds">--</div>
+                <div class="countdown-label">Sekundy</div>
+            </div>
+        </div>
+    </div>
+
     <form id="registrationForm">
         <div class="form-group">
-            <label for="driverRole">Typ Zgłoszenia / Rola &nbsp;<span id="freeSlotsCounter" style="font-size:0.75rem; color:var(--success-green); font-family:'Inter',sans-serif; text-transform:none; letter-spacing:0; font-weight:500;"></span></label>
+            <label for="driverRole">Typ Zgłoszenia / Rola &nbsp;<span id="freeSlotsCounter" style="font-size:0.75rem; color:var(--success-green); font-family:'Inter',sans-serif; text-transform:none; letter-spacing:0; font-weight:600;"></span></label>
             <select id="driverRole" required>
                 <option value="Główny" id="optMain">Kierowca Podstawowy (Stały etat)</option>
                 <option value="Rezerwowy" id="optReserve">Kierowca Rezerwowy (Okazyjne starty)</option>
@@ -723,6 +992,19 @@
                 <button class="btn-admin" onclick="exportToTXT()">Eksportuj do .txt</button>
                 <button class="btn-admin btn-danger" onclick="clearAllDrivers()">Reset Sezonu</button>
             </div>
+
+            <div class="admin-unlock-section">
+                <h3>⏱ Harmonogram Zapisów</h3>
+                <div class="unlock-controls">
+                    <div class="form-group">
+                        <label for="unlockDateInput">Data i godzina otwarcia zapisów</label>
+                        <input type="datetime-local" id="unlockDateInput">
+                    </div>
+                    <button class="btn-set-unlock" onclick="setUnlockDate()">Ustaw datę</button>
+                    <button class="btn-clear-unlock" onclick="clearUnlockDate()">Usuń blokadę</button>
+                </div>
+                <div class="current-unlock-info" id="currentUnlockInfo">Aktualnie: <span>brak ustawionej blokady — zapisy otwarte</span></div>
+            </div>
         </div>
     </div>
 </div>
@@ -733,68 +1015,233 @@
     const ADMIN_PASSWORD = "admin123";
 
     let globalDriversList = [];
+    let countdownInterval = null;
+
+    function initTheme() {
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const themeToggleIcon = document.getElementById('themeToggleIcon');
+        const themeToggleText = document.getElementById('themeToggleText');
+        
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        
+        if (savedTheme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            if (themeToggleIcon) themeToggleIcon.textContent = '☀️';
+            if (themeToggleText) themeToggleText.textContent = 'Jasny';
+        }
+        
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', () => {
+                const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+                if (isLight) {
+                    document.documentElement.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'dark');
+                    if (themeToggleIcon) themeToggleIcon.textContent = '🌙';
+                    if (themeToggleText) themeToggleText.textContent = 'Ciemny';
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    if (themeToggleIcon) themeToggleIcon.textContent = '☀️';
+                    if (themeToggleText) themeToggleText.textContent = 'Jasny';
+                }
+            });
+        }
+    }
+
+    async function fetchUnlockDate() {
+        try {
+            const res = await fetch(`${firebaseBaseUrl}settings/unlockDate.json`);
+            return await res.json();
+        } catch { return null; }
+    }
+
+    async function checkRegistrationLock() {
+        const unlockDateStr = await fetchUnlockDate();
+        const overlay = document.getElementById('lockedOverlay');
+        const form = document.getElementById('registrationForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        updateAdminUnlockInfo(unlockDateStr);
+
+        // Jeśli w bazie danych NIE MA ustawionej daty – licznik całkowicie znika ze struktury strony
+        if (!unlockDateStr) {
+            overlay.classList.remove('visible');
+            form.style.display = '';
+            submitBtn.disabled = false;
+            clearInterval(countdownInterval);
+            return;
+        }
+
+        const unlockTime = new Date(unlockDateStr).getTime();
+        const now = Date.now();
+
+        if (now >= unlockTime) {
+            overlay.classList.remove('visible');
+            form.style.display = '';
+            submitBtn.disabled = false;
+            clearInterval(countdownInterval);
+        } else {
+            // Licznik aktywuje się dopiero w tym miejscu, gdy data z bazy faktycznie blokuje rejestrację
+            overlay.classList.add('visible');
+            form.style.display = 'none';
+
+            const unlockDate = new Date(unlockDateStr);
+            const formatted = unlockDate.toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            document.getElementById('lockedSubtitle').textContent = `Rejestracja otworzy się ${formatted}. Pozostały czas:`;
+
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                const remaining = new Date(unlockDateStr).getTime() - Date.now();
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    overlay.classList.remove('visible');
+                    form.style.display = '';
+                    return;
+                }
+                const d = Math.floor(remaining / (1000 * 60 * 60 * 24));
+                const h = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((remaining % (1000 * 60)) / 1000);
+                document.getElementById('cdDays').textContent = String(d).padStart(2, '0');
+                document.getElementById('cdHours').textContent = String(h).padStart(2, '0');
+                document.getElementById('cdMinutes').textContent = String(m).padStart(2, '0');
+                document.getElementById('cdSeconds').textContent = String(s).padStart(2, '0');
+            }, 1000);
+        }
+    }
+
+    function updateAdminUnlockInfo(unlockDateStr) {
+        const info = document.getElementById('currentUnlockInfo');
+        const input = document.getElementById('unlockDateInput');
+        if (!info) return;
+        if (!unlockDateStr) {
+            info.innerHTML = `Aktualnie: <span>brak ustawionej blokady — zapisy otwarte</span>`;
+            if (input) input.value = '';
+        } else {
+            const d = new Date(unlockDateStr);
+            const formatted = d.toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const isPast = Date.now() >= d.getTime();
+            info.innerHTML = `Aktualnie: <span>${isPast ? '✅ Zapisy już otwarte od' : '🔒 Zapisy zablokowane do'} ${formatted}</span>`;
+            if (input) {
+                const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                input.value = local;
+            }
+        }
+    }
+
+    async function setUnlockDate() {
+        const input = document.getElementById('unlockDateInput');
+        const val = input.value;
+        if (!val) { alert("Wybierz datę i godzinę otwarcia zapisów."); return; }
+
+        const isoDate = new Date(val).toISOString();
+        try {
+            const res = await fetch(`${firebaseBaseUrl}settings/unlockDate.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(isoDate)
+            });
+            if (!res.ok) throw new Error();
+            alert(`✅ Ustawiono datę otwarcia zapisów: ${new Date(val).toLocaleString('pl-PL')}`);
+            sendDiscordCountdownNotification(val);
+            checkRegistrationLock();
+        } catch {
+            alert("❌ Błąd zapisu do bazy danych.");
+        }
+    }
+
+    async function clearUnlockDate() {
+        if (!confirm("Czy na pewno usunąć blokadę? Zapisy będą natychmiast otwarte.")) return;
+        try {
+            const res = await fetch(`${firebaseBaseUrl}settings/unlockDate.json`, {
+                method: 'DELETE'
+            });
+            if (!res.ok) throw new Error();
+            alert("✅ Blokada usunięta. Zapisy są teraz otwarte.");
+            sendDiscordOpenNotification();
+            checkRegistrationLock();
+        } catch {
+            alert("❌ Błąd podczas usuwania blokady.");
+        }
+    }
+
+    function sendDiscordCountdownNotification(dateString) {
+        const unixSeconds = Math.floor(new Date(dateString).getTime() / 1000);
+        const discordPayload = {
+            content: "⏳ **ZAPISY DO LIGI F1 ZOSTAŁY ZAPLANOWANE!**",
+            embeds: [{
+                title: "🏁 Odliczanie do otwarcia rejestracji",
+                color: 14747136,
+                description: `Serwery rejestracyjne zostaną uruchomione automatycznie.\n\n📅 **Dokładna data:** <t:${unixSeconds}:F>\n🚀 **Status:** Zapisy wystartują **<t:${unixSeconds}:R>**`,
+                footer: { text: "Liga F1 · System Zarządzania Czasem" },
+                timestamp: new Date().toISOString()
+            }]
+        };
+        fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) }).catch(err => console.warn(err));
+    }
+
+    function sendDiscordOpenNotification() {
+        const discordPayload = {
+            content: "🟢 **ZAPISY ZOSTAŁY WŁAŚNIE OTWARTE!**",
+            embeds: [{
+                title: "🚀 Zielone światło nad padokiem!",
+                color: 4890208,
+                description: "Blokada czasowa została zdjęta przez koordynatora wyścigu. Formularz rejestracyjny jest już w pełni aktywny – rezerwujcie wolne fotele!",
+                footer: { text: "Liga F1 · Baza danych aktywna" },
+                timestamp: new Date().toISOString()
+            }]
+        };
+        fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) }).catch(err => console.warn(err));
+    }
 
     document.addEventListener("DOMContentLoaded", () => {
-        // Pokaż stan ładowania zanim przyjdą dane z Firebase
+        initTheme();
         document.getElementById('liveTrackerText').innerHTML = `<span style="color:var(--text-muted);">Pobieranie statusu padoku...</span>`;
-        document.getElementById('freeSlotsCounter').innerHTML = '';
         fetchDriversFromFirebase();
+        checkRegistrationLock();
     });
 
     async function fetchDriversFromFirebase() {
-
         try {
             const res = await fetch(`${firebaseBaseUrl}drivers.json`);
             const data = await res.json();
-
             globalDriversList = [];
             if (data && typeof data === 'object') {
-                globalDriversList = Object.keys(data).map(key => ({
-                    id: key,
-                    ...data[key]
-                }));
-                globalDriversList.sort((a, b) => {
-                    if (a.driverStatus === b.driverStatus) return 0;
-                    return a.driverStatus === "Główny" ? -1 : 1;
-                });
+                globalDriversList = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+                globalDriversList.sort((a, b) => a.driverStatus === b.driverStatus ? 0 : (a.driverStatus === "Główny" ? -1 : 1));
             }
             updateGridSlotsTracker();
             renderAdminTable();
             calculateDashboardStats();
         } catch (err) {
-            console.error("Błąd połączenia z bazą danych:", err);
+            console.error(err);
             globalDriversList = [];
             updateGridSlotsTracker();
         }
     }
 
-        function updateGridSlotsTracker() {
+    function updateGridSlotsTracker() {
         const mainDriversCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
         const percentage = (mainDriversCount / 22) * 100;
-        
         document.getElementById('liveTrackerBar').style.width = `${percentage}%`;
         
         const trackerText = document.getElementById('liveTrackerText');
         const infoAlert = document.getElementById('infoAlert');
         const roleSelect = document.getElementById('driverRole');
         const optMain = document.getElementById('optMain');
-
         const freeSlotsCounter = document.getElementById('freeSlotsCounter');
 
         if (mainDriversCount >= 22) {
-            trackerText.innerHTML = `<span style="color:#fb923c; font-weight:600;">Główny skład pełny (22/22)</span>`;
-            
+            trackerText.innerHTML = `<span style="color:#fb923c; font-weight:700;">Główny skład pełny (22/22)</span>`;
             infoAlert.innerText = `📋 Wszystkie stałe etaty (22/22) zostały obsadzone. Rejestracja jest teraz otwarta wyłącznie dla kierowców rezerwowych.`;
             infoAlert.style.display = 'block';
-            
             optMain.disabled = true;
             roleSelect.value = "Rezerwowy";
             if (freeSlotsCounter) freeSlotsCounter.innerHTML = `<span style="color:#fb923c;">(skład pełny · 0 wolnych miejsc)</span>`;
         } else {
             const freeSlots = 22 - mainDriversCount;
-            trackerText.innerHTML = `<span style="color:var(--success-green); font-weight:600;">Zostało ${freeSlots} wolnych etatów</span>`;
+            trackerText.innerHTML = `<span style="color:var(--success-green); font-weight:700;">Zostało ${freeSlots} wolnych etatów</span>`;
             infoAlert.style.display = 'none';
-            
             optMain.disabled = false;
             if (freeSlotsCounter) freeSlotsCounter.innerHTML = `(${freeSlots} wolnych miejsc w składzie podstawowym)`;
         }
@@ -802,11 +1249,9 @@
 
     document.getElementById('registrationForm').addEventListener('submit', function(e) {
         e.preventDefault();
-
         const submitBtn = document.getElementById('submitBtn');
         const successAlert = document.getElementById('successAlert');
         const errorAlert = document.getElementById('errorAlert');
-
         const driverStatus = document.getElementById('driverRole').value;
         
         const mainDriversCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
@@ -819,25 +1264,16 @@
         const firstname = document.getElementById('firstname').value.trim();
         const lastname = document.getElementById('lastname').value.trim();
         const gamertag = document.getElementById('gamertag').value.trim();
-        
-        let discordTag = document.getElementById('discordTag').value.trim();
-        discordTag = discordTag.replace(/[^0-9]/g, ''); 
+        let discordTag = document.getElementById('discordTag').value.trim().replace(/[^0-9]/g, '');
 
-        const platform = document.getElementById('platform').value;
-        const device = document.querySelector('input[name="input_device"]:checked').value;
-        const asysty = document.getElementById('asysty').value;
-
-        const duplicateGamertag = globalDriversList.some(d => d.gamertag.toLowerCase() === gamertag.toLowerCase());
-        const duplicateDiscord = globalDriversList.some(d => d.discordTag === discordTag);
-
-        if (duplicateGamertag) {
+        if (globalDriversList.some(d => d.gamertag.toLowerCase() === gamertag.toLowerCase())) {
             errorAlert.innerText = "❌ Wybrany Gamertag figuruje już na liście startowej.";
             errorAlert.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
 
-        if (duplicateDiscord) {
+        if (globalDriversList.some(d => d.discordTag === discordTag)) {
             errorAlert.innerText = "❌ To Discord ID wysłało już swoje zgłoszenie do sezonu.";
             errorAlert.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -847,78 +1283,44 @@
         submitBtn.disabled = true;
         submitBtn.innerText = "ZAPISYWANIE W BAZIE...";
 
-        // Jeśli jest plik — najpierw zakoduj go jako base64, potem zapisz
         function doSave(attachmentData, attachmentName, attachmentType) {
-            const newDriver = { firstname, lastname, gamertag, discordTag, platform, device, asysty, driverStatus,
-                attachmentData: attachmentData || null,
-                attachmentName: attachmentName || null,
-                attachmentType: attachmentType || null
-            };
-
-            fetch(`${firebaseBaseUrl}drivers.json`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newDriver)
-            })
-            .then(res => {
-                if (!res.ok) throw new Error('Błąd serwera bazy danych');
-                return res.json();
-            })
+            const newDriver = { firstname, lastname, gamertag, discordTag, platform: document.getElementById('platform').value, device: document.querySelector('input[name="input_device"]:checked').value, asysty: document.getElementById('asysty').value, driverStatus, attachmentData: attachmentData || null, attachmentName: attachmentName || null, attachmentType: attachmentType || null };
+            fetch(`${firebaseBaseUrl}drivers.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newDriver) })
+            .then(res => { if (!res.ok) throw new Error(); return res.json(); })
             .then(() => {
                 successAlert.innerText = `✅ Pomyślnie zarejestrowano profil kierowcy z rolą: ${driverStatus}.`;
                 successAlert.style.display = 'block';
                 errorAlert.style.display = 'none';
-                // Wyślij Discord przed removeFile() — selectedFile musi być dostępny
-                sendDiscordNotification(driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty);
+                sendDiscordNotification(driverStatus, gamertag, discordTag, firstname, lastname, newDriver.platform, newDriver.device, newDriver.asysty);
                 document.getElementById('registrationForm').reset();
                 removeFile();
                 fetchDriversFromFirebase();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             })
-        .catch(error => {
+            .catch(() => {
                 errorAlert.innerText = "❌ Wystąpił nieoczekiwany problem z łącznością. Dane nie zostały wysłane.";
                 errorAlert.style.display = 'block';
-                successAlert.style.display = 'none';
-                console.error(error);
             })
             .finally(() => {
                 submitBtn.disabled = false;
                 submitBtn.innerText = "WYŚLIJ ZGŁOSZENIE";
-                setTimeout(() => {
-                    successAlert.style.display = 'none';
-                    errorAlert.style.display = 'none';
-                }, 8000);
+                setTimeout(() => { successAlert.style.display = 'none'; errorAlert.style.display = 'none'; }, 8000);
             });
         }
 
         if (selectedFile) {
             submitBtn.innerText = "KODOWANIE PLIKU...";
             const reader = new FileReader();
-            reader.onload = e => {
-                const base64 = e.target.result.split(',')[1];
-                doSave(base64, selectedFile.name, selectedFile.type);
-            };
-            reader.onerror = () => doSave(null, null, null);
+            reader.onload = e => doSave(e.target.result.split(',')[1], selectedFile.name, selectedFile.type);
             reader.readAsDataURL(selectedFile);
-        } else {
-            doSave(null, null, null);
-        }
+        } else { doSave(null, null, null); }
     });
 
-    // --- Obsługa pliku ---
     let selectedFile = null;
-
     function handleFileSelect(input) {
         const file = input.files[0];
         if (!file) return;
-
-        const maxSize = 5 * 1024 * 1024;
-        if (file.size > maxSize) {
-            alert("Plik jest za duży. Maksymalny rozmiar to 5 MB.");
-            input.value = '';
-            return;
-        }
-
+        if (file.size > 5 * 1024 * 1024) { alert("Plik jest za duży. Maksymalny rozmiar to 5 MB."); input.value = ''; return; }
         selectedFile = file;
         showFilePreview(file);
     }
@@ -926,231 +1328,75 @@
     function showFilePreview(file) {
         const preview = document.getElementById('filePreview');
         const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-        const isImage = file.type.startsWith('image/');
-
-        let thumbHTML = '';
-        if (isImage) {
+        if (file.type.startsWith('image/')) {
             const reader = new FileReader();
-            reader.onload = e => {
-                const img = preview.querySelector('.file-preview-thumb');
-                if (img) img.src = e.target.result;
-            };
+            reader.onload = e => { const img = preview.querySelector('.file-preview-thumb'); if (img) img.src = e.target.result; };
             reader.readAsDataURL(file);
-            thumbHTML = `<img class="file-preview-thumb" src="" alt="podgląd">`;
+            preview.innerHTML = `<img class="file-preview-thumb" src="" alt="podgląd"><div class="file-preview-info"><div class="file-preview-name">${file.name}</div><div class="file-preview-size">${sizeMB} MB</div></div><button type="button" class="file-remove-btn" onclick="removeFile()">✕</button>`;
         } else {
-            thumbHTML = `<span style="font-size:2rem;">📄</span>`;
+            preview.innerHTML = `<span style="font-size:2rem;">📄</span><div class="file-preview-info"><div class="file-preview-name">${file.name}</div><div class="file-preview-size">${sizeMB} MB</div></div><button type="button" class="file-remove-btn" onclick="removeFile()">✕</button>`;
         }
-
-        preview.innerHTML = `
-            ${thumbHTML}
-            <div class="file-preview-info">
-                <div class="file-preview-name">${file.name}</div>
-                <div class="file-preview-size">${sizeMB} MB</div>
-            </div>
-            <button class="file-remove-btn" onclick="removeFile()" title="Usuń plik">✕</button>
-        `;
         preview.style.display = 'flex';
     }
 
-    function removeFile() {
-        selectedFile = null;
-        document.getElementById('fileUpload').value = '';
-        document.getElementById('filePreview').style.display = 'none';
-    }
+    function removeFile() { selectedFile = null; document.getElementById('fileUpload').value = ''; document.getElementById('filePreview').style.display = 'none'; }
 
-    // Drag & drop
     const uploadArea = document.getElementById('fileUploadArea');
     uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
     uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
     uploadArea.addEventListener('drop', e => {
-        e.preventDefault();
-        uploadArea.classList.remove('drag-over');
+        e.preventDefault(); uploadArea.classList.remove('drag-over');
         const file = e.dataTransfer.files[0];
-        if (file) {
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            const input = document.getElementById('fileUpload');
-            input.files = dt.files;
-            handleFileSelect(input);
-        }
+        if (file) { const dt = new DataTransfer(); dt.items.add(file); document.getElementById('fileUpload').files = dt.files; handleFileSelect(document.getElementById('fileUpload')); }
     });
 
     function toggleAdminPanel() {
         const panel = document.getElementById('adminPanel');
-        if (panel.style.display === 'block') {
-            panel.style.display = 'none';
-            document.getElementById('adminSearch').value = '';
-        } else {
-            const password = prompt("Autoryzacja administratora ligi. Podaj hasło:");
-            if (password === ADMIN_PASSWORD) {
-                panel.style.display = 'block';
-                renderAdminTable();
-                calculateDashboardStats();
-                panel.scrollIntoView({ behavior: 'smooth' });
-            } else if (password !== null) {
-                alert("Hasło niepoprawne.");
-            }
+        if (panel.style.display === 'block') { panel.style.display = 'none'; }
+        else {
+            if (prompt("Autoryzacja administratora ligi. Podaj hasło:") === ADMIN_PASSWORD) {
+                panel.style.display = 'block'; renderAdminTable(); calculateDashboardStats(); panel.scrollIntoView({ behavior: 'smooth' });
+            } else { alert("Hasło niepoprawne."); }
         }
     }
 
     function calculateDashboardStats() {
-        const total = globalDriversList.length;
-        const main = globalDriversList.filter(d => d.driverStatus === "Główny").length;
-        const reserve = globalDriversList.filter(d => d.driverStatus === "Rezerwowy").length;
-        
-        const wheel = globalDriversList.filter(d => d.device === "Kierownica").length;
-        const pad = globalDriversList.filter(d => d.device === "Pad").length;
-
-        const pc = globalDriversList.filter(d => d.platform === "PC").length;
-        const ps5 = globalDriversList.filter(d => d.platform === "PS5").length;
-        const xbox = globalDriversList.filter(d => d.platform === "Xbox").length;
-
-        document.getElementById('dashTotal').innerText = `${total} kierowców`;
-        document.getElementById('dashStatusSplit').innerText = `Główni: ${main} / 22 | Rezerwa: ${reserve}`;
-        document.getElementById('dashHardware').innerText = `Kierownica: ${wheel} | Pad: ${pad}`;
-        document.getElementById('dashPlatforms').innerText = `PC: ${pc} | PS5: ${ps5} | XBX: ${xbox}`;
+        document.getElementById('dashTotal').innerText = `${globalDriversList.length} kierowców`;
+        document.getElementById('dashStatusSplit').innerText = `Główni: ${globalDriversList.filter(d => d.driverStatus === "Główny").length} / 22 | Rezerwa: ${globalDriversList.filter(d => d.driverStatus === "Rezerwowy").length}`;
+        document.getElementById('dashHardware').innerText = `Kierownica: ${globalDriversList.filter(d => d.device === "Kierownica").length} | Pad: ${globalDriversList.filter(d => d.device === "Pad").length}`;
+        document.getElementById('dashPlatforms').innerText = `PC: ${globalDriversList.filter(d => d.platform === "PC").length} | PS5: ${globalDriversList.filter(d => d.platform === "PS5").length} | XBX: ${globalDriversList.filter(d => d.platform === "Xbox").length}`;
     }
 
     function renderAdminTable(filterText = '') {
-        const tbody = document.getElementById('adminTableBody');
-        tbody.innerHTML = '';
-
-        if (globalDriversList.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color:var(--text-muted);">Baza danych jest pusta.</td></tr>`;
-            return;
-        }
-
+        const tbody = document.getElementById('adminTableBody'); tbody.innerHTML = '';
+        if (globalDriversList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color:var(--text-muted); font-weight:600;">Baza danych jest pusta.</td></tr>`; return; }
         const lowerFilter = filterText.toLowerCase();
-        const filteredDrivers = globalDriversList.filter(d => 
-            d.gamertag.toLowerCase().includes(lowerFilter) || 
-            d.firstname.toLowerCase().includes(lowerFilter) ||
-            d.lastname.toLowerCase().includes(lowerFilter) ||
-            d.platform.toLowerCase().includes(lowerFilter) ||
-            d.driverStatus.toLowerCase().includes(lowerFilter)
-        );
-
-        filteredDrivers.forEach((driver) => {
-            const statusClass = driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve";
-
-            const attachmentCell = driver.attachmentData
-                ? driver.attachmentType && driver.attachmentType.startsWith('image/')
-                    ? `<a href="data:${driver.attachmentType};base64,${driver.attachmentData}" download="${driver.attachmentName}" title="${driver.attachmentName}" style="display:inline-block;">
-                        <img src="data:${driver.attachmentType};base64,${driver.attachmentData}" style="width:40px;height:40px;object-fit:cover;border-radius:5px;border:1px solid rgba(255,255,255,0.1);cursor:pointer;" title="Kliknij aby pobrać: ${driver.attachmentName}">
-                       </a>`
-                    : `<a href="data:${driver.attachmentType};base64,${driver.attachmentData}" download="${driver.attachmentName}" style="color:#5bb0ff;font-size:0.8rem;text-decoration:none;" title="Pobierz ${driver.attachmentName}">📄 ${driver.attachmentName}</a>`
-                : `<span style="color:#444455;font-size:0.75rem;">—</span>`;
-
+        globalDriversList.filter(d => d.gamertag.toLowerCase().includes(lowerFilter) || d.firstname.toLowerCase().includes(lowerFilter) || d.lastname.toLowerCase().includes(lowerFilter)).forEach((driver) => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><span class="badge ${statusClass}">${driver.driverStatus}</span></td>
-                <td><div style="font-weight:500;">${driver.firstname} ${driver.lastname}</div></td>
-                <td><strong style="color:white;">${driver.gamertag}</strong></td>
-                <td><span style="color:var(--text-muted); font-size: 0.8rem; font-family: monospace;">${driver.discordTag}</span></td>
-                <td><div style="font-size:0.85rem;">${driver.platform} <span style="color:#8b8b99;">(${driver.device})</span></div></td>
-                <td>${attachmentCell}</td>
-                <td><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>
-            `;
+            tr.innerHTML = `<td><span class="badge ${driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve"}">${driver.driverStatus}</span></td><td><div>${driver.firstname} ${driver.lastname}</div></td><td><strong>${driver.gamertag}</strong></td><td><span style="font-family:monospace; font-weight:600;">${driver.discordTag}</span></td><td>${driver.platform} (${driver.device})</td><td>${driver.attachmentData ? '📎 Załącznik' : '—'}</td><td><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>`;
             tbody.appendChild(tr);
         });
     }
 
-    function filterAdminTable() {
-        const searchVal = document.getElementById('adminSearch').value;
-        renderAdminTable(searchVal);
-    }
-
-    function deleteDriver(firebaseId, gamertag) {
-        if(confirm(`Czy na pewno usunąć kierowcę ${gamertag} z bazy danych ligi?`)) {
-            fetch(`${firebaseBaseUrl}drivers/${firebaseId}.json`, {
-                method: 'DELETE'
-            })
-            .then(res => {
-                if(!res.ok) throw new Error('Błąd bazy danych');
-                fetchDriversFromFirebase();
-            })
-            .catch(err => {
-                alert("Błąd synchronizacji.");
-                console.error(err);
-            });
-        }
-    }
+    function filterAdminTable() { renderAdminTable(document.getElementById('adminSearch').value); }
+    function deleteDriver(id, tag) { if(confirm(`Usunąć kierowcę ${tag}?`)) { fetch(`${firebaseBaseUrl}drivers/${id}.json`, { method: 'DELETE' }).then(() => fetchDriversFromFirebase()); } }
 
     function sendDiscordNotification(driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty) {
-        const statusEmoji = driverStatus === "Główny" ? "🟢 SKŁAD GŁÓWNY" : "🟠 KIEROWCA REZERWOWY";
         const mainCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
-        const freeSlots = Math.max(0, 22 - mainCount);
-
-        const discordPayload = {
-            content: `🔔 Nowe zgłoszenie! Rola: **${driverStatus.toUpperCase()}**`,
-            embeds: [{
-                title: `🏎️ Nowy profil w bazie: ${gamertag}`,
-                color: driverStatus === "Główny" ? 3066993 : 15105570,
-                fields: [
-                    { name: "📋 Przydzielona funkcja", value: statusEmoji, inline: false },
-                    { name: "📱 Discord ID", value: `<@${discordTag}>`, inline: true },
-                    { name: "👤 Kierowca", value: `${firstname} ${lastname}`, inline: true },
-                    { name: "💻 Platforma", value: platform, inline: true },
-                    { name: "🕹️ Kontroler", value: device, inline: true },
-                    { name: "🛠️ Asysty", value: asysty, inline: true },
-                    { name: "🪑 Wolne miejsca (skład główny)", value: `${freeSlots} / 22`, inline: true }
-                ],
-                footer: { text: "Liga F1 · System rejestracji" },
-                timestamp: new Date().toISOString()
-            }]
-        };
-
-        // Jeśli jest plik załącznika — wyślij jako multipart/form-data
+        const discordPayload = { content: `🔔 Nowe zgłoszenie! Rola: **${driverStatus.toUpperCase()}**`, embeds: [{ title: `🏎️ Nowy profil w bazie: ${gamertag}`, color: driverStatus === "Główny" ? 3066993 : 15105570, fields: [{ name: "📱 Discord ID", value: `<@${discordTag}>`, inline: true }, { name: "👤 Kierowca", value: `${firstname} ${lastname}`, inline: true }, { name: "💻 Platforma", value: platform, inline: true }, { name: "🕹️ Kontroler", value: device, inline: true }, { name: "🛠️ Asysty", value: asysty, inline: true }, { name: "🪑 Wolne miejsca (skład główny)", value: `${Math.max(0, 22 - mainCount)} / 22`, inline: true }], footer: { text: "Liga F1 · System rejestracji" }, timestamp: new Date().toISOString() }] };
         if (selectedFile) {
-            const formData = new FormData();
-            formData.append('payload_json', JSON.stringify(discordPayload));
-            formData.append('file', selectedFile, selectedFile.name);
-            fetch(webhookUrl, { method: 'POST', body: formData })
-                .then(r => { if (!r.ok) console.warn('Discord webhook (plik): błąd', r.status); })
-                .catch(err => console.warn('Discord webhook (plik): brak połączenia', err));
+            const fd = new FormData(); fd.append('payload_json', JSON.stringify(discordPayload)); fd.append('file', selectedFile, selectedFile.name);
+            fetch(webhookUrl, { method: 'POST', body: fd }).catch(err => console.warn(err));
         } else {
-            fetch(webhookUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(discordPayload)
-            })
-            .then(r => { if (!r.ok) console.warn('Discord webhook: błąd', r.status); })
-            .catch(err => console.warn('Discord webhook: brak połączenia', err));
+            fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) }).catch(err => console.warn(err));
         }
     }
 
-    function clearAllDrivers() {
-        if(confirm("⚠️ UWAGA! Czy chcesz bezpowrotnie usunąć wszystkich zapisanych zawodników?")) {
-            fetch(`${firebaseBaseUrl}drivers.json`, {
-                method: 'DELETE'
-            })
-            .then(res => {
-                if(!res.ok) throw new Error('Nie czyszczono bazy');
-                fetchDriversFromFirebase();
-            })
-            .catch(err => {
-                alert("Błąd podczas operacji czyszczenia serwera.");
-                console.error(err);
-            });
-        }
-    }
-
+    function clearAllDrivers() { if(confirm("Usunąć wszystkich zawodników?")) { fetch(`${firebaseBaseUrl}drivers.json`, { method: 'DELETE' }).then(() => fetchDriversFromFirebase()); } }
     function exportToTXT() {
-        if(globalDriversList.length === 0) {
-            alert("Brak danych telemetrii do pobrania.");
-            return;
-        }
-
-        let txtContent = "=== EKSPORT BAZY KIEROWCÓW LIGI F1 ===\n\n";
-
-        globalDriversList.forEach((d) => {
-            txtContent += `Status: ${d.driverStatus.padEnd(10)} | Nick: ${d.gamertag.padEnd(16)} | ID: ${d.discordTag.padEnd(19)} | Dane: ${d.firstname} ${d.lastname.padEnd(15)} | ${d.platform} (${d.device})\n`;
-        });
-
-        const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'lista_kierowcow_podzial_role.txt';
-        link.click();
+        let txt = "=== EKSPORT BAZY KIEROWCÓW LIGI F1 ===\n\n";
+        globalDriversList.forEach(d => { txt += `Status: ${d.driverStatus} | Nick: ${d.gamertag} | ID: ${d.discordTag} | ${d.firstname} ${d.lastname} | ${d.platform} (${d.device})\n`; });
+        const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain;charset=utf-8' })); link.download = 'lista_kierowcow.txt'; link.click();
     }
 </script>
 
