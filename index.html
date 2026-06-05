@@ -644,72 +644,7 @@
         [data-theme="light"] .badge-main { background: #e6f4ea; color: #137333; border: 1px solid #137333; }
         [data-theme="light"] .badge-reserve { background: #fef7e0; color: #b06000; border: 1px solid #b06000; }
 
-        .file-upload-area {
-            width: 100%;
-            padding: 30px 20px;
-            background: var(--input-bg);
-            border: 1.5px dashed var(--glass-border);
-            border-radius: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
 
-        .file-upload-area:hover, .file-upload-area.drag-over {
-            border-color: var(--f1-red);
-            background: rgba(225, 6, 0, 0.04);
-        }
-
-        .file-upload-icon { font-size: 2rem; margin-bottom: 8px; }
-        .file-upload-text { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 500; }
-        .file-upload-hint { font-size: 0.78rem; color: var(--placeholder-color); }
-
-        .file-preview-container {
-            margin-top: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .file-preview-item {
-            padding: 12px 16px;
-            background: rgba(74, 222, 128, 0.08);
-            border: 1px solid rgba(74, 222, 128, 0.2);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.9rem;
-            color: var(--success-green);
-            justify-content: space-between;
-        }
-        [data-theme="light"] .file-preview-item {
-            background: #f0fdf4;
-            border-color: #22c55e;
-            color: #166534;
-        }
-
-        .file-preview-thumb {
-            width: 48px;
-            height: 48px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .file-preview-info { flex: 1; text-align: left; }
-        .file-preview-name { font-weight: 600; color: var(--text-light); font-size: 0.9rem; word-break: break-all; }
-        .file-preview-size { font-size: 0.78rem; color: var(--text-muted); }
-
-        .file-remove-btn {
-            background: none;
-            border: none;
-            color: #ff8a8a;
-            cursor: pointer;
-            font-size: 1.1rem;
-            padding: 4px;
-        }
-        [data-theme="light"] .file-remove-btn { color: #b91c1c; }
 
         .admin-unlock-section {
             margin-top: 25px;
@@ -924,18 +859,7 @@
             </div>
         </div>
 
-        <div class="form-group">
-            <label for="fileUpload" data-i18n="lblFile">Załączniki (opcjonalne)</label>
-            <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileUpload').click()">
-                <input type="file" id="fileUpload" accept="image/*,.pdf" style="display:none;" multiple onchange="handleFileSelect(this)">
-                <div class="file-upload-icon">📎</div>
-                <div class="file-upload-text" id="fileUploadText" data-i18n="fileUploadText">Kliknij lub przeciągnij pliki tutaj</div>
-                <div class="file-upload-hint" id="fileUploadHint" data-i18n="fileUploadHint">Obsługiwane: JPG, PNG, PDF (maks. 5 MB na plik)</div>
-            </div>
-            <div id="filePreview" class="file-preview-container" style="display:none;"></div>
-        </div>
-
-        <div class="checkbox-group">
+<div class="checkbox-group">
             <input type="checkbox" id="rulesAccept" required>
             <label for="rulesAccept" data-i18n="lblRules">Akceptuję regulamin ligi i zobowiązuję się do czystej jazdy na torze. Rozumiem, że celowe powodowanie kolizji grozi dyskwalifikacją.</label>
         </div>
@@ -984,8 +908,7 @@
                             <th>Gamertag</th>
                             <th>Discord</th>
                             <th>Sprzęt</th>
-                            <th>Załączniki</th>
-                            <th>Akcja</th>
+<th>Akcja</th>
                         </tr>
                     </thead>
                     <tbody id="adminTableBody">
@@ -1023,7 +946,7 @@
     let globalDriversList = [];
     let countdownInterval = null;
     let currentLang = 'pl';
-    let selectedFiles = [];
+
 
     const langData = {
         pl: {
@@ -1051,9 +974,7 @@
             lblDevice: "Kontroler",
             lblWheel: "Kierownica",
             lblPad: "Pad",
-            lblFile: "Załączniki (opcjonalne)",
-            fileUploadText: "Kliknij lub przeciągnij pliki tutaj",
-            fileUploadHint: "Obsługiwane: JPG, PNG, PDF (maks. 5 MB na plik)",
+
             lblRules: "Akceptuję regulamin ligi i zobowiązuję się do czystej jazdy na torze. Rozumiem, że celowe powodowanie kolizji grozi dyskwalifikacją.",
             btnSubmit: "Wyślij zgłoszenie",
             adminTrigger: "Zarządzanie Ligą (Tylko Admin)",
@@ -1072,7 +993,7 @@
             errGamer: "❌ Wybrany Gamertag figuruje już na liście startowej.",
             errDiscord: "❌ To Discord ID wysłało już swoje zgłoszenie do sezonu.",
             btnSaving: "ZAPISYWANIE W BAZIE...",
-            btnEncoding: "KODOWANIE PLIKÓW...",
+
             successReg: "✅ Pomyślnie zarejestrowano profil kierowcy z rolą: {rola}."
         },
         en: {
@@ -1100,9 +1021,7 @@
             lblDevice: "Input Device",
             lblWheel: "Wheel",
             lblPad: "Pad",
-            lblFile: "Attachments (optional)",
-            fileUploadText: "Click or drag files here",
-            fileUploadHint: "Supported: JPG, PNG, PDF (max 5 MB per file)",
+
             lblRules: "I accept the league regulations and commit to clean racing on track. I understand that intentionally causing collisions results in disqualification.",
             btnSubmit: "Submit application",
             adminTrigger: "League Management (Admin Only)",
@@ -1121,7 +1040,7 @@
             errGamer: "❌ Selected Gamertag is already on the grid list.",
             errDiscord: "❌ This Discord ID has already submitted an application.",
             btnSaving: "SAVING IN DATABASE...",
-            btnEncoding: "ENCODING FILES...",
+
             successReg: "✅ Successfully registered driver profile as: {rola}."
         }
     };
@@ -1136,7 +1055,6 @@
             updateLanguageUI();
             updateGridSlotsTracker();
             checkRegistrationLock();
-            renderFilePreviews();
         });
     }
 
@@ -1182,7 +1100,6 @@
                     if (themeToggleIcon) themeToggleIcon.textContent = '☀️';
                     if (themeToggleText) themeToggleText.textContent = 'Jasny';
                 }
-                renderFilePreviews();
             });
         }
     }
@@ -1413,19 +1330,6 @@
         }
     }
 
-    function readDriverFileAsBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve({
-                name: file.name,
-                type: file.type,
-                data: reader.result.split(',')[1]
-            });
-            reader.onerror = err => reject(err);
-            reader.readAsDataURL(file);
-        });
-    }
-
     document.getElementById('registrationForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
@@ -1460,19 +1364,6 @@
         }
 
         submitBtn.disabled = true;
-        let processedAttachments = null;
-
-        if (selectedFiles.length > 0) {
-            submitBtn.innerText = langData[currentLang].btnEncoding;
-            try {
-                processedAttachments = await Promise.all(selectedFiles.map(file => readDriverFileAsBase64(file)));
-            } catch (err) {
-                alert(currentLang === 'pl' ? "❌ Błąd podczas przetwarzania plików." : "❌ Error processing files.");
-                submitBtn.disabled = false;
-                submitBtn.innerText = langData[currentLang].btnSubmit;
-                return;
-            }
-        }
 
         submitBtn.innerText = langData[currentLang].btnSaving;
 
@@ -1484,8 +1375,7 @@
             platform: document.getElementById('platform').value, 
             device: document.querySelector('input[name="input_device"]:checked').value, 
             asysty: document.getElementById('asysty').value, 
-            driverStatus, 
-            attachments: processedAttachments 
+            driverStatus
         };
 
         fetch(`${firebaseBaseUrl}drivers.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newDriver) })
@@ -1496,7 +1386,6 @@
             errorAlert.style.display = 'none';
             sendDiscordNotification(driverStatus, gamertag, discordTag, firstname, lastname, newDriver.platform, newDriver.device, newDriver.asysty);
             document.getElementById('registrationForm').reset();
-            clearAllFiles();
             fetchDriversFromFirebase();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         })
@@ -1509,86 +1398,6 @@
             submitBtn.innerText = langData[currentLang].btnSubmit;
             setTimeout(() => { successAlert.style.display = 'none'; errorAlert.style.display = 'none'; }, 8000);
         });
-    });
-
-    function handleFileSelect(input) {
-        const files = Array.from(input.files);
-        if (!files.length) return;
-
-        for (let file of files) {
-            if (file.size > 5 * 1024 * 1024) { 
-                alert(currentLang === 'pl' ? `Plik "${file.name}" jest za duży. Maksymalny rozmiar to 5 MB.` : `File "${file.name}" is too large. Maximum size is 5 MB.`); 
-                continue; 
-            }
-            if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
-                selectedFiles.push(file);
-            }
-        }
-        input.value = ''; 
-        renderFilePreviews();
-    }
-
-    function renderFilePreviews() {
-        const previewContainer = document.getElementById('filePreview');
-        previewContainer.innerHTML = '';
-
-        if (selectedFiles.length === 0) {
-            previewContainer.style.display = 'none';
-            return;
-        }
-
-        selectedFiles.forEach((file, index) => {
-            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-            const item = document.createElement('div');
-            item.className = 'file-preview-item';
-
-            let thumbHtml = `<span style="font-size:2rem;">📄</span>`;
-            if (file.type.startsWith('image/')) {
-                thumbHtml = `<img class="file-preview-thumb" id="thumb-${index}" src="" alt="podgląd">`;
-                const reader = new FileReader();
-                reader.onload = e => { 
-                    const img = document.getElementById(`thumb-${index}`); 
-                    if (img) img.src = e.target.result; 
-                };
-                reader.readAsDataURL(file);
-            }
-
-            item.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
-                    ${thumbHtml}
-                    <div class="file-preview-info">
-                        <div class="file-preview-name">${file.name}</div>
-                        <div class="file-preview-size">${sizeMB} MB</div>
-                    </div>
-                </div>
-                <button type="button" class="file-remove-btn" onclick="removeFile(${index})">✕</button>
-            `;
-            previewContainer.appendChild(item);
-        });
-
-        previewContainer.style.display = 'flex';
-    }
-
-    function removeFile(index) { 
-        selectedFiles.splice(index, 1); 
-        renderFilePreviews(); 
-    }
-
-    function clearAllFiles() { 
-        selectedFiles = []; 
-        document.getElementById('fileUpload').value = ''; 
-        document.getElementById('filePreview').style.display = 'none'; 
-    }
-
-    const uploadArea = document.getElementById('fileUploadArea');
-    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
-    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
-    uploadArea.addEventListener('drop', e => {
-        e.preventDefault(); uploadArea.classList.remove('drag-over');
-        if (e.dataTransfer.files.length) {
-            const mockInput = { files: e.dataTransfer.files };
-            handleFileSelect(mockInput);
-        }
     });
 
     function toggleAdminPanel() {
@@ -1614,10 +1423,8 @@
         const lowerFilter = filterText.toLowerCase();
         globalDriversList.filter(d => d.gamertag.toLowerCase().includes(lowerFilter) || d.firstname.toLowerCase().includes(lowerFilter) || d.lastname.toLowerCase().includes(lowerFilter)).forEach((driver) => {
             const tr = document.createElement('tr');
-            const attachmentCount = driver.attachments ? driver.attachments.length : 0;
-            const attachmentLabel = attachmentCount > 0 ? `📎 Załączniki (${attachmentCount})` : '—';
             
-            tr.innerHTML = `<td><span class="badge ${driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve"}">${driver.driverStatus}</span></td><td><div>${driver.firstname} ${driver.lastname}</div></td><td><strong>${driver.gamertag}</strong></td><td><span style="font-family:monospace; font-weight:600;">${driver.discordTag}</span></td><td>${driver.platform} (${driver.device})</td><td>${attachmentLabel}</td><td><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>`;
+            tr.innerHTML = `<td><span class="badge ${driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve"}">${driver.driverStatus}</span></td><td><div>${driver.firstname} ${driver.lastname}</div></td><td><strong>${driver.gamertag}</strong></td><td><span style="font-family:monospace; font-weight:600;">${driver.discordTag}</span></td><td>${driver.platform} (${driver.device})</td><td><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>`;
             tbody.appendChild(tr);
         });
     }
@@ -1645,16 +1452,7 @@
             }] 
         };
 
-        if (selectedFiles.length > 0) {
-            const fd = new FormData(); 
-            fd.append('payload_json', JSON.stringify(discordPayload)); 
-            selectedFiles.forEach((file, index) => {
-                fd.append(`files[${index}]`, file, file.name);
-            });
-            fetch(webhookUrl, { method: 'POST', body: fd }).catch(err => console.warn(err));
-        } else {
-            fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) }).catch(err => console.warn(err));
-        }
+        fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) }).catch(err => console.warn(err));
     }
 
     function clearAllDrivers() { if(confirm("Usunąć wszystkich zawodników?")) { fetch(`${firebaseBaseUrl}drivers.json`, { method: 'DELETE' }).then(() => fetchDriversFromFirebase()); } }
