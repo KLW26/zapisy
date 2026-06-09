@@ -397,6 +397,62 @@
             color: var(--text-light);
         }
 
+        .reserve-interest-group {
+            display: none;
+            align-items: flex-start;
+            gap: 15px;
+            margin-top: 16px;
+            padding: 18px 20px;
+            background: linear-gradient(90deg, rgba(251, 146, 60, 0.1) 0%, rgba(251, 146, 60, 0.02) 100%);
+            border-radius: 12px;
+            border-left: 4px solid #fb923c;
+            animation: slideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reserve-interest-group.visible {
+            display: flex;
+        }
+
+        [data-theme="light"] .reserve-interest-group {
+            background: linear-gradient(90deg, #fff7ed 0%, rgba(255,255,255,0) 100%);
+            border-left: 4px solid #ea580c;
+        }
+
+        .reserve-interest-group input {
+            accent-color: #fb923c;
+            width: 22px;
+            height: 22px;
+            margin-top: 2px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .reserve-interest-group label {
+            text-transform: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            line-height: 1.5;
+            color: var(--text-light);
+            letter-spacing: 0;
+        }
+
+        .reserve-interest-badge {
+            display: inline-block;
+            background: rgba(251, 146, 60, 0.18);
+            color: #fb923c;
+            border: 1px solid rgba(251, 146, 60, 0.4);
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 2px 6px;
+            text-transform: uppercase;
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+
         .btn-submit {
             display: block;
             width: 100%;
@@ -797,6 +853,12 @@
         </div>
     </div>
 
+    <div id="closedOverlay" class="locked-overlay" style="border-top-color: #fb923c;">
+        <div class="locked-icon">🏁</div>
+        <div class="locked-title" style="color:#fb923c;">Zapisy zostały zamknięte</div>
+        <div class="locked-subtitle" id="closedSubtitle">Rejestracja na ten sezon dobiegła końca.</div>
+    </div>
+
     <form id="registrationForm">
         <div class="form-group">
             <label for="driverRole"><span data-i18n="lblRole">Typ Zgłoszenia / Rola</span> &nbsp;<span id="freeSlotsCounter" style="font-size:0.75rem; color:var(--success-green); font-family:'Inter',sans-serif; text-transform:none; letter-spacing:0; font-weight:600;"></span></label>
@@ -864,6 +926,11 @@
             <label for="rulesAccept" data-i18n="lblRules">Akceptuję regulamin ligi i zobowiązuję się do czystej jazdy na torze. Rozumiem, że celowe powodowanie kolizji grozi dyskwalifikacją.</label>
         </div>
 
+        <div class="reserve-interest-group" id="reserveInterestGroup">
+            <input type="checkbox" id="reserveInterestMain">
+            <label for="reserveInterestMain"><span class="reserve-interest-badge" data-i18n="reserveBadge">Opcjonalne</span> <span data-i18n="lblReserveInterest">Jestem zainteresowany/a jazdą w głównym splicie, jeśli zwolni się miejsce w składzie podstawowym.</span></label>
+        </div>
+
         <button type="submit" id="submitBtn" class="btn-submit" data-i18n="btnSubmit">Wyślij zgłoszenie</button>
     </form>
 
@@ -908,6 +975,7 @@
                             <th>Gamertag</th>
                             <th>Discord</th>
                             <th>Sprzęt</th>
+                            <th>Gł. Split</th>
 <th>Akcja</th>
                         </tr>
                     </thead>
@@ -932,6 +1000,18 @@
                     <button class="btn-clear-unlock" onclick="clearUnlockDate()">Usuń blokadę</button>
                 </div>
                 <div class="current-unlock-info" id="currentUnlockInfo">Aktualnie: <span>brak ustawionej blokady — zapisy otwarte</span></div>
+
+                <div style="margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--glass-border);">
+                    <div class="unlock-controls">
+                        <div class="form-group">
+                            <label for="lockDateInput" style="color:#fb923c;">Data i godzina zamknięcia zapisów</label>
+                            <input type="datetime-local" id="lockDateInput" style="border-color: rgba(251,146,60,0.3);">
+                        </div>
+                        <button class="btn-set-unlock" style="background: #b45309;" onclick="setLockDate()">Ustaw zamknięcie</button>
+                        <button class="btn-clear-unlock" onclick="clearLockDate()">Usuń</button>
+                    </div>
+                    <div class="current-unlock-info" id="currentLockInfo">Aktualnie: <span>brak ustawionej daty zamknięcia — zapisy bez limitu czasowego</span></div>
+                </div>
             </div>
         </div>
     </div>
@@ -994,7 +1074,9 @@
             errDiscord: "❌ To Discord ID wysłało już swoje zgłoszenie do sezonu.",
             btnSaving: "ZAPISYWANIE W BAZIE...",
 
-            successReg: "✅ Pomyślnie zarejestrowano profil kierowcy z rolą: {rola}."
+            successReg: "✅ Pomyślnie zarejestrowano profil kierowcy z rolą: {rola}.",
+            reserveBadge: "Opcjonalne",
+            lblReserveInterest: "Jestem zainteresowany/a jazdą w głównym splicie, jeśli zwolni się miejsce w składzie podstawowym."
         },
         en: {
             headerTitle: "Registration Form",
@@ -1041,7 +1123,9 @@
             errDiscord: "❌ This Discord ID has already submitted an application.",
             btnSaving: "SAVING IN DATABASE...",
 
-            successReg: "✅ Successfully registered driver profile as: {rola}."
+            successReg: "✅ Successfully registered driver profile as: {rola}.",
+            reserveBadge: "Optional",
+            lblReserveInterest: "I am interested in racing in the main split if a slot opens up in the main lineup."
         }
     };
 
@@ -1111,16 +1195,48 @@
         } catch { return null; }
     }
 
+    async function fetchLockDate() {
+        try {
+            const res = await fetch(`${firebaseBaseUrl}settings/lockDate.json`);
+            return await res.json();
+        } catch { return null; }
+    }
+
     async function checkRegistrationLock() {
         const unlockDateStr = await fetchUnlockDate();
+        const lockDateStr = await fetchLockDate();
         const overlay = document.getElementById('lockedOverlay');
+        const closedOverlay = document.getElementById('closedOverlay');
         const form = document.getElementById('registrationForm');
         const submitBtn = document.getElementById('submitBtn');
 
         updateAdminUnlockInfo(unlockDateStr);
+        updateAdminLockInfo(lockDateStr);
 
+        const now = Date.now();
+
+        // 1. Check if registration period has ended
+        if (lockDateStr) {
+            const lockTime = new Date(lockDateStr).getTime();
+            if (now >= lockTime) {
+                overlay.classList.remove('visible');
+                closedOverlay.classList.add('visible');
+                form.style.display = 'none';
+                submitBtn.disabled = true;
+                clearInterval(countdownInterval);
+                const lockDate = new Date(lockDateStr);
+                const formatted = lockDate.toLocaleString(currentLang === 'pl' ? 'pl-PL' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                document.getElementById('closedSubtitle').textContent = currentLang === 'pl'
+                    ? `Rejestracja na ten sezon zakończyła się ${formatted}.`
+                    : `Registration for this season closed on ${formatted}.`;
+                return;
+            }
+        }
+
+        // 2. Check if registration hasn't opened yet
         if (!unlockDateStr) {
             overlay.classList.remove('visible');
+            closedOverlay.classList.remove('visible');
             form.style.display = '';
             submitBtn.disabled = false;
             clearInterval(countdownInterval);
@@ -1128,10 +1244,10 @@
         }
 
         const unlockTime = new Date(unlockDateStr).getTime();
-        const now = Date.now();
 
         if (now >= unlockTime) {
             overlay.classList.remove('visible');
+            closedOverlay.classList.remove('visible');
             form.style.display = '';
             submitBtn.disabled = false;
             clearInterval(countdownInterval);
@@ -1139,6 +1255,7 @@
             return;
         } else {
             overlay.classList.add('visible');
+            closedOverlay.classList.remove('visible');
             form.style.display = 'none';
 
             const unlockDate = new Date(unlockDateStr);
@@ -1247,6 +1364,60 @@
         }
     }
 
+    function updateAdminLockInfo(lockDateStr) {
+        const info = document.getElementById('currentLockInfo');
+        const input = document.getElementById('lockDateInput');
+        if (!info) return;
+        if (!lockDateStr) {
+            info.innerHTML = `Aktualnie: <span>brak ustawionej daty zamknięcia — zapisy bez limitu czasowego</span>`;
+            if (input) input.value = '';
+        } else {
+            const d = new Date(lockDateStr);
+            const formatted = d.toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const isPast = Date.now() >= d.getTime();
+            info.innerHTML = `Aktualnie: <span style="color:#fb923c;">${isPast ? '🏁 Zapisy zamknięte od' : '⏳ Zapisy zamkną się'} ${formatted}</span>`;
+            if (input) {
+                const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                input.value = local;
+            }
+        }
+    }
+
+    async function setLockDate() {
+        const input = document.getElementById('lockDateInput');
+        const val = input.value;
+        if (!val) { alert("Wybierz datę i godzinę zamknięcia zapisów."); return; }
+
+        const unlockInput = document.getElementById('unlockDateInput');
+        if (unlockInput && unlockInput.value && new Date(val) <= new Date(unlockInput.value)) {
+            alert("❌ Data zamknięcia musi być późniejsza niż data otwarcia zapisów."); return;
+        }
+
+        const isoDate = new Date(val).toISOString();
+        try {
+            await fetch(`${firebaseBaseUrl}settings/lockDate.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(isoDate)
+            });
+            alert(`✅ Ustawiono datę zamknięcia zapisów: ${new Date(val).toLocaleString('pl-PL')}`);
+            checkRegistrationLock();
+        } catch {
+            alert("❌ Błąd zapisu do bazy danych.");
+        }
+    }
+
+    async function clearLockDate() {
+        if (!confirm("Czy na pewno usunąć datę zamknięcia? Zapisy będą otwarte bezterminowo.")) return;
+        try {
+            await fetch(`${firebaseBaseUrl}settings/lockDate.json`, { method: 'DELETE' });
+            alert("✅ Data zamknięcia usunięta. Zapisy są teraz otwarte bezterminowo.");
+            checkRegistrationLock();
+        } catch {
+            alert("❌ Błąd podczas usuwania daty zamknięcia.");
+        }
+    }
+
     function sendDiscordCountdownNotification(dateString) {
         const unixSeconds = Math.floor(new Date(dateString).getTime() / 1000);
         const discordPayload = {
@@ -1314,6 +1485,8 @@
         const optMain = document.getElementById('optMain');
         const freeSlotsCounter = document.getElementById('freeSlotsCounter');
 
+        const reserveInterestGroup = document.getElementById('reserveInterestGroup');
+
         if (mainDriversCount >= 22) {
             trackerText.innerHTML = `<span style="color:#fb923c; font-weight:700;">${langData[currentLang].statusFull}</span>`;
             infoAlert.innerText = langData[currentLang].infoFull;
@@ -1321,12 +1494,14 @@
             optMain.disabled = true;
             roleSelect.value = "Rezerwowy";
             if (freeSlotsCounter) freeSlotsCounter.innerHTML = `<span style="color:#fb923c;">${langData[currentLang].counterFull}</span>`;
+            if (reserveInterestGroup) reserveInterestGroup.classList.add('visible');
         } else {
             const freeSlots = 22 - mainDriversCount;
             trackerText.innerHTML = `<span style="color:var(--success-green); font-weight:700;">${langData[currentLang].statusLeft.replace('{wolne}', freeSlots)}</span>`;
             infoAlert.style.display = 'none';
             optMain.disabled = false;
             if (freeSlotsCounter) freeSlotsCounter.innerHTML = langData[currentLang].counterLeft.replace('{wolne}', freeSlots);
+            if (reserveInterestGroup) reserveInterestGroup.classList.remove('visible');
         }
     }
 
@@ -1367,6 +1542,8 @@
 
         submitBtn.innerText = langData[currentLang].btnSaving;
 
+        const reserveWantsMain = driverStatus === "Rezerwowy" && document.getElementById('reserveInterestMain').checked;
+
         const newDriver = { 
             firstname, 
             lastname, 
@@ -1375,7 +1552,8 @@
             platform: document.getElementById('platform').value, 
             device: document.querySelector('input[name="input_device"]:checked').value, 
             asysty: document.getElementById('asysty').value, 
-            driverStatus
+            driverStatus,
+            reserveWantsMain: reserveWantsMain || false
         };
 
         fetch(`${firebaseBaseUrl}drivers.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newDriver) })
@@ -1384,7 +1562,7 @@
             successAlert.innerText = langData[currentLang].successReg.replace('{rola}', driverStatus === "Główny" ? (currentLang === 'pl' ? 'Główny' : 'Main') : (currentLang === 'pl' ? 'Rezerwowy' : 'Reserve'));
             successAlert.style.display = 'block';
             errorAlert.style.display = 'none';
-            sendDiscordNotification(driverStatus, gamertag, discordTag, firstname, lastname, newDriver.platform, newDriver.device, newDriver.asysty);
+            sendDiscordNotification(driverStatus, gamertag, discordTag, firstname, lastname, newDriver.platform, newDriver.device, newDriver.asysty, newDriver.reserveWantsMain);
             document.getElementById('registrationForm').reset();
             fetchDriversFromFirebase();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1424,7 +1602,10 @@
         globalDriversList.filter(d => d.gamertag.toLowerCase().includes(lowerFilter) || d.firstname.toLowerCase().includes(lowerFilter) || d.lastname.toLowerCase().includes(lowerFilter)).forEach((driver) => {
             const tr = document.createElement('tr');
             
-            tr.innerHTML = `<td><span class="badge ${driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve"}">${driver.driverStatus}</span></td><td><div>${driver.firstname} ${driver.lastname}</div></td><td><strong>${driver.gamertag}</strong></td><td><span style="font-family:monospace; font-weight:600;">${driver.discordTag}</span></td><td>${driver.platform} (${driver.device})</td><td><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>`;
+            const splitBadge = driver.driverStatus === "Rezerwowy" && driver.reserveWantsMain
+                ? '<span style="color:#fb923c; font-weight:700;">✅ Tak</span>'
+                : driver.driverStatus === "Rezerwowy" ? '<span style="color:var(--text-muted);">—</span>' : '<span style="color:var(--text-muted); font-size:0.8rem;">N/D</span>';
+            tr.innerHTML = `<td><span class="badge ${driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve"}">${driver.driverStatus}</span></td><td><div>${driver.firstname} ${driver.lastname}</div></td><td><strong>${driver.gamertag}</strong></td><td><span style="font-family:monospace; font-weight:600;">${driver.discordTag}</span></td><td>${driver.platform} (${driver.device})</td><td>${splitBadge}</td><td><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>`;
             tbody.appendChild(tr);
         });
     }
@@ -1432,7 +1613,7 @@
     function filterAdminTable() { renderAdminTable(document.getElementById('adminSearch').value); }
     function deleteDriver(id, tag) { if(confirm(`Usunąć kierowcę ${tag}?`)) { fetch(`${firebaseBaseUrl}drivers/${id}.json`, { method: 'DELETE' }).then(() => fetchDriversFromFirebase()); } }
 
-    function sendDiscordNotification(driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty) {
+    function sendDiscordNotification(driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, reserveWantsMain) {
         const mainCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
         const discordPayload = { 
             content: `🔔 Nowe zgłoszenie! Rola: **${driverStatus.toUpperCase()}**`, 
@@ -1445,7 +1626,8 @@
                     { name: "💻 Platforma", value: platform, inline: true }, 
                     { name: "🕹️ Kontroler", value: device, inline: true }, 
                     { name: "🛠️ Asysty", value: asysty, inline: true }, 
-                    { name: "🪑 Wolne miejsca (skład główny)", value: `${Math.max(0, 22 - mainCount)} / 22`, inline: true }
+                    { name: "🪑 Wolne miejsca (skład główny)", value: `${Math.max(0, 22 - mainCount)} / 22`, inline: true },
+                    ...(driverStatus === "Rezerwowy" ? [{ name: "⭐ Chęć jazdy w gł. splicie", value: reserveWantsMain ? "✅ Tak" : "—", inline: true }] : [])
                 ], 
                 footer: { text: "Liga F1 · System rejestracji" }, 
                 timestamp: new Date().toISOString() 
