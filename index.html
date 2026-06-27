@@ -1339,12 +1339,27 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(false)
             });
-            alert(`✅ Ustawiono datę otraciu zapisów: ${new Date(val).toLocaleString('pl-PL')}`);
-            sendDiscordCountdownNotification(val);
+           alert(`✅ Ustawiono datę zamknięcia zapisów: ${new Date(val).toLocaleString('pl-PL')}`);
+            sendDiscordCloseNotification(val);
             checkRegistrationLock();
         } catch {
             alert("❌ Błąd zapisu do bazy danych.");
         }
+    }
+
+    function sendDiscordCloseNotification(dateString) {
+        const unixSeconds = Math.floor(new Date(dateString).getTime() / 1000);
+        const discordPayload = {
+            content: "@everyone 🔴 **ZAPISY DO LIGI F1 ZOSTANĄ ZAMKNIĘTE!**",
+            embeds: [{
+                title: "🏁 Koniec rejestracji — zbliża się flaga w szachownicę!",
+                color: 15158332,
+                description: `Zapisy zostaną automatycznie zamknięte o wyznaczonej godzinie. Nie zwlekaj!\n\n📅 **Dokładna data zamknięcia:** <t:${unixSeconds}:F>\n⏳ **Czas do zamknięcia:** <t:${unixSeconds}:R>\n\n🔗 **Strona z zapisami:** https://klw26.github.io/zapisy/`,
+                footer: { text: "Liga F1 · System Zarządzania Czasem" },
+                timestamp: new Date().toISOString()
+            }]
+        };
+        fetch(countdownWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) }).catch(err => console.warn(err));
     }
 
     async function clearUnlockDate() {
