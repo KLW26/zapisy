@@ -1339,8 +1339,8 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(false)
             });
-           alert(`✅ Ustawiono datę zamknięcia zapisów: ${new Date(val).toLocaleString('pl-PL')}`);
-            sendDiscordCloseNotification(val);
+            alert(`✅ Ustawiono datę otwarcia zapisów: ${new Date(val).toLocaleString('pl-PL')}`);
+            sendDiscordCountdownNotification(val);
             checkRegistrationLock();
         } catch {
             alert("❌ Błąd zapisu do bazy danych.");
@@ -1416,6 +1416,7 @@
                 body: JSON.stringify(isoDate)
             });
             alert(`✅ Ustawiono datę zamknięcia zapisów: ${new Date(val).toLocaleString('pl-PL')}`);
+            sendDiscordCloseNotification(val);
             checkRegistrationLock();
         } catch {
             alert("❌ Błąd zapisu do bazy danych.");
