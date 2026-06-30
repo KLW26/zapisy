@@ -1492,7 +1492,7 @@
 
     function updateGridSlotsTracker() {
         const mainDriversCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
-        const percentage = (mainDriversCount / 22) * 100;
+        const percentage = 100;
         document.getElementById('liveTrackerBar').style.width = `${percentage}%`;
         
         const trackerText = document.getElementById('liveTrackerText');
@@ -1503,7 +1503,7 @@
 
         const reserveInterestGroup = document.getElementById('reserveInterestGroup');
 
-        if (mainDriversCount >= 22) {
+        if (mainDriversCount >= Infinity) {
             trackerText.innerHTML = `<span style="color:#fb923c; font-weight:700;">${langData[currentLang].statusFull}</span>`;
             infoAlert.innerText = langData[currentLang].infoFull;
             infoAlert.style.display = 'block';
@@ -1512,7 +1512,7 @@
             if (freeSlotsCounter) freeSlotsCounter.innerHTML = `<span style="color:#fb923c;">${langData[currentLang].counterFull}</span>`;
             if (reserveInterestGroup) reserveInterestGroup.classList.add('visible');
         } else {
-            const freeSlots = 22 - mainDriversCount;
+            const freeSlots = '∞';
             trackerText.innerHTML = `<span style="color:var(--success-green); font-weight:700;">${langData[currentLang].statusLeft.replace('{wolne}', freeSlots)}</span>`;
             infoAlert.style.display = 'none';
             optMain.disabled = false;
@@ -1529,7 +1529,7 @@
         const driverStatus = document.getElementById('driverRole').value;
         
         const mainDriversCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
-        if (driverStatus === "Główny" && mainDriversCount >= 22) {
+        if (driverStatus === "Główny" && mainDriversCount >= Infinity) {
             alert(currentLang === 'pl' ? "Niestety, limit kierowców głównych został wyczerpany przed momentem. Zmień rolę na rezerwowego." : "Unfortunately, the main driver limit has just been reached. Please change role to reserve.");
             fetchDriversFromFirebase();
             return;
