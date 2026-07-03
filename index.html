@@ -548,6 +548,65 @@
             border-top: 4px solid var(--admin-blue);
         }
 
+        .edit-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(5, 5, 8, 0.75);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            overflow-y: auto;
+        }
+
+        .edit-modal-overlay.visible {
+            display: flex;
+        }
+
+        .edit-modal-box {
+            background: var(--admin-card-bg);
+            border: 1px solid var(--glass-border);
+            border-top: 4px solid var(--admin-blue);
+            border-radius: 16px;
+            padding: 35px;
+            width: 100%;
+            max-width: 560px;
+            box-shadow: var(--box-shadow-overlay);
+            animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .edit-modal-box h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .edit-modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn-cancel-edit {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .btn-cancel-edit:hover {
+            border-color: var(--text-muted);
+        }
+
         .admin-controls {
             display: flex;
             justify-content: space-between;
@@ -1012,6 +1071,93 @@
                     </div>
                     <div class="current-unlock-info" id="currentLockInfo">Aktualnie: <span>brak ustawionej daty zamknięcia — zapisy bez limitu czasowego</span></div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editModalOverlay" class="edit-modal-overlay">
+        <div class="edit-modal-box">
+            <h2>✏️ Edytuj zgłoszenie</h2>
+
+            <div class="form-group">
+                <label for="editDriverRole">Typ Zgłoszenia / Rola</label>
+                <select id="editDriverRole">
+                    <option value="Główny">Kierowca Podstawowy (Stały etat)</option>
+                    <option value="Rezerwowy">Kierowca Rezerwowy (Okazyjne starty)</option>
+                </select>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="editFirstname">Imię</label>
+                    <input type="text" id="editFirstname" required minlength="2">
+                </div>
+                <div class="form-group">
+                    <label for="editLastname">Nazwisko</label>
+                    <input type="text" id="editLastname" required minlength="2">
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="editGamertag">Nick / Gamertag (w grze)</label>
+                    <input type="text" id="editGamertag" required>
+                </div>
+                <div class="form-group">
+                    <label for="editDiscordTag">Discord ID</label>
+                    <input type="text" id="editDiscordTag" required pattern="[0-9]+" title="Tylko cyfry z Twojego Discord ID">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="editPlatform">Platforma</label>
+                <select id="editPlatform">
+                    <option value="PC">PC (Steam / EA App)</option>
+                    <option value="PS5">PlayStation 5</option>
+                    <option value="Xbox">Xbox Series X/S</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="editAsysty">Poziom asyst</label>
+                <select id="editAsysty">
+                    <option value="Brak">Brak asyst (Hardcore)</option>
+                    <option value="Częściowe">Dozwolone częściowe (ABS / Średnia trakcja)</option>
+                    <option value="Pełne">Pełne asysty (Casual)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Kontroler</label>
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="edit_input_device" value="Kierownica"> <span>Kierownica</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="edit_input_device" value="Pad"> <span>Pad</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="reserve-interest-group visible" id="editReserveInterestGroup">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label for="editReserveWantsMain">⭐ Chęć jazdy w głównym splicie</label>
+                    <select id="editReserveWantsMain">
+                        <option value="tak">✅ Tak</option>
+                        <option value="nie">❌ Nie</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top:10px; padding-top:18px; border-top:1px solid var(--glass-border);">
+                <label for="editDiscordMessageLink" style="color:var(--text-muted);">🔗 Link / ID wiadomości Discord (opcjonalne)</label>
+                <input type="text" id="editDiscordMessageLink" placeholder="Wklej link do wiadomości (Prawy klik → Kopiuj link) lub samo ID">
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:6px; font-weight:500;">Uzupełnij dla starych zgłoszeń, których powiadomienie zostało wysłane przed wdrożeniem edycji "na żywo" — dzięki temu kolejne edycje będą aktualizować tę wiadomość zamiast tworzyć nową.</div>
+            </div>
+
+            <div class="edit-modal-actions">
+                <button type="button" class="btn-cancel-edit" onclick="closeEditModal()">Anuluj</button>
+                <button type="button" class="btn-submit" style="flex:1;" onclick="saveDriverEdit()">Zapisz zmiany</button>
             </div>
         </div>
     </div>
@@ -1582,11 +1728,11 @@
 
         fetch(`${firebaseBaseUrl}drivers.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newDriver) })
         .then(res => { if (!res.ok) throw new Error(); return res.json(); })
-        .then(() => {
+        .then(async (data) => {
             successAlert.innerText = langData[currentLang].successReg.replace('{rola}', driverStatus === "Główny" ? (currentLang === 'pl' ? 'Główny' : 'Main') : (currentLang === 'pl' ? 'Rezerwowy' : 'Reserve'));
             successAlert.style.display = 'block';
             errorAlert.style.display = 'none';
-            sendDiscordNotification(driverStatus, gamertag, discordTag, firstname, lastname, newDriver.platform, newDriver.device, newDriver.asysty, newDriver.reserveWantsMain);
+            await sendDiscordNotification(data.name, driverStatus, gamertag, discordTag, firstname, lastname, newDriver.platform, newDriver.device, newDriver.asysty, newDriver.reserveWantsMain, false, null);
             document.getElementById('registrationForm').reset();
             fetchDriversFromFirebase();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1629,7 +1775,7 @@
             const splitBadge = driver.driverStatus === "Rezerwowy" && driver.reserveWantsMain
                 ? '<span style="color:#fb923c; font-weight:700;">✅ Tak</span>'
                 : driver.driverStatus === "Rezerwowy" ? '<span style="color:var(--text-muted); font-weight:600;">❌ Nie</span>' : '<span style="color:var(--text-muted); font-size:0.8rem;">N/D</span>';
-            tr.innerHTML = `<td><span class="badge ${driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve"}">${driver.driverStatus}</span></td><td><div>${driver.firstname} ${driver.lastname}</div></td><td><strong>${driver.gamertag}</strong></td><td><span style="font-family:monospace; font-weight:600;">${driver.discordTag}</span></td><td>${driver.platform} (${driver.device})</td><td>${splitBadge}</td><td><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>`;
+            tr.innerHTML = `<td><span class="badge ${driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve"}">${driver.driverStatus}</span></td><td><div>${driver.firstname} ${driver.lastname}</div></td><td><strong>${driver.gamertag}</strong></td><td><span style="font-family:monospace; font-weight:600;">${driver.discordTag}</span></td><td>${driver.platform} (${driver.device})</td><td>${splitBadge}</td><td style="display:flex; gap:6px;"><button class="btn-admin" style="padding:6px 12px; font-size:0.75rem;" onclick="openEditModal('${driver.id}')">✏️ Edytuj</button><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>`;
             tbody.appendChild(tr);
         });
     }
@@ -1637,14 +1783,98 @@
     function filterAdminTable() { renderAdminTable(document.getElementById('adminSearch').value); }
     function deleteDriver(id, tag) { if(confirm(`Usunąć kierowcę ${tag}?`)) { fetch(`${firebaseBaseUrl}drivers/${id}.json`, { method: 'DELETE' }).then(() => fetchDriversFromFirebase()); } }
 
-    function sendDiscordNotification(driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, reserveWantsMain) {
-        const mainCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
+    let editingDriverId = null;
+
+    document.getElementById('editDriverRole').addEventListener('change', function() {
+        const group = document.getElementById('editReserveInterestGroup');
+        const select = document.getElementById('editReserveWantsMain');
+        if (this.value === "Rezerwowy") {
+            group.classList.add('visible');
+        } else {
+            group.classList.remove('visible');
+            if (select) select.value = "nie";
+        }
+    });
+
+    function openEditModal(id) {
+        const driver = globalDriversList.find(d => d.id === id);
+        if (!driver) return;
+        editingDriverId = id;
+
+        document.getElementById('editDriverRole').value = driver.driverStatus;
+        document.getElementById('editFirstname').value = driver.firstname;
+        document.getElementById('editLastname').value = driver.lastname;
+        document.getElementById('editGamertag').value = driver.gamertag;
+        document.getElementById('editDiscordTag').value = driver.discordTag;
+        document.getElementById('editPlatform').value = driver.platform;
+        document.getElementById('editAsysty').value = driver.asysty;
+        document.querySelectorAll('input[name="edit_input_device"]').forEach(r => { r.checked = (r.value === driver.device); });
+        document.getElementById('editReserveWantsMain').value = driver.reserveWantsMain ? "tak" : "nie";
+        document.getElementById('editDiscordMessageLink').value = driver.discordMessageId || "";
+        document.getElementById('editDriverRole').dispatchEvent(new Event('change'));
+
+        document.getElementById('editModalOverlay').classList.add('visible');
+    }
+
+    function closeEditModal() {
+        editingDriverId = null;
+        document.getElementById('editModalOverlay').classList.remove('visible');
+    }
+
+    function saveDriverEdit() {
+        if (!editingDriverId) return;
+
+        const driverStatus = document.getElementById('editDriverRole').value;
+        const firstname = document.getElementById('editFirstname').value.trim();
+        const lastname = document.getElementById('editLastname').value.trim();
+        const gamertag = document.getElementById('editGamertag').value.trim();
+        const discordTag = document.getElementById('editDiscordTag').value.trim().replace(/[^0-9]/g, '');
+        const platform = document.getElementById('editPlatform').value;
+        const deviceEl = document.querySelector('input[name="edit_input_device"]:checked');
+        const device = deviceEl ? deviceEl.value : 'Kierownica';
+        const asysty = document.getElementById('editAsysty').value;
+        const reserveWantsMain = driverStatus === "Rezerwowy" && document.getElementById('editReserveWantsMain').value === "tak";
+
+        if (!firstname || !lastname || !gamertag || !discordTag) {
+            alert("Wszystkie wymagane pola muszą być wypełnione.");
+            return;
+        }
+
+        if (globalDriversList.some(d => d.id !== editingDriverId && d.gamertag.toLowerCase() === gamertag.toLowerCase())) {
+            alert("Ten gamertag jest już zajęty przez innego kierowcę.");
+            return;
+        }
+        if (globalDriversList.some(d => d.id !== editingDriverId && d.discordTag === discordTag)) {
+            alert("To Discord ID jest już przypisane do innego kierowcy.");
+            return;
+        }
+
+        const existingDriver = globalDriversList.find(d => d.id === editingDriverId);
+        const manualLinkRaw = document.getElementById('editDiscordMessageLink').value.trim();
+        const manualIdMatch = manualLinkRaw.match(/(\d{15,25})$/);
+        const manualMessageId = manualIdMatch ? manualIdMatch[1] : null;
+        const existingMessageId = manualMessageId || (existingDriver ? existingDriver.discordMessageId : null) || null;
+
+        const updatedDriver = { firstname, lastname, gamertag, discordTag, platform, device, asysty, driverStatus, reserveWantsMain: reserveWantsMain || false };
+        if (existingMessageId) updatedDriver.discordMessageId = existingMessageId;
+
+        fetch(`${firebaseBaseUrl}drivers/${editingDriverId}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedDriver) })
+            .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+            .then(async () => {
+                await sendDiscordNotification(editingDriverId, driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, updatedDriver.reserveWantsMain, true, existingMessageId);
+                closeEditModal();
+                fetchDriversFromFirebase();
+            })
+            .catch(() => alert("❌ Wystąpił problem podczas zapisywania zmian."));
+    }
+
+    async function sendDiscordNotification(driverId, driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, reserveWantsMain, isEdit = false, existingMessageId = null) {
         const isReserve = driverStatus === "Rezerwowy";
         const discordPayload = { 
-            content: `🔔 Nowe zgłoszenie! Rola: **${driverStatus.toUpperCase()}**`, 
+            content: isEdit ? `✏️ Zaktualizowano zgłoszenie! Rola: **${driverStatus.toUpperCase()}**` : `🔔 Nowe zgłoszenie! Rola: **${driverStatus.toUpperCase()}**`, 
             embeds: [{ 
                 title: isReserve ? `🟠 [REZERWA] ${gamertag}` : `🏎️ Nowy profil w bazie: ${gamertag}`, 
-                color: driverStatus === "Główny" ? 3066993 : 15105570, 
+                color: isEdit ? 3901635 : (driverStatus === "Główny" ? 3066993 : 15105570), 
                 fields: [
                     { name: "🎭 Rola", value: isReserve ? "⭐ Kierowca Rezerwowy" : "🏁 Kierowca Podstawowy", inline: true },
                     { name: "📱 Discord ID", value: `<@${discordTag}>`, inline: true }, 
@@ -1652,15 +1882,29 @@
                     { name: "💻 Platforma", value: platform, inline: true }, 
                     { name: "🕹️ Kontroler", value: device, inline: true }, 
                     { name: "🛠️ Asysty", value: asysty, inline: true }, 
-                    { name: "🪑 Wolne miejsca (skład główny)", value: `${Math.max(0, 22 - mainCount)} / 22`, inline: true },
                     ...(isReserve ? [{ name: "⭐ Chęć jazdy w gł. splicie", value: reserveWantsMain ? "✅ Tak" : "❌ Nie", inline: true }] : [])
                 ], 
-                footer: { text: "Liga F1 · System rejestracji" }, 
+                footer: { text: isEdit ? "Liga F1 · Edycja zgłoszenia (Admin)" : "Liga F1 · System rejestracji" }, 
                 timestamp: new Date().toISOString() 
             }] 
         };
 
-        fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) }).catch(err => console.warn(err));
+        try {
+            if (existingMessageId) {
+                // Istniejąca wiadomość już jest na Discordzie - edytujemy ją zamiast tworzyć nową.
+                await fetch(`${webhookUrl}/messages/${existingMessageId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) });
+            } else {
+                // Pierwsza wiadomość dla tego kierowcy (albo brak zapisanego ID) - tworzymy ją i zapamiętujemy jej ID w Firebase,
+                // żeby przyszłe edycje aktualizowały tę samą wiadomość zamiast tworzyć nowe.
+                const res = await fetch(`${webhookUrl}?wait=true`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) });
+                const msg = res.ok ? await res.json() : null;
+                if (msg && msg.id && driverId) {
+                    await fetch(`${firebaseBaseUrl}drivers/${driverId}/discordMessageId.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(msg.id) });
+                }
+            }
+        } catch (err) {
+            console.warn(err);
+        }
     }
 
     function clearAllDrivers() { if(confirm("Usunąć wszystkich zawodników?")) { fetch(`${firebaseBaseUrl}drivers.json`, { method: 'DELETE' }).then(() => fetchDriversFromFirebase()); } }
