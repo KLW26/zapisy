@@ -1501,25 +1501,33 @@
         const optMain = document.getElementById('optMain');
         const freeSlotsCounter = document.getElementById('freeSlotsCounter');
 
-        const reserveInterestGroup = document.getElementById('reserveInterestGroup');
-
         if (mainDriversCount >= Infinity) {
             trackerText.innerHTML = `<span style="color:#fb923c; font-weight:700;">${langData[currentLang].statusFull}</span>`;
             infoAlert.innerText = langData[currentLang].infoFull;
             infoAlert.style.display = 'block';
             optMain.disabled = true;
             roleSelect.value = "Rezerwowy";
+            roleSelect.dispatchEvent(new Event('change'));
             if (freeSlotsCounter) freeSlotsCounter.innerHTML = `<span style="color:#fb923c;">${langData[currentLang].counterFull}</span>`;
-            if (reserveInterestGroup) reserveInterestGroup.classList.add('visible');
         } else {
             const freeSlots = '∞';
             trackerText.innerHTML = `<span style="color:var(--success-green); font-weight:700;">${langData[currentLang].statusLeft.replace('{wolne}', freeSlots)}</span>`;
             infoAlert.style.display = 'none';
             optMain.disabled = false;
             if (freeSlotsCounter) freeSlotsCounter.innerHTML = langData[currentLang].counterLeft.replace('{wolne}', freeSlots);
-            if (reserveInterestGroup) reserveInterestGroup.classList.remove('visible');
         }
     }
+
+    document.getElementById('driverRole').addEventListener('change', function() {
+        const reserveInterestGroup = document.getElementById('reserveInterestGroup');
+        const reserveInterestCheckbox = document.getElementById('reserveInterestMain');
+        if (this.value === "Rezerwowy") {
+            reserveInterestGroup.classList.add('visible');
+        } else {
+            reserveInterestGroup.classList.remove('visible');
+            if (reserveInterestCheckbox) reserveInterestCheckbox.checked = false;
+        }
+    });
 
     document.getElementById('registrationForm').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -1620,7 +1628,7 @@
             
             const splitBadge = driver.driverStatus === "Rezerwowy" && driver.reserveWantsMain
                 ? '<span style="color:#fb923c; font-weight:700;">✅ Tak</span>'
-                : driver.driverStatus === "Rezerwowy" ? '<span style="color:var(--text-muted);">—</span>' : '<span style="color:var(--text-muted); font-size:0.8rem;">N/D</span>';
+                : driver.driverStatus === "Rezerwowy" ? '<span style="color:var(--text-muted); font-weight:600;">❌ Nie</span>' : '<span style="color:var(--text-muted); font-size:0.8rem;">N/D</span>';
             tr.innerHTML = `<td><span class="badge ${driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve"}">${driver.driverStatus}</span></td><td><div>${driver.firstname} ${driver.lastname}</div></td><td><strong>${driver.gamertag}</strong></td><td><span style="font-family:monospace; font-weight:600;">${driver.discordTag}</span></td><td>${driver.platform} (${driver.device})</td><td>${splitBadge}</td><td><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>`;
             tbody.appendChild(tr);
         });
@@ -1631,19 +1639,21 @@
 
     function sendDiscordNotification(driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, reserveWantsMain) {
         const mainCount = globalDriversList.filter(d => d.driverStatus === "Główny").length;
+        const isReserve = driverStatus === "Rezerwowy";
         const discordPayload = { 
             content: `🔔 Nowe zgłoszenie! Rola: **${driverStatus.toUpperCase()}**`, 
             embeds: [{ 
-                title: `🏎️ Nowy profil w bazie: ${gamertag}`, 
+                title: isReserve ? `🟠 [REZERWA] ${gamertag}` : `🏎️ Nowy profil w bazie: ${gamertag}`, 
                 color: driverStatus === "Główny" ? 3066993 : 15105570, 
                 fields: [
+                    { name: "🎭 Rola", value: isReserve ? "⭐ Kierowca Rezerwowy" : "🏁 Kierowca Podstawowy", inline: true },
                     { name: "📱 Discord ID", value: `<@${discordTag}>`, inline: true }, 
                     { name: "👤 Kierowca", value: `${firstname} ${lastname}`, inline: true }, 
                     { name: "💻 Platforma", value: platform, inline: true }, 
                     { name: "🕹️ Kontroler", value: device, inline: true }, 
                     { name: "🛠️ Asysty", value: asysty, inline: true }, 
                     { name: "🪑 Wolne miejsca (skład główny)", value: `${Math.max(0, 22 - mainCount)} / 22`, inline: true },
-                    ...(driverStatus === "Rezerwowy" ? [{ name: "⭐ Chęć jazdy w gł. splicie", value: reserveWantsMain ? "✅ Tak" : "—", inline: true }] : [])
+                    ...(isReserve ? [{ name: "⭐ Chęć jazdy w gł. splicie", value: reserveWantsMain ? "✅ Tak" : "❌ Nie", inline: true }] : [])
                 ], 
                 footer: { text: "Liga F1 · System rejestracji" }, 
                 timestamp: new Date().toISOString() 
