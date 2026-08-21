@@ -1702,10 +1702,7 @@
         const tbody = document.getElementById('adminTableBody'); tbody.innerHTML = '';
         if (globalDriversList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color:var(--text-muted); font-weight:600;">Baza danych jest pusta.</td></tr>`; return; }
         const lowerFilter = filterText.toLowerCase();
-        const filteredList = globalDriversList.filter(d => d.driverStatus === "Rezerwowy" && d.reserveWantsMain)
-            .filter(d => d.gamertag.toLowerCase().includes(lowerFilter) || d.firstname.toLowerCase().includes(lowerFilter) || d.lastname.toLowerCase().includes(lowerFilter));
-        if (filteredList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color:var(--text-muted); font-weight:600;">Brak rezerwowych zainteresowanych jazdą w głównym splicie.</td></tr>`; return; }
-        filteredList.forEach((driver) => {
+        globalDriversList.filter(d => d.gamertag.toLowerCase().includes(lowerFilter) || d.firstname.toLowerCase().includes(lowerFilter) || d.lastname.toLowerCase().includes(lowerFilter)).forEach((driver) => {
             const tr = document.createElement('tr');
             
             const splitBadge = driver.driverStatus === "Rezerwowy" && driver.reserveWantsMain
