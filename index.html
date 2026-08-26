@@ -177,6 +177,31 @@
             transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        .split-tracker-block + .split-tracker-block {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .split-tracker-heading {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--f1-red);
+            margin-bottom: 8px;
+        }
+
+        .split-tracker-block:nth-of-type(2) .split-tracker-heading {
+            color: #5bb0ff;
+        }
+
+        .badge-split1 { background: rgba(225, 6, 0, 0.12); color: var(--f1-red); border: 1px solid rgba(225, 6, 0, 0.35); }
+        .badge-split2 { background: rgba(0, 99, 229, 0.12); color: #5bb0ff; border: 1px solid rgba(0, 99, 229, 0.35); }
+        [data-theme="light"] .badge-split1 { background: #fef2f2; color: #b91c1c; border: 1px solid #b91c1c; }
+        [data-theme="light"] .badge-split2 { background: #eff6ff; color: var(--admin-blue); border: 1px solid var(--admin-blue); }
+
         .locked-overlay {
             display: none;
             background: rgba(16, 16, 24, 0.85);
@@ -875,12 +900,15 @@
     </header>
 
     <div class="grid-status-tracker">
-        <div class="tracker-info">
-            <span data-i18n="trackerLabel">Fotele w składzie rezerwowym</span>
-            <span id="liveTrackerText">Pobieranie statusu padoku...</span>
-        </div>
-        <div class="tracker-bar-bg">
-            <div id="liveTrackerBar" class="tracker-bar-fill"></div>
+        <div class="split-tracker-block">
+            <div class="split-tracker-heading" data-i18n="split2Heading">🔵 Split 2</div>
+            <div class="tracker-info">
+                <span data-i18n="trackerLabel">Fotele w składzie głównym</span>
+                <span id="liveTrackerTextS2">Pobieranie statusu padoku...</span>
+            </div>
+            <div class="tracker-bar-bg">
+                <div id="liveTrackerBarS2" class="tracker-bar-fill"></div>
+            </div>
         </div>
     </div>
 
@@ -889,8 +917,20 @@
     <div id="infoAlert" class="info-message"></div>
 
     <form id="registrationForm">
-        <div class="form-group" style="display:none;">
-            <input type="hidden" id="driverRole" value="Rezerwowy">
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="driverRole" data-i18n="lblRole">Typ Zgłoszenia / Rola</label>
+                <select id="driverRole" required>
+                    <option value="Główny" data-i18n="optMain">Kierowca Podstawowy (Stały etat)</option>
+                    <option value="Rezerwowy" data-i18n="optReserve">Kierowca Rezerwowy (Okazyjne starty)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="driverSplit" data-i18n="lblSplit">Split</label>
+                <select id="driverSplit" required>
+                    <option value="Split 2" data-i18n="optSplit2">Split 2</option>
+                </select>
+            </div>
         </div>
 
         <div class="grid-2">
@@ -951,7 +991,7 @@
             <label for="rulesAccept" data-i18n="lblRules">Akceptuję regulamin ligi i zobowiązuję się do czystej jazdy na torze. Rozumiem, że celowe powodowanie kolizji grozi dyskwalifikacją.</label>
         </div>
 
-        <div class="reserve-interest-group visible" id="reserveInterestGroup">
+        <div class="reserve-interest-group" id="reserveInterestGroup">
             <input type="checkbox" id="reserveInterestMain">
             <label for="reserveInterestMain"><span class="reserve-interest-badge" data-i18n="reserveBadge">Opcjonalne</span> <span data-i18n="lblReserveInterest">Jestem zainteresowany/a jazdą w głównym splicie, jeśli zwolni się miejsce w składzie podstawowym.</span></label>
         </div>
@@ -967,8 +1007,12 @@
                 <div>
                     <h2>Panel Kontrolny Wyścigu</h2>
                 </div>
-                <div class="search-bar">
+                <div class="search-bar" style="display:flex; gap:10px; align-items:center;">
                     <input type="text" id="adminSearch" placeholder="Szukaj kierowcy, roli, platformy..." onkeyup="filterAdminTable()">
+                    <select id="adminSplitFilter" onchange="filterAdminTable()" style="width:auto; padding:12px 16px; background:var(--input-bg); border:1px solid var(--input-border); border-radius:12px; color:var(--text-light);">
+                        <option value="">Wszystkie splity</option>
+                        <option value="Split 2">Split 2</option>
+                    </select>
                 </div>
             </div>
 
@@ -978,8 +1022,12 @@
                     <div class="dash-box-value" id="dashTotal">0</div>
                 </div>
                 <div class="dash-box">
-                    <div class="dash-box-title">Kierowcy rezerwowi</div>
-                    <div class="dash-box-value" id="dashStatusSplit">Rezerwa: 0</div>
+                    <div class="dash-box-title">Podział składu (Główni / Rezerwa)</div>
+                    <div class="dash-box-value" id="dashStatusSplit">Główni: 0 / Rezerwa: 0</div>
+                </div>
+                <div class="dash-box">
+                    <div class="dash-box-title">🔵 Split 2 (Główni / Rezerwa)</div>
+                    <div class="dash-box-value" id="dashSplit2" style="font-size:1.3rem;">0/22 · 0</div>
                 </div>
                 <div class="dash-box">
                     <div class="dash-box-title">Kontrolery (Kierownica / Pad)</div>
@@ -996,6 +1044,7 @@
                     <thead>
                         <tr>
                             <th>Status</th>
+                            <th>Split</th>
                             <th>Kierowca</th>
                             <th>Gamertag</th>
                             <th>Discord</th>
@@ -1045,11 +1094,20 @@
         <div class="edit-modal-box">
             <h2>✏️ Edytuj zgłoszenie</h2>
 
-            <div class="form-group">
-                <label for="editDriverRole">Typ Zgłoszenia / Rola</label>
-                <select id="editDriverRole">
-                    <option value="Rezerwowy">Kierowca Rezerwowy (Okazyjne starty)</option>
-                </select>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="editDriverRole">Typ Zgłoszenia / Rola</label>
+                    <select id="editDriverRole">
+                        <option value="Główny">Kierowca Główny (Stały etat)</option>
+                        <option value="Rezerwowy">Kierowca Rezerwowy (Okazyjne starty)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editDriverSplit">Split</label>
+                    <select id="editDriverSplit">
+                        <option value="Split 2">Split 2</option>
+                    </select>
+                </div>
             </div>
 
             <div class="grid-2">
@@ -1143,7 +1201,7 @@
         pl: {
             headerTitle: "Formularz Zgłoszeniowy",
             headerSubtitle: "Oficjalne zapisy do nowego sezonu ligowego F1 2026/27",
-            trackerLabel: "Fotele w składzie rezerwowym",
+            trackerLabel: "Fotele w składzie głównym",
             lockedTitle: "Zapisy są jeszcze zamknięte",
             cdDays: "Dni",
             cdHours: "Godziny",
@@ -1165,6 +1223,9 @@
             lblDevice: "Kontroler",
             lblWheel: "Kierownica",
             lblPad: "Pad",
+            lblSplit: "Split",
+            optSplit2: "Split 2",
+            split2Heading: "🔵 Split 2",
 
             lblRules: "Akceptuję regulamin ligi i zobowiązuję się do czystej jazdy na torze. Rozumiem, że celowe powodowanie kolizji grozi dyskwalifikacją.",
             btnSubmit: "Wyślij zgłoszenie",
@@ -1177,7 +1238,7 @@
             statusFetching: "Pobieranie statusu padoku...",
             statusFull: "Główny skład pełny (22/22)",
             statusLeft: "Zostało {wolne} wolnych etatów",
-            infoFull: "📋 Wszystkie stałe etaty (22/22) zostały obsadzone. Rejestracja jest teraz otwarta wyłącznie dla kierowców rezerwowych.",
+            infoFull: "📋 Wszystkie stałe etaty w {split} (22/22) zostały obsadzone. Rejestracja w tym splicie jest teraz otwarta wyłącznie dla kierowców rezerwowych.",
             counterFull: "(skład pełny · 0 wolnych miejsc)",
             counterLeft: "({wolne} wolnych miejsc w składzie podstawowym)",
             alertClosed: "Rejestracja otworzy się {data}. Pozostały czas:",
@@ -1185,7 +1246,7 @@
             errDiscord: "❌ To Discord ID wysłało już swoje zgłoszenie do sezonu.",
             btnSaving: "ZAPISYWANIE W BAZIE...",
 
-            successReg: "✅ Pomyślnie zarejestrowano profil kierowcy z rolą: {rola}.",
+            successReg: "✅ Pomyślnie zarejestrowano profil kierowcy z rolą: {rola} ({split}).",
             reserveBadge: "Opcjonalne",
             lblReserveInterest: "Jestem zainteresowany/a jazdą w głównym splicie, jeśli zwolni się miejsce w składzie podstawowym."
         },
@@ -1214,6 +1275,9 @@
             lblDevice: "Input Device",
             lblWheel: "Wheel",
             lblPad: "Pad",
+            lblSplit: "Split",
+            optSplit2: "Split 2",
+            split2Heading: "🔵 Split 2",
 
             lblRules: "I accept the league regulations and commit to clean racing on track. I understand that intentionally causing collisions results in disqualification.",
             btnSubmit: "Submit application",
@@ -1226,7 +1290,7 @@
             statusFetching: "Fetching paddock status...",
             statusFull: "Main lineup full (22/22)",
             statusLeft: "{wolne} free slots left",
-            infoFull: "📋 All full-time seats (22/22) are occupied. Registration is currently open only for reserve drivers.",
+            infoFull: "📋 All full-time seats in {split} (22/22) are occupied. Registration in this split is currently open only for reserve drivers.",
             counterFull: "(lineup full · 0 free slots)",
             counterLeft: "({wolne} free slots in main lineup)",
             alertClosed: "Registration opens on {data}. Time left:",
@@ -1234,7 +1298,7 @@
             errDiscord: "❌ This Discord ID has already submitted an application.",
             btnSaving: "SAVING IN DATABASE...",
 
-            successReg: "✅ Successfully registered driver profile as: {rola}.",
+            successReg: "✅ Successfully registered driver profile as: {rola} ({split}).",
             reserveBadge: "Optional",
             lblReserveInterest: "I am interested in racing in the main split if a slot opens up in the main lineup."
         }
@@ -1574,6 +1638,22 @@
         fetch(countdownWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) }).catch(err => console.warn(err));
     }
 
+    const MAX_MAIN_SEATS = 22;
+
+    document.getElementById('driverRole').addEventListener('change', function() {
+        const group = document.getElementById('reserveInterestGroup');
+        if (this.value === "Rezerwowy") {
+            group.classList.add('visible');
+        } else {
+            group.classList.remove('visible');
+            document.getElementById('reserveInterestMain').checked = false;
+        }
+    });
+
+    document.getElementById('driverSplit').addEventListener('change', function() {
+        updateGridSlotsTracker();
+    });
+
     document.addEventListener("DOMContentLoaded", () => {
         initTheme();
         initLanguage();
@@ -1601,18 +1681,52 @@
         }
     }
 
-    function updateGridSlotsTracker() {
-        const percentage = 100;
-        document.getElementById('liveTrackerBar').style.width = `${percentage}%`;
-        
-        const trackerText = document.getElementById('liveTrackerText');
-        const infoAlert = document.getElementById('infoAlert');
-        const freeSlotsCounter = document.getElementById('freeSlotsCounter');
+    function getSplitStats(split) {
+        const mainCount = globalDriversList.filter(d => d.driverStatus === "Główny" && d.split === split).length;
+        const freeSlots = Math.max(MAX_MAIN_SEATS - mainCount, 0);
+        const percentage = Math.min((mainCount / MAX_MAIN_SEATS) * 100, 100);
+        return { mainCount, freeSlots, percentage };
+    }
 
-        const freeSlots = '∞';
-        trackerText.innerHTML = `<span style="color:var(--success-green); font-weight:700;">${langData[currentLang].statusLeft.replace('{wolne}', freeSlots)}</span>`;
-        infoAlert.style.display = 'none';
-        if (freeSlotsCounter) freeSlotsCounter.innerHTML = langData[currentLang].counterLeft.replace('{wolne}', freeSlots);
+    function renderSplitTracker(split, suffix) {
+        const stats = getSplitStats(split);
+        const bar = document.getElementById(`liveTrackerBar${suffix}`);
+        const text = document.getElementById(`liveTrackerText${suffix}`);
+        if (bar) bar.style.width = `${stats.percentage}%`;
+        if (text) {
+            if (stats.freeSlots <= 0) {
+                text.innerHTML = `<span style="color:var(--f1-red); font-weight:700;">${langData[currentLang].statusFull}</span>`;
+            } else {
+                text.innerHTML = `<span style="color:var(--success-green); font-weight:700;">${langData[currentLang].statusLeft.replace('{wolne}', stats.freeSlots)}</span>`;
+            }
+        }
+        return stats;
+    }
+
+    function updateGridSlotsTracker() {
+        const statsBySplit = {
+            "Split 2": renderSplitTracker("Split 2", "S2")
+        };
+
+        const infoAlert = document.getElementById('infoAlert');
+        const driverRoleSelect = document.getElementById('driverRole');
+        const driverSplitSelect = document.getElementById('driverSplit');
+        const mainOption = driverRoleSelect ? driverRoleSelect.querySelector('option[value="Główny"]') : null;
+        const selectedSplit = driverSplitSelect ? driverSplitSelect.value : "Split 2";
+        const selectedStats = statsBySplit[selectedSplit] || statsBySplit["Split 2"];
+
+        if (selectedStats.freeSlots <= 0) {
+            infoAlert.innerText = langData[currentLang].infoFull.replace('{split}', selectedSplit);
+            infoAlert.style.display = 'block';
+            if (mainOption) mainOption.disabled = true;
+            if (driverRoleSelect && driverRoleSelect.value === "Główny") {
+                driverRoleSelect.value = "Rezerwowy";
+                driverRoleSelect.dispatchEvent(new Event('change'));
+            }
+        } else {
+            infoAlert.style.display = 'none';
+            if (mainOption) mainOption.disabled = false;
+        }
     }
 
     document.getElementById('registrationForm').addEventListener('submit', async function(e) {
@@ -1621,6 +1735,7 @@
         const successAlert = document.getElementById('successAlert');
         const errorAlert = document.getElementById('errorAlert');
         const driverStatus = document.getElementById('driverRole').value;
+        const driverSplit = document.getElementById('driverSplit').value;
         
         const firstname = document.getElementById('firstname').value.trim();
         const lastname = document.getElementById('lastname').value.trim();
@@ -1641,6 +1756,14 @@
             return;
         }
 
+        if (driverStatus === "Główny" && globalDriversList.filter(d => d.driverStatus === "Główny" && d.split === driverSplit).length >= MAX_MAIN_SEATS) {
+            errorAlert.innerText = langData[currentLang].infoFull.replace('{split}', driverSplit);
+            errorAlert.style.display = 'block';
+            updateGridSlotsTracker();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
         submitBtn.disabled = true;
 
         submitBtn.innerText = langData[currentLang].btnSaving;
@@ -1656,16 +1779,18 @@
             device: document.querySelector('input[name="input_device"]:checked').value, 
             asysty: document.getElementById('asysty').value, 
             driverStatus,
+            split: driverSplit,
             reserveWantsMain: reserveWantsMain || false
         };
 
         fetch(`${firebaseBaseUrl}drivers.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newDriver) })
         .then(res => { if (!res.ok) throw new Error(); return res.json(); })
         .then(async (data) => {
-            successAlert.innerText = langData[currentLang].successReg.replace('{rola}', currentLang === 'pl' ? 'Rezerwowy' : 'Reserve');
+            const rolaLabel = driverStatus === "Główny" ? (currentLang === 'pl' ? 'Główny' : 'Main') : (currentLang === 'pl' ? 'Rezerwowy' : 'Reserve');
+            successAlert.innerText = langData[currentLang].successReg.replace('{rola}', rolaLabel).replace('{split}', driverSplit);
             successAlert.style.display = 'block';
             errorAlert.style.display = 'none';
-            await sendDiscordNotification(data.name, driverStatus, gamertag, discordTag, firstname, lastname, newDriver.platform, newDriver.device, newDriver.asysty, newDriver.reserveWantsMain, false, null);
+            await sendDiscordNotification(data.name, driverStatus, gamertag, discordTag, firstname, lastname, newDriver.platform, newDriver.device, newDriver.asysty, newDriver.reserveWantsMain, false, null, driverSplit);
             document.getElementById('registrationForm').reset();
             fetchDriversFromFirebase();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1693,27 +1818,37 @@
 
     function calculateDashboardStats() {
         document.getElementById('dashTotal').innerText = `${globalDriversList.length} kierowców`;
-        document.getElementById('dashStatusSplit').innerText = `Rezerwa: ${globalDriversList.filter(d => d.driverStatus === "Rezerwowy").length}`;
+        document.getElementById('dashStatusSplit').innerText = `Główni: ${globalDriversList.filter(d => d.driverStatus === "Główny").length} / Rezerwa: ${globalDriversList.filter(d => d.driverStatus === "Rezerwowy").length}`;
+        const s2Main = globalDriversList.filter(d => d.driverStatus === "Główny" && d.split === "Split 2").length;
+        const s2Reserve = globalDriversList.filter(d => d.driverStatus === "Rezerwowy" && d.split === "Split 2").length;
+        document.getElementById('dashSplit2').innerText = `${s2Main}/${MAX_MAIN_SEATS} · Rez: ${s2Reserve}`;
         document.getElementById('dashHardware').innerText = `Kierownica: ${globalDriversList.filter(d => d.device === "Kierownica").length} | Pad: ${globalDriversList.filter(d => d.device === "Pad").length}`;
         document.getElementById('dashPlatforms').innerText = `PC: ${globalDriversList.filter(d => d.platform === "PC").length} | PS5: ${globalDriversList.filter(d => d.platform === "PS5").length} | XBX: ${globalDriversList.filter(d => d.platform === "Xbox").length}`;
     }
 
-    function renderAdminTable(filterText = '') {
+    function renderAdminTable(filterText = '', splitFilter = '') {
         const tbody = document.getElementById('adminTableBody'); tbody.innerHTML = '';
-        if (globalDriversList.length === 0) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color:var(--text-muted); font-weight:600;">Baza danych jest pusta.</td></tr>`; return; }
+        if (globalDriversList.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 30px; color:var(--text-muted); font-weight:600;">Baza danych jest pusta.</td></tr>`; return; }
         const lowerFilter = filterText.toLowerCase();
-        globalDriversList.filter(d => d.gamertag.toLowerCase().includes(lowerFilter) || d.firstname.toLowerCase().includes(lowerFilter) || d.lastname.toLowerCase().includes(lowerFilter)).forEach((driver) => {
+        const filtered = globalDriversList.filter(d =>
+            (d.gamertag.toLowerCase().includes(lowerFilter) || d.firstname.toLowerCase().includes(lowerFilter) || d.lastname.toLowerCase().includes(lowerFilter)) &&
+            (!splitFilter || d.split === splitFilter)
+        );
+        if (filtered.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 30px; color:var(--text-muted); font-weight:600;">Brak wyników dla podanych filtrów.</td></tr>`; return; }
+        filtered.forEach((driver) => {
             const tr = document.createElement('tr');
             
             const splitBadge = driver.driverStatus === "Rezerwowy" && driver.reserveWantsMain
                 ? '<span style="color:#fb923c; font-weight:700;">✅ Tak</span>'
                 : driver.driverStatus === "Rezerwowy" ? '<span style="color:var(--text-muted); font-weight:600;">❌ Nie</span>' : '<span style="color:var(--text-muted); font-size:0.8rem;">N/D</span>';
-            tr.innerHTML = `<td><span class="badge ${driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve"}">${driver.driverStatus}</span></td><td><div>${driver.firstname} ${driver.lastname}</div></td><td><strong>${driver.gamertag}</strong></td><td><span style="font-family:monospace; font-weight:600;">${driver.discordTag}</span></td><td>${driver.platform} (${driver.device})</td><td>${splitBadge}</td><td style="display:flex; gap:6px;"><button class="btn-admin" style="padding:6px 12px; font-size:0.75rem;" onclick="openEditModal('${driver.id}')">✏️ Edytuj</button><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>`;
+            const splitLabel = driver.split || "Split 2";
+            const splitClass = splitLabel === "Split 2" ? "badge-split2" : "badge-split1";
+            tr.innerHTML = `<td><span class="badge ${driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve"}">${driver.driverStatus}</span></td><td><span class="badge ${splitClass}">${splitLabel}</span></td><td><div>${driver.firstname} ${driver.lastname}</div></td><td><strong>${driver.gamertag}</strong></td><td><span style="font-family:monospace; font-weight:600;">${driver.discordTag}</span></td><td>${driver.platform} (${driver.device})</td><td>${splitBadge}</td><td style="display:flex; gap:6px;"><button class="btn-admin" style="padding:6px 12px; font-size:0.75rem;" onclick="openEditModal('${driver.id}')">✏️ Edytuj</button><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>`;
             tbody.appendChild(tr);
         });
     }
 
-    function filterAdminTable() { renderAdminTable(document.getElementById('adminSearch').value); }
+    function filterAdminTable() { renderAdminTable(document.getElementById('adminSearch').value, document.getElementById('adminSplitFilter').value); }
     function deleteDriver(id, tag) { if(confirm(`Usunąć kierowcę ${tag}?`)) { fetch(`${firebaseBaseUrl}drivers/${id}.json`, { method: 'DELETE' }).then(() => fetchDriversFromFirebase()); } }
 
     let editingDriverId = null;
