@@ -942,17 +942,18 @@
     <div id="successAlert" class="success-message"></div>
     <div id="errorAlert" class="error-message"></div>
     <div id="infoAlert" class="info-message"></div>
+    <div class="error-message" id="allClosedNotice" data-i18n="allClosedInfo" style="display:none;">🔒 Zapisy są obecnie zamknięte. Żadna rola (Split 1 / Split 2 / Rezerwa) nie jest teraz dostępna.</div>
 
     <form id="registrationForm">
         <div class="grid-2">
-            <div class="form-group">
+            <div class="form-group" id="driverRoleGroup">
                 <label for="driverRole" data-i18n="lblRole">Typ Zgłoszenia / Rola</label>
                 <select id="driverRole" required>
                     <option value="Główny" data-i18n="optMain">Kierowca Podstawowy (Stały etat)</option>
                     <option value="Rezerwowy" data-i18n="optReserve" id="driverRoleOptionReserve">Kierowca Rezerwowy (Okazyjne starty)</option>
                 </select>
             </div>
-            <div class="form-group">
+            <div class="form-group" id="driverSplitGroup">
                 <label for="driverSplit" data-i18n="lblSplit">Split</label>
                 <select id="driverSplit" required>
                     <option value="Split 1" data-i18n="optSplit1" id="driverSplitOption1" hidden disabled>Split 1</option>
@@ -960,6 +961,7 @@
                 </select>
             </div>
         </div>
+        <div class="info-message" id="reserveOnlyNotice" data-i18n="reserveOnlyInfo" style="display:none; margin-bottom: 18px;">⭐ Obecnie otwarte są zapisy wyłącznie na Kierowcę Rezerwowego.</div>
 
         <div class="grid-2">
             <div class="form-group">
@@ -1099,6 +1101,10 @@
             <div class="admin-unlock-section">
                 <h3>🔀 Ustawienia Splitów i Rezerwy</h3>
                 <div class="unlock-controls" style="align-items:flex-start; flex-direction:column; gap:14px;">
+                    <label class="split-toggle-label" for="allSectionsToggle" style="border-bottom:1px dashed var(--glass-border); padding-bottom:14px; margin-bottom:2px; width:100%;">
+                        <input type="checkbox" id="allSectionsToggle" onchange="setAllSectionsEnabled(this.checked)">
+                        <span>🟢 Włącz / wyłącz wszystko na raz (Split 1 + Split 2 + Rezerwa)</span>
+                    </label>
                     <label class="split-toggle-label" for="split1EnabledToggle">
                         <input type="checkbox" id="split1EnabledToggle" onchange="setSectionEnabled('split1', this.checked)">
                         <span>🔴 Włącz zapisy do Split 1</span>
@@ -1303,7 +1309,9 @@
 
             successReg: "✅ Pomyślnie zarejestrowano profil kierowcy z rolą: {rola} ({split}).",
             reserveBadge: "Opcjonalne",
-            lblReserveInterest: "Jestem zainteresowany/a jazdą w głównym splicie, jeśli zwolni się miejsce w składzie podstawowym."
+            lblReserveInterest: "Jestem zainteresowany/a jazdą w głównym splicie, jeśli zwolni się miejsce w składzie podstawowym.",
+            reserveOnlyInfo: "⭐ Obecnie otwarte są zapisy wyłącznie na Kierowcę Rezerwowego.",
+            allClosedInfo: "🔒 Zapisy są obecnie zamknięte. Żadna rola (Split 1 / Split 2 / Rezerwa) nie jest teraz dostępna."
         },
         en: {
             headerTitle: "Registration Form",
@@ -1357,7 +1365,9 @@
 
             successReg: "✅ Successfully registered driver profile as: {rola} ({split}).",
             reserveBadge: "Optional",
-            lblReserveInterest: "I am interested in racing in the main split if a slot opens up in the main lineup."
+            lblReserveInterest: "I am interested in racing in the main split if a slot opens up in the main lineup.",
+            reserveOnlyInfo: "⭐ Registration is currently open only for Reserve Drivers.",
+            allClosedInfo: "🔒 Registration is currently closed. No role (Split 1 / Split 2 / Reserve) is available right now."
         }
     };
 
@@ -1451,6 +1461,7 @@
         if (lockDateStr) {
             const lockTime = new Date(lockDateStr).getTime();
             if (now >= lockTime) {
+                dateRegistrationClosed = true;
                 overlay.classList.remove('visible');
                 closedOverlay.classList.add('visible');
                 form.style.display = 'none';
@@ -1467,25 +1478,30 @@
 
         // 2. Check if registration hasn't opened yet
         if (!unlockDateStr) {
+            dateRegistrationClosed = false;
             overlay.classList.remove('visible');
             closedOverlay.classList.remove('visible');
             form.style.display = '';
             submitBtn.disabled = false;
             clearInterval(countdownInterval);
+            updateFormBlockedState();
             return;
         }
 
         const unlockTime = new Date(unlockDateStr).getTime();
 
         if (now >= unlockTime) {
+            dateRegistrationClosed = false;
             overlay.classList.remove('visible');
             closedOverlay.classList.remove('visible');
             form.style.display = '';
             submitBtn.disabled = false;
             clearInterval(countdownInterval);
             triggerAutomaticOpenNotification();
+            updateFormBlockedState();
             return;
         } else {
+            dateRegistrationClosed = true;
             overlay.classList.add('visible');
             closedOverlay.classList.remove('visible');
             form.style.display = 'none';
@@ -1500,9 +1516,11 @@
                 const remaining = new Date(unlockDateStr).getTime() - Date.now();
                 if (remaining <= 0) {
                     clearInterval(countdownInterval);
+                    dateRegistrationClosed = false;
                     overlay.classList.remove('visible');
                     form.style.display = '';
                     triggerAutomaticOpenNotification();
+                    updateFormBlockedState();
                     return;
                 }
                 const d = Math.floor(remaining / (1000 * 60 * 60 * 24));
@@ -1715,6 +1733,7 @@
     let split1Enabled = false;
     let split2Enabled = true;
     let reserveEnabled = true;
+    let dateRegistrationClosed = false; // true, gdy formularz jest zablokowany przez harmonogram (data otwarcia/zamknięcia)
 
     const SECTION_SETTINGS_KEY = { split1: 'split1Enabled', split2: 'split2Enabled', reserve: 'reserveEnabled' };
     const SECTION_TOGGLE_ID = { split1: 'split1EnabledToggle', split2: 'split2EnabledToggle', reserve: 'reserveEnabledToggle' };
@@ -1758,11 +1777,30 @@
         const reserveOption = document.getElementById('driverRoleOptionReserve');
         if (reserveOption) { reserveOption.hidden = !reserve; reserveOption.disabled = !reserve; }
 
+        // Tryb "tylko rezerwa": gdy oba splity są wyłączone, a rezerwa włączona,
+        // nie ma innej możliwości wyboru niż "Rezerwowy" — pola roli i splitu chowamy i ustawiamy automatycznie.
+        const reserveOnlyMode = reserve && !split1 && !split2;
+        const driverRoleGroup = document.getElementById('driverRoleGroup');
+        const driverSplitGroup = document.getElementById('driverSplitGroup');
+        const reserveOnlyNotice = document.getElementById('reserveOnlyNotice');
+        const driverRoleSelectEl = document.getElementById('driverRole');
+        if (driverRoleGroup) driverRoleGroup.style.display = reserveOnlyMode ? 'none' : '';
+        if (driverSplitGroup) driverSplitGroup.style.display = reserveOnlyMode ? 'none' : '';
+        if (reserveOnlyNotice) reserveOnlyNotice.style.display = reserveOnlyMode ? 'block' : 'none';
+        if (reserveOnlyMode && driverRoleSelectEl && driverRoleSelectEl.value !== "Rezerwowy") {
+            driverRoleSelectEl.value = "Rezerwowy";
+            driverRoleSelectEl.dispatchEvent(new Event('change'));
+        }
+
         // Aktualizacja checkboxów w panelu admina.
         Object.entries(SECTION_TOGGLE_ID).forEach(([key, id]) => {
             const toggle = document.getElementById(id);
             if (toggle) toggle.checked = key === 'split1' ? split1 : key === 'split2' ? split2 : reserve;
         });
+
+        // Przełącznik zbiorczy "wszystko na raz" jest zaznaczony tylko, gdy WSZYSTKIE trzy sekcje są włączone.
+        const masterToggle = document.getElementById('allSectionsToggle');
+        if (masterToggle) masterToggle.checked = split1 && split2 && reserve;
 
         // Tekst informacyjny.
         const info = document.getElementById('currentSplitsInfo');
@@ -1794,6 +1832,24 @@
         }
 
         updateGridSlotsTracker();
+        updateFormBlockedState();
+    }
+
+    // Blokuje/odblokowuje główny formularz, gdy WSZYSTKIE sekcje (Split 1, Split 2, Rezerwa)
+    // są wyłączone — czyli nie ma żadnej roli/splitu, na który można się zapisać.
+    // Nie nadpisuje blokady wynikającej z harmonogramu (data otwarcia/zamknięcia) —
+    // ta ma priorytet i jest zarządzana przez checkRegistrationLock().
+    function updateFormBlockedState() {
+        if (dateRegistrationClosed) return;
+
+        const form = document.getElementById('registrationForm');
+        const notice = document.getElementById('allClosedNotice');
+        const submitBtn = document.getElementById('submitBtn');
+        const allClosed = !split1Enabled && !split2Enabled && !reserveEnabled;
+
+        if (form) form.style.display = allClosed ? 'none' : '';
+        if (notice) notice.style.display = allClosed ? 'block' : 'none';
+        if (submitBtn) submitBtn.disabled = allClosed;
     }
 
     async function setSectionEnabled(section, enabled) {
@@ -1811,6 +1867,27 @@
             const labels = { split1: 'Split 1', split2: 'Split 2', reserve: 'Rezerwa' };
             alert(enabled ? `✅ ${labels[section]} został włączony.` : `✅ ${labels[section]} został wyłączony.`);
         } catch {
+            alert("❌ Błąd zapisu ustawienia do bazy danych.");
+        }
+    }
+
+    // Master-switch: włącza lub wyłącza Split 1, Split 2 i Rezerwę jednocześnie, jednym kliknięciem.
+    async function setAllSectionsEnabled(enabled) {
+        const masterToggle = document.getElementById('allSectionsToggle');
+        try {
+            await Promise.all(
+                Object.values(SECTION_SETTINGS_KEY).map(key =>
+                    fetch(`${firebaseBaseUrl}settings/${key}.json`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(enabled)
+                    })
+                )
+            );
+            applySectionSettingsUI({ split1: enabled, split2: enabled, reserve: enabled });
+            alert(enabled ? "✅ Wszystkie zapisy (Split 1 + Split 2 + Rezerwa) zostały włączone." : "🔒 Wszystkie zapisy (Split 1 + Split 2 + Rezerwa) zostały wyłączone.");
+        } catch {
+            if (masterToggle) masterToggle.checked = !enabled;
             alert("❌ Błąd zapisu ustawienia do bazy danych.");
         }
     }
