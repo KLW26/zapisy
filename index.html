@@ -197,6 +197,23 @@
             color: #5bb0ff;
         }
 
+        .split-toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .split-toggle-label input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--admin-blue);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
         .badge-split1 { background: rgba(225, 6, 0, 0.12); color: var(--f1-red); border: 1px solid rgba(225, 6, 0, 0.35); }
         .badge-split2 { background: rgba(0, 99, 229, 0.12); color: #5bb0ff; border: 1px solid rgba(0, 99, 229, 0.35); }
         [data-theme="light"] .badge-split1 { background: #fef2f2; color: #b91c1c; border: 1px solid #b91c1c; }
@@ -900,7 +917,17 @@
     </header>
 
     <div class="grid-status-tracker">
-        <div class="split-tracker-block">
+        <div class="split-tracker-block" id="split1TrackerBlock" style="display:none;">
+            <div class="split-tracker-heading" data-i18n="split1Heading">🔴 Split 1</div>
+            <div class="tracker-info">
+                <span data-i18n="trackerLabel">Fotele w składzie głównym</span>
+                <span id="liveTrackerTextS1">Pobieranie statusu padoku...</span>
+            </div>
+            <div class="tracker-bar-bg">
+                <div id="liveTrackerBarS1" class="tracker-bar-fill"></div>
+            </div>
+        </div>
+        <div class="split-tracker-block" id="split2TrackerBlock">
             <div class="split-tracker-heading" data-i18n="split2Heading">🔵 Split 2</div>
             <div class="tracker-info">
                 <span data-i18n="trackerLabel">Fotele w składzie głównym</span>
@@ -922,13 +949,14 @@
                 <label for="driverRole" data-i18n="lblRole">Typ Zgłoszenia / Rola</label>
                 <select id="driverRole" required>
                     <option value="Główny" data-i18n="optMain">Kierowca Podstawowy (Stały etat)</option>
-                    <option value="Rezerwowy" data-i18n="optReserve">Kierowca Rezerwowy (Okazyjne starty)</option>
+                    <option value="Rezerwowy" data-i18n="optReserve" id="driverRoleOptionReserve">Kierowca Rezerwowy (Okazyjne starty)</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="driverSplit" data-i18n="lblSplit">Split</label>
                 <select id="driverSplit" required>
-                    <option value="Split 2" data-i18n="optSplit2">Split 2</option>
+                    <option value="Split 1" data-i18n="optSplit1" id="driverSplitOption1" hidden disabled>Split 1</option>
+                    <option value="Split 2" data-i18n="optSplit2" id="driverSplitOption2">Split 2</option>
                 </select>
             </div>
         </div>
@@ -1011,6 +1039,7 @@
                     <input type="text" id="adminSearch" placeholder="Szukaj kierowcy, roli, platformy..." onkeyup="filterAdminTable()">
                     <select id="adminSplitFilter" onchange="filterAdminTable()" style="width:auto; padding:12px 16px; background:var(--input-bg); border:1px solid var(--input-border); border-radius:12px; color:var(--text-light);">
                         <option value="">Wszystkie splity</option>
+                        <option value="Split 1">Split 1</option>
                         <option value="Split 2">Split 2</option>
                     </select>
                 </div>
@@ -1024,6 +1053,10 @@
                 <div class="dash-box">
                     <div class="dash-box-title">Podział składu (Główni / Rezerwa)</div>
                     <div class="dash-box-value" id="dashStatusSplit">Główni: 0 / Rezerwa: 0</div>
+                </div>
+                <div class="dash-box">
+                    <div class="dash-box-title">🔴 Split 1 (Główni / Rezerwa)</div>
+                    <div class="dash-box-value" id="dashSplit1" style="font-size:1.3rem;">0/22 · 0</div>
                 </div>
                 <div class="dash-box">
                     <div class="dash-box-title">🔵 Split 2 (Główni / Rezerwa)</div>
@@ -1061,6 +1094,25 @@
             <div class="admin-actions">
                 <button class="btn-admin" onclick="exportToTXT()">Eksportuj do .txt</button>
                 <button class="btn-admin btn-danger" onclick="clearAllDrivers()">Reset Sezonu</button>
+            </div>
+
+            <div class="admin-unlock-section">
+                <h3>🔀 Ustawienia Splitów i Rezerwy</h3>
+                <div class="unlock-controls" style="align-items:flex-start; flex-direction:column; gap:14px;">
+                    <label class="split-toggle-label" for="split1EnabledToggle">
+                        <input type="checkbox" id="split1EnabledToggle" onchange="setSectionEnabled('split1', this.checked)">
+                        <span>🔴 Włącz zapisy do Split 1</span>
+                    </label>
+                    <label class="split-toggle-label" for="split2EnabledToggle">
+                        <input type="checkbox" id="split2EnabledToggle" onchange="setSectionEnabled('split2', this.checked)">
+                        <span>🔵 Włącz zapisy do Split 2</span>
+                    </label>
+                    <label class="split-toggle-label" for="reserveEnabledToggle">
+                        <input type="checkbox" id="reserveEnabledToggle" onchange="setSectionEnabled('reserve', this.checked)">
+                        <span>⭐ Włącz zapisy na Kierowcę Rezerwowego (globalnie, oba splity)</span>
+                    </label>
+                </div>
+                <div class="current-unlock-info" id="currentSplitsInfo">Aktualnie: <span>tylko Split 2 jest dostępny w formularzu zapisów</span></div>
             </div>
 
             <div class="admin-unlock-section">
@@ -1105,6 +1157,7 @@
                 <div class="form-group">
                     <label for="editDriverSplit">Split</label>
                     <select id="editDriverSplit">
+                        <option value="Split 1">Split 1</option>
                         <option value="Split 2">Split 2</option>
                     </select>
                 </div>
@@ -1224,7 +1277,9 @@
             lblWheel: "Kierownica",
             lblPad: "Pad",
             lblSplit: "Split",
+            optSplit1: "Split 1",
             optSplit2: "Split 2",
+            split1Heading: "🔴 Split 1",
             split2Heading: "🔵 Split 2",
 
             lblRules: "Akceptuję regulamin ligi i zobowiązuję się do czystej jazdy na torze. Rozumiem, że celowe powodowanie kolizji grozi dyskwalifikacją.",
@@ -1276,7 +1331,9 @@
             lblWheel: "Wheel",
             lblPad: "Pad",
             lblSplit: "Split",
+            optSplit1: "Split 1",
             optSplit2: "Split 2",
+            split1Heading: "🔴 Split 1",
             split2Heading: "🔵 Split 2",
 
             lblRules: "I accept the league regulations and commit to clean racing on track. I understand that intentionally causing collisions results in disqualification.",
@@ -1654,10 +1711,117 @@
         updateGridSlotsTracker();
     });
 
-    document.addEventListener("DOMContentLoaded", () => {
+    // Trzy niezależne przełączniki: Split 1, Split 2, Rezerwa (globalnie dla obu splitów).
+    let split1Enabled = false;
+    let split2Enabled = true;
+    let reserveEnabled = true;
+
+    const SECTION_SETTINGS_KEY = { split1: 'split1Enabled', split2: 'split2Enabled', reserve: 'reserveEnabled' };
+    const SECTION_TOGGLE_ID = { split1: 'split1EnabledToggle', split2: 'split2EnabledToggle', reserve: 'reserveEnabledToggle' };
+    const SECTION_DEFAULT = { split1: false, split2: true, reserve: true };
+
+    async function fetchSectionSetting(section) {
+        try {
+            const res = await fetch(`${firebaseBaseUrl}settings/${SECTION_SETTINGS_KEY[section]}.json`);
+            const val = await res.json();
+            return val === null || val === undefined ? SECTION_DEFAULT[section] : val === true;
+        } catch { return SECTION_DEFAULT[section]; }
+    }
+
+    async function fetchAllSectionSettings() {
+        const [s1, s2, res] = await Promise.all([
+            fetchSectionSetting('split1'),
+            fetchSectionSetting('split2'),
+            fetchSectionSetting('reserve')
+        ]);
+        return { split1: s1, split2: s2, reserve: res };
+    }
+
+    function applySectionSettingsUI({ split1, split2, reserve }) {
+        split1Enabled = split1;
+        split2Enabled = split2;
+        reserveEnabled = reserve;
+
+        // Split 1: opcja w selektorze splitu + blok trackera na górze strony.
+        const option1 = document.getElementById('driverSplitOption1');
+        if (option1) { option1.hidden = !split1; option1.disabled = !split1; }
+        const block1 = document.getElementById('split1TrackerBlock');
+        if (block1) block1.style.display = split1 ? '' : 'none';
+
+        // Split 2: opcja w selektorze splitu + blok trackera na górze strony.
+        const option2 = document.getElementById('driverSplitOption2');
+        if (option2) { option2.hidden = !split2; option2.disabled = !split2; }
+        const block2 = document.getElementById('split2TrackerBlock');
+        if (block2) block2.style.display = split2 ? '' : 'none';
+
+        // Rezerwa: opcja roli w formularzu, globalnie dla obu splitów.
+        const reserveOption = document.getElementById('driverRoleOptionReserve');
+        if (reserveOption) { reserveOption.hidden = !reserve; reserveOption.disabled = !reserve; }
+
+        // Aktualizacja checkboxów w panelu admina.
+        Object.entries(SECTION_TOGGLE_ID).forEach(([key, id]) => {
+            const toggle = document.getElementById(id);
+            if (toggle) toggle.checked = key === 'split1' ? split1 : key === 'split2' ? split2 : reserve;
+        });
+
+        // Tekst informacyjny.
+        const info = document.getElementById('currentSplitsInfo');
+        if (info) {
+            const parts = [];
+            parts.push(split1 ? '✅ Split 1 otwarty' : '❌ Split 1 zamknięty');
+            parts.push(split2 ? '✅ Split 2 otwarty' : '❌ Split 2 zamknięty');
+            parts.push(reserve ? '✅ Rezerwa otwarta' : '❌ Rezerwa zamknięta');
+            info.innerHTML = `Aktualnie: <span>${parts.join(' &nbsp;|&nbsp; ')}</span>`;
+        }
+
+        // Jeśli wybrany split właśnie został wyłączony, przełącz na dostępny.
+        const driverSplitSelect = document.getElementById('driverSplit');
+        if (driverSplitSelect) {
+            if (driverSplitSelect.value === "Split 1" && !split1) {
+                driverSplitSelect.value = split2 ? "Split 2" : "Split 1";
+                driverSplitSelect.dispatchEvent(new Event('change'));
+            } else if (driverSplitSelect.value === "Split 2" && !split2) {
+                driverSplitSelect.value = split1 ? "Split 1" : "Split 2";
+                driverSplitSelect.dispatchEvent(new Event('change'));
+            }
+        }
+
+        // Jeśli rola "Rezerwowy" jest wybrana, a rezerwa właśnie została wyłączona, wróć do "Główny".
+        const driverRoleSelect = document.getElementById('driverRole');
+        if (driverRoleSelect && !reserve && driverRoleSelect.value === "Rezerwowy") {
+            driverRoleSelect.value = "Główny";
+            driverRoleSelect.dispatchEvent(new Event('change'));
+        }
+
+        updateGridSlotsTracker();
+    }
+
+    async function setSectionEnabled(section, enabled) {
+        try {
+            await fetch(`${firebaseBaseUrl}settings/${SECTION_SETTINGS_KEY[section]}.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(enabled)
+            });
+            applySectionSettingsUI({
+                split1: section === 'split1' ? enabled : split1Enabled,
+                split2: section === 'split2' ? enabled : split2Enabled,
+                reserve: section === 'reserve' ? enabled : reserveEnabled
+            });
+            const labels = { split1: 'Split 1', split2: 'Split 2', reserve: 'Rezerwa' };
+            alert(enabled ? `✅ ${labels[section]} został włączony.` : `✅ ${labels[section]} został wyłączony.`);
+        } catch {
+            alert("❌ Błąd zapisu ustawienia do bazy danych.");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
         initTheme();
         initLanguage();
-        document.getElementById('liveTrackerText').innerHTML = `<span style="color:var(--text-muted);">${langData[currentLang].statusFetching}</span>`;
+        document.getElementById('liveTrackerTextS2').innerHTML = `<span style="color:var(--text-muted);">${langData[currentLang].statusFetching}</span>`;
+        document.getElementById('liveTrackerTextS1').innerHTML = `<span style="color:var(--text-muted);">${langData[currentLang].statusFetching}</span>`;
+        const settings = await fetchAllSectionSettings();
+        applySectionSettingsUI(settings);
         fetchDriversFromFirebase();
         checkRegistrationLock();
     });
@@ -1704,22 +1868,24 @@
     }
 
     function updateGridSlotsTracker() {
-        const statsBySplit = {
-            "Split 2": renderSplitTracker("Split 2", "S2")
-        };
+        const statsBySplit = {};
+        if (split2Enabled) statsBySplit["Split 2"] = renderSplitTracker("Split 2", "S2");
+        if (split1Enabled) statsBySplit["Split 1"] = renderSplitTracker("Split 1", "S1");
 
         const infoAlert = document.getElementById('infoAlert');
         const driverRoleSelect = document.getElementById('driverRole');
         const driverSplitSelect = document.getElementById('driverSplit');
         const mainOption = driverRoleSelect ? driverRoleSelect.querySelector('option[value="Główny"]') : null;
         const selectedSplit = driverSplitSelect ? driverSplitSelect.value : "Split 2";
-        const selectedStats = statsBySplit[selectedSplit] || statsBySplit["Split 2"];
+        const selectedStats = statsBySplit[selectedSplit] || statsBySplit["Split 2"] || statsBySplit["Split 1"];
+
+        if (!selectedStats) { infoAlert.style.display = 'none'; return; }
 
         if (selectedStats.freeSlots <= 0) {
             infoAlert.innerText = langData[currentLang].infoFull.replace('{split}', selectedSplit);
             infoAlert.style.display = 'block';
             if (mainOption) mainOption.disabled = true;
-            if (driverRoleSelect && driverRoleSelect.value === "Główny") {
+            if (driverRoleSelect && driverRoleSelect.value === "Główny" && reserveEnabled) {
                 driverRoleSelect.value = "Rezerwowy";
                 driverRoleSelect.dispatchEvent(new Event('change'));
             }
@@ -1819,6 +1985,9 @@
     function calculateDashboardStats() {
         document.getElementById('dashTotal').innerText = `${globalDriversList.length} kierowców`;
         document.getElementById('dashStatusSplit').innerText = `Główni: ${globalDriversList.filter(d => d.driverStatus === "Główny").length} / Rezerwa: ${globalDriversList.filter(d => d.driverStatus === "Rezerwowy").length}`;
+        const s1Main = globalDriversList.filter(d => d.driverStatus === "Główny" && d.split === "Split 1").length;
+        const s1Reserve = globalDriversList.filter(d => d.driverStatus === "Rezerwowy" && d.split === "Split 1").length;
+        document.getElementById('dashSplit1').innerText = `${s1Main}/${MAX_MAIN_SEATS} · Rez: ${s1Reserve}`;
         const s2Main = globalDriversList.filter(d => d.driverStatus === "Główny" && d.split === "Split 2").length;
         const s2Reserve = globalDriversList.filter(d => d.driverStatus === "Rezerwowy" && d.split === "Split 2").length;
         document.getElementById('dashSplit2').innerText = `${s2Main}/${MAX_MAIN_SEATS} · Rez: ${s2Reserve}`;
@@ -1870,6 +2039,7 @@
         editingDriverId = id;
 
         document.getElementById('editDriverRole').value = driver.driverStatus;
+        document.getElementById('editDriverSplit').value = driver.split || "Split 2";
         document.getElementById('editFirstname').value = driver.firstname;
         document.getElementById('editLastname').value = driver.lastname;
         document.getElementById('editGamertag').value = driver.gamertag;
@@ -1893,6 +2063,7 @@
         if (!editingDriverId) return;
 
         const driverStatus = document.getElementById('editDriverRole').value;
+        const driverSplit = document.getElementById('editDriverSplit').value;
         const firstname = document.getElementById('editFirstname').value.trim();
         const lastname = document.getElementById('editLastname').value.trim();
         const gamertag = document.getElementById('editGamertag').value.trim();
@@ -1923,20 +2094,20 @@
         const manualMessageId = manualIdMatch ? manualIdMatch[1] : null;
         const existingMessageId = manualMessageId || (existingDriver ? existingDriver.discordMessageId : null) || null;
 
-        const updatedDriver = { firstname, lastname, gamertag, discordTag, platform, device, asysty, driverStatus, reserveWantsMain: reserveWantsMain || false };
+        const updatedDriver = { firstname, lastname, gamertag, discordTag, platform, device, asysty, driverStatus, split: driverSplit, reserveWantsMain: reserveWantsMain || false };
         if (existingMessageId) updatedDriver.discordMessageId = existingMessageId;
 
         fetch(`${firebaseBaseUrl}drivers/${editingDriverId}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedDriver) })
             .then(res => { if (!res.ok) throw new Error(); return res.json(); })
             .then(async () => {
-                await sendDiscordNotification(editingDriverId, driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, updatedDriver.reserveWantsMain, true, existingMessageId);
+                await sendDiscordNotification(editingDriverId, driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, updatedDriver.reserveWantsMain, true, existingMessageId, driverSplit);
                 closeEditModal();
                 fetchDriversFromFirebase();
             })
             .catch(() => alert("❌ Wystąpił problem podczas zapisywania zmian."));
     }
 
-    async function sendDiscordNotification(driverId, driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, reserveWantsMain, isEdit = false, existingMessageId = null) {
+    async function sendDiscordNotification(driverId, driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, reserveWantsMain, isEdit = false, existingMessageId = null, driverSplit = "Split 2") {
         const isReserve = driverStatus === "Rezerwowy";
         const discordPayload = { 
             content: isEdit ? `✏️ Zaktualizowano zgłoszenie! Rola: **${driverStatus.toUpperCase()}**` : `🔔 Nowe zgłoszenie! Rola: **${driverStatus.toUpperCase()}**`, 
@@ -1945,7 +2116,7 @@
                 color: isEdit ? 3901635 : (driverStatus === "Główny" ? 3066993 : 15105570), 
                 fields: [
                     { name: "🎭 Rola", value: isReserve ? "⭐ Kierowca Rezerwowy" : "🏁 Kierowca Podstawowy", inline: true },
-                    { name: "🔵 Split", value: "Split 2", inline: true },
+                    { name: "🔵 Split", value: driverSplit, inline: true },
                     { name: "📱 Discord ID", value: `<@${discordTag}>`, inline: true }, 
                     { name: "👤 Kierowca", value: `${firstname} ${lastname}`, inline: true }, 
                     { name: "💻 Platforma", value: platform, inline: true }, 
