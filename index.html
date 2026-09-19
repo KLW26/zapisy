@@ -1793,7 +1793,9 @@
         const driverSplitGroup = document.getElementById('driverSplitGroup');
         const reserveOnlyNotice = document.getElementById('reserveOnlyNotice');
         const driverRoleSelectEl = document.getElementById('driverRole');
-        if (driverRoleGroup) driverRoleGroup.style.display = reserveOnlyMode ? 'none' : '';
+        // Rola pozostaje widoczna, ale w trybie "tylko rezerwa" jest zablokowana na "Kierowca Rezerwowy".
+        if (driverRoleGroup) { driverRoleGroup.style.display = ''; driverRoleGroup.style.gridColumn = reserveOnlyMode ? '1 / -1' : ''; }
+        if (driverRoleSelectEl) driverRoleSelectEl.disabled = reserveOnlyMode;
         if (driverSplitGroup) driverSplitGroup.style.display = reserveOnlyMode ? 'none' : '';
         if (reserveOnlyNotice) reserveOnlyNotice.style.display = reserveOnlyMode ? 'block' : 'none';
         if (reserveOnlyMode && driverRoleSelectEl && driverRoleSelectEl.value !== "Rezerwowy") {
