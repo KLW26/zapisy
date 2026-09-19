@@ -551,6 +551,8 @@
         [data-theme="light"] .success-message { background: #f0fdf4; border: 1.5px solid #22c55e; color: #166534; }
         [data-theme="light"] .error-message { background: #fef2f2; border: 1.5px solid #ef4444; color: #991b1b; }
         [data-theme="light"] .info-message { background: #fff7ed; border: 1.5px solid #f97316; color: #9a3412; }
+        /* Tryb "tylko rezerwa": ukrywamy wszystko, co dotyczy splitów (panel admina, edycja). */
+        body.reserve-only-mode .split-ui { display: none !important; }
 
         .admin-trigger {
             text-align: center;
@@ -961,7 +963,7 @@
                 </select>
             </div>
         </div>
-        <div class="info-message" id="reserveOnlyNotice" data-i18n="reserveOnlyInfo" style="display:none; margin-bottom: 18px;"> ⭐ Obecnie otwarte są zapisy wyłącznie na stanowisko Kierowcy Rezerwowego.<br><br> Jeżeli ktoś poda nieprawidłowe imię i nazwisko, zgłoszenie zostanie automatycznie odrzucone. Taki kierowca musi liczyć się również z możliwością usunięcia z ligi KLW. </div>
+        <div class="info-message" id="reserveOnlyNotice" data-i18n="reserveOnlyInfo" style="display:none; margin-bottom: 18px;">⭐ Obecnie otwarte są zapisy wyłącznie na Kierowcę Rezerwowego. Jeżeli ktoś poda nieprawidłowe imię i nazwisko, zgłoszenie zostanie automatycznie odrzucone. Taki kierowca musi liczyć się również z możliwością usunięcia z ligi KLW.</div>
 
         <div class="grid-2">
             <div class="form-group">
@@ -1039,7 +1041,7 @@
                 </div>
                 <div class="search-bar" style="display:flex; gap:10px; align-items:center;">
                     <input type="text" id="adminSearch" placeholder="Szukaj kierowcy, roli, platformy..." onkeyup="filterAdminTable()">
-                    <select id="adminSplitFilter" onchange="filterAdminTable()" style="width:auto; padding:12px 16px; background:var(--input-bg); border:1px solid var(--input-border); border-radius:12px; color:var(--text-light);">
+                    <select id="adminSplitFilter" class="split-ui" onchange="filterAdminTable()" style="width:auto; padding:12px 16px; background:var(--input-bg); border:1px solid var(--input-border); border-radius:12px; color:var(--text-light);">
                         <option value="">Wszystkie splity</option>
                         <option value="Split 1">Split 1</option>
                         <option value="Split 2">Split 2</option>
@@ -1056,11 +1058,11 @@
                     <div class="dash-box-title">Podział składu (Główni / Rezerwa)</div>
                     <div class="dash-box-value" id="dashStatusSplit">Główni: 0 / Rezerwa: 0</div>
                 </div>
-                <div class="dash-box">
+                <div class="dash-box split-ui">
                     <div class="dash-box-title">🔴 Split 1 (Główni / Rezerwa)</div>
                     <div class="dash-box-value" id="dashSplit1" style="font-size:1.3rem;">0/22 · 0</div>
                 </div>
-                <div class="dash-box">
+                <div class="dash-box split-ui">
                     <div class="dash-box-title">🔵 Split 2 (Główni / Rezerwa)</div>
                     <div class="dash-box-value" id="dashSplit2" style="font-size:1.3rem;">0/22 · 0</div>
                 </div>
@@ -1079,7 +1081,7 @@
                     <thead>
                         <tr>
                             <th>Status</th>
-                            <th>Split</th>
+                            <th class="split-ui">Split</th>
                             <th>Kierowca</th>
                             <th>Gamertag</th>
                             <th>Discord</th>
@@ -1160,9 +1162,10 @@
                         <option value="Rezerwowy">Kierowca Rezerwowy (Okazyjne starty)</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group split-ui">
                     <label for="editDriverSplit">Split</label>
                     <select id="editDriverSplit">
+                        <option value="">— brak —</option>
                         <option value="Split 1">Split 1</option>
                         <option value="Split 2">Split 2</option>
                     </select>
@@ -1308,9 +1311,10 @@
             btnSaving: "ZAPISYWANIE W BAZIE...",
 
             successReg: "✅ Pomyślnie zarejestrowano profil kierowcy z rolą: {rola} ({split}).",
+            successRegNoSplit: "✅ Pomyślnie zarejestrowano profil kierowcy z rolą: {rola}.",
             reserveBadge: "Opcjonalne",
             lblReserveInterest: "Jestem zainteresowany/a jazdą w głównym splicie, jeśli zwolni się miejsce w składzie podstawowym.",
-            reserveOnlyInfo: "⭐ Obecnie otwarte są zapisy wyłącznie na Kierowcę Rezerwowego.",
+            reserveOnlyInfo: "⭐ Obecnie otwarte są zapisy wyłącznie na Kierowcę Rezerwowego. Jeżeli ktoś poda nieprawidłowe imię i nazwisko, zgłoszenie zostanie automatycznie odrzucone. Taki kierowca musi liczyć się również z możliwością usunięcia z ligi KLW.",
             allClosedInfo: "🔒 Zapisy są obecnie zamknięte. Żadna rola (Split 1 / Split 2 / Rezerwa) nie jest teraz dostępna."
         },
         en: {
@@ -1364,9 +1368,10 @@
             btnSaving: "SAVING IN DATABASE...",
 
             successReg: "✅ Successfully registered driver profile as: {rola} ({split}).",
+            successRegNoSplit: "✅ Successfully registered driver profile as: {rola}.",
             reserveBadge: "Optional",
             lblReserveInterest: "I am interested in racing in the main split if a slot opens up in the main lineup.",
-            reserveOnlyInfo: "⭐ Registration is currently open only for Reserve Drivers.",
+            reserveOnlyInfo: "⭐ Registration is currently open only for Reserve Drivers. If someone provides an invalid first and last name, the application will be automatically rejected. Such a driver must also be prepared for the possibility of being removed from the KLW league.",
             allClosedInfo: "🔒 Registration is currently closed. No role (Split 1 / Split 2 / Reserve) is available right now."
         }
     };
@@ -1733,6 +1738,7 @@
     let split1Enabled = false;
     let split2Enabled = true;
     let reserveEnabled = true;
+    let reserveOnlyMode = false; // true, gdy otwarta jest wyłącznie Rezerwa (oba splity wyłączone)
     let dateRegistrationClosed = false; // true, gdy formularz jest zablokowany przez harmonogram (data otwarcia/zamknięcia)
 
     const SECTION_SETTINGS_KEY = { split1: 'split1Enabled', split2: 'split2Enabled', reserve: 'reserveEnabled' };
@@ -1779,7 +1785,10 @@
 
         // Tryb "tylko rezerwa": gdy oba splity są wyłączone, a rezerwa włączona,
         // nie ma innej możliwości wyboru niż "Rezerwowy" — pola roli i splitu chowamy i ustawiamy automatycznie.
-        const reserveOnlyMode = reserve && !split1 && !split2;
+        reserveOnlyMode = reserve && !split1 && !split2;
+        document.body.classList.toggle('reserve-only-mode', reserveOnlyMode);
+        const adminSplitFilterEl = document.getElementById('adminSplitFilter');
+        if (reserveOnlyMode && adminSplitFilterEl && adminSplitFilterEl.value) { adminSplitFilterEl.value = ''; filterAdminTable(); }
         const driverRoleGroup = document.getElementById('driverRoleGroup');
         const driverSplitGroup = document.getElementById('driverSplitGroup');
         const reserveOnlyNotice = document.getElementById('reserveOnlyNotice');
@@ -1806,8 +1815,10 @@
         const info = document.getElementById('currentSplitsInfo');
         if (info) {
             const parts = [];
-            parts.push(split1 ? '✅ Split 1 otwarty' : '❌ Split 1 zamknięty');
-            parts.push(split2 ? '✅ Split 2 otwarty' : '❌ Split 2 zamknięty');
+            if (!reserveOnlyMode) {
+                parts.push(split1 ? '✅ Split 1 otwarty' : '❌ Split 1 zamknięty');
+                parts.push(split2 ? '✅ Split 2 otwarty' : '❌ Split 2 zamknięty');
+            }
             parts.push(reserve ? '✅ Rezerwa otwarta' : '❌ Rezerwa zamknięta');
             info.innerHTML = `Aktualnie: <span>${parts.join(' &nbsp;|&nbsp; ')}</span>`;
         }
@@ -1977,8 +1988,9 @@
         const submitBtn = document.getElementById('submitBtn');
         const successAlert = document.getElementById('successAlert');
         const errorAlert = document.getElementById('errorAlert');
-        const driverStatus = document.getElementById('driverRole').value;
-        const driverSplit = document.getElementById('driverSplit').value;
+        // W trybie "tylko rezerwa" rola jest wymuszona, a split w ogóle nie jest przypisywany.
+        const driverStatus = reserveOnlyMode ? "Rezerwowy" : document.getElementById('driverRole').value;
+        const driverSplit = reserveOnlyMode ? "" : document.getElementById('driverSplit').value;
         
         const firstname = document.getElementById('firstname').value.trim();
         const lastname = document.getElementById('lastname').value.trim();
@@ -2030,11 +2042,17 @@
         .then(res => { if (!res.ok) throw new Error(); return res.json(); })
         .then(async (data) => {
             const rolaLabel = driverStatus === "Główny" ? (currentLang === 'pl' ? 'Główny' : 'Main') : (currentLang === 'pl' ? 'Rezerwowy' : 'Reserve');
-            successAlert.innerText = langData[currentLang].successReg.replace('{rola}', rolaLabel).replace('{split}', driverSplit);
+            successAlert.innerText = (driverSplit ? langData[currentLang].successReg : langData[currentLang].successRegNoSplit).replace('{rola}', rolaLabel).replace('{split}', driverSplit);
             successAlert.style.display = 'block';
             errorAlert.style.display = 'none';
             await sendDiscordNotification(data.name, driverStatus, gamertag, discordTag, firstname, lastname, newDriver.platform, newDriver.device, newDriver.asysty, newDriver.reserveWantsMain, false, null, driverSplit);
             document.getElementById('registrationForm').reset();
+            // reset() przywraca pierwszą opcję roli — w trybie "tylko rezerwa" ustawiamy ją z powrotem na Rezerwowego.
+            if (reserveOnlyMode) {
+                const roleSel = document.getElementById('driverRole');
+                roleSel.value = "Rezerwowy";
+                roleSel.dispatchEvent(new Event('change'));
+            }
             fetchDriversFromFirebase();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         })
@@ -2087,9 +2105,9 @@
             const splitBadge = driver.driverStatus === "Rezerwowy" && driver.reserveWantsMain
                 ? '<span style="color:#fb923c; font-weight:700;">✅ Tak</span>'
                 : driver.driverStatus === "Rezerwowy" ? '<span style="color:var(--text-muted); font-weight:600;">❌ Nie</span>' : '<span style="color:var(--text-muted); font-size:0.8rem;">N/D</span>';
-            const splitLabel = driver.split || "Split 2";
+            const splitLabel = driver.split === "" ? "—" : (driver.split || "Split 2");
             const splitClass = splitLabel === "Split 2" ? "badge-split2" : "badge-split1";
-            tr.innerHTML = `<td><span class="badge ${driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve"}">${driver.driverStatus}</span></td><td><span class="badge ${splitClass}">${splitLabel}</span></td><td><div>${driver.firstname} ${driver.lastname}</div></td><td><strong>${driver.gamertag}</strong></td><td><span style="font-family:monospace; font-weight:600;">${driver.discordTag}</span></td><td>${driver.platform} (${driver.device})</td><td>${splitBadge}</td><td style="display:flex; gap:6px;"><button class="btn-admin" style="padding:6px 12px; font-size:0.75rem;" onclick="openEditModal('${driver.id}')">✏️ Edytuj</button><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>`;
+            tr.innerHTML = `<td><span class="badge ${driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve"}">${driver.driverStatus}</span></td><td class="split-ui"><span class="badge ${splitClass}">${splitLabel}</span></td><td><div>${driver.firstname} ${driver.lastname}</div></td><td><strong>${driver.gamertag}</strong></td><td><span style="font-family:monospace; font-weight:600;">${driver.discordTag}</span></td><td>${driver.platform} (${driver.device})</td><td>${splitBadge}</td><td style="display:flex; gap:6px;"><button class="btn-admin" style="padding:6px 12px; font-size:0.75rem;" onclick="openEditModal('${driver.id}')">✏️ Edytuj</button><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>`;
             tbody.appendChild(tr);
         });
     }
@@ -2116,7 +2134,7 @@
         editingDriverId = id;
 
         document.getElementById('editDriverRole').value = driver.driverStatus;
-        document.getElementById('editDriverSplit').value = driver.split || "Split 2";
+        document.getElementById('editDriverSplit').value = driver.split === "" ? "" : (driver.split || "Split 2");
         document.getElementById('editFirstname').value = driver.firstname;
         document.getElementById('editLastname').value = driver.lastname;
         document.getElementById('editGamertag').value = driver.gamertag;
@@ -2140,7 +2158,10 @@
         if (!editingDriverId) return;
 
         const driverStatus = document.getElementById('editDriverRole').value;
-        const driverSplit = document.getElementById('editDriverSplit').value;
+        // W trybie "tylko rezerwa" pole splitu jest ukryte — zachowujemy dotychczasową wartość kierowcy.
+        const driverSplit = reserveOnlyMode
+            ? ((globalDriversList.find(d => d.id === editingDriverId) || {}).split ?? "")
+            : document.getElementById('editDriverSplit').value;
         const firstname = document.getElementById('editFirstname').value.trim();
         const lastname = document.getElementById('editLastname').value.trim();
         const gamertag = document.getElementById('editGamertag').value.trim();
@@ -2177,7 +2198,7 @@
         fetch(`${firebaseBaseUrl}drivers/${editingDriverId}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedDriver) })
             .then(res => { if (!res.ok) throw new Error(); return res.json(); })
             .then(async () => {
-                await sendDiscordNotification(editingDriverId, driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, updatedDriver.reserveWantsMain, true, existingMessageId, driverSplit);
+                await sendDiscordNotification(editingDriverId, driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, updatedDriver.reserveWantsMain, true, existingMessageId, reserveOnlyMode ? "" : driverSplit);
                 closeEditModal();
                 fetchDriversFromFirebase();
             })
@@ -2193,7 +2214,7 @@
                 color: isEdit ? 3901635 : (driverStatus === "Główny" ? 3066993 : 15105570), 
                 fields: [
                     { name: "🎭 Rola", value: isReserve ? "⭐ Kierowca Rezerwowy" : "🏁 Kierowca Podstawowy", inline: true },
-                    { name: "🔵 Split", value: driverSplit, inline: true },
+                    ...(driverSplit ? [{ name: "🔵 Split", value: driverSplit, inline: true }] : []),
                     { name: "📱 Discord ID", value: `<@${discordTag}>`, inline: true }, 
                     { name: "👤 Kierowca", value: `${firstname} ${lastname}`, inline: true }, 
                     { name: "💻 Platforma", value: platform, inline: true }, 
