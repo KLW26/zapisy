@@ -889,6 +889,130 @@
         .current-unlock-info span { color: #5bb0ff; font-style: normal; font-weight: 600; }
         [data-theme="light"] .current-unlock-info span { color: var(--admin-blue); }
 
+        /* ===== Panel admina: edycja w tabeli + przesuwanie ===== */
+        .container { transition: background 0.3s ease, border-color 0.3s ease, max-width 0.35s ease; }
+        .container.admin-wide { max-width: 1440px; }
+
+        .admin-hint {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            line-height: 1.7;
+            margin-bottom: 14px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background: rgba(0, 99, 229, 0.06);
+            border: 1px dashed rgba(0, 99, 229, 0.3);
+        }
+
+        .admin-table th { padding: 14px 10px; }
+        .admin-table td { padding: 8px 8px; vertical-align: middle; }
+
+        /* Kolumna "#" z uchwytem jest przyklejona do lewej, żeby dało się przeciągać także po przewinięciu tabeli w bok. */
+        :root { --sticky-cell-bg: #121219; }
+        [data-theme="light"] { --sticky-cell-bg: #ffffff; }
+        .admin-table th:first-child,
+        .admin-table td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background-color: var(--sticky-cell-bg);
+            box-shadow: 1px 0 0 var(--glass-border);
+        }
+        .admin-table th:first-child { background-image: linear-gradient(var(--table-th-bg), var(--table-th-bg)); }
+        .admin-table tr:hover td:first-child {
+            background-color: var(--sticky-cell-bg);
+            box-shadow: inset 0 0 0 9999px var(--row-hover-bg), 1px 0 0 var(--glass-border);
+        }
+        .admin-table tr.row-dragging td:first-child {
+            background: var(--sticky-cell-bg) !important;
+            box-shadow: inset 0 0 0 9999px rgba(0, 99, 229, 0.14), 1px 0 0 var(--glass-border);
+        }
+
+        .admin-table .cell-input {
+            width: auto;
+            min-width: 0;
+            padding: 7px 10px;
+            font-size: 0.88rem;
+            border-radius: 8px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-light);
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+        }
+        .admin-table .cell-input:hover { border-color: var(--input-border); background: var(--input-bg); }
+        .admin-table .cell-input:focus {
+            border-color: var(--admin-blue);
+            background: var(--input-focus-bg);
+            box-shadow: 0 0 0 3px rgba(0, 99, 229, 0.25);
+        }
+        .admin-table .cell-input.mono { font-family: monospace; font-weight: 600; }
+        .admin-table .cell-input.strong { font-weight: 700; }
+
+        .admin-table .cell-select {
+            width: auto;
+            padding: 7px 8px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-light);
+            cursor: pointer;
+        }
+        .admin-table .cell-select:focus { border-color: var(--admin-blue); box-shadow: 0 0 0 3px rgba(0, 99, 229, 0.25); }
+        .admin-table .cell-select.is-main { color: var(--success-green); border-color: rgba(74, 222, 128, 0.4); font-weight: 700; }
+        .admin-table .cell-select.is-reserve { color: #fb923c; border-color: rgba(251, 146, 60, 0.45); font-weight: 700; }
+        .admin-table .cell-select.is-split1 { color: var(--f1-red); border-color: rgba(225, 6, 0, 0.4); font-weight: 700; }
+        .admin-table .cell-select.is-split2 { color: #5bb0ff; border-color: rgba(0, 99, 229, 0.45); font-weight: 700; }
+        [data-theme="light"] .admin-table .cell-select.is-main { color: #137333; border-color: #137333; }
+        [data-theme="light"] .admin-table .cell-select.is-reserve { color: #b06000; border-color: #b06000; }
+        [data-theme="light"] .admin-table .cell-select.is-split1 { color: #b91c1c; border-color: #b91c1c; }
+        [data-theme="light"] .admin-table .cell-select.is-split2 { color: var(--admin-blue); border-color: var(--admin-blue); }
+
+        .admin-table .cell-saving { opacity: 0.55; }
+        .admin-table .cell-ok { animation: cellOk 1.4s ease; }
+        .admin-table .cell-err { animation: cellErr 1.4s ease; }
+        @keyframes cellOk {
+            0% { box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.6); border-color: var(--success-green); }
+            100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+        }
+        @keyframes cellErr {
+            0%, 30% { box-shadow: 0 0 0 3px rgba(225, 6, 0, 0.6); border-color: var(--f1-red); }
+            100% { box-shadow: 0 0 0 0 rgba(225, 6, 0, 0); }
+        }
+
+        .drag-cell { display: flex; align-items: center; gap: 4px; }
+        .drag-handle {
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            font-size: 1.2rem;
+            line-height: 1;
+            color: var(--text-muted);
+            padding: 6px 6px;
+            border-radius: 6px;
+        }
+        .drag-handle:hover { color: #5bb0ff; background: rgba(0, 99, 229, 0.12); }
+        [data-theme="light"] .drag-handle:hover { color: var(--admin-blue); }
+        .row-pos {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            min-width: 24px;
+        }
+        .admin-table tr.row-dragging td { background: rgba(0, 99, 229, 0.14) !important; }
+        .admin-table tr.row-dragging { outline: 2px dashed var(--admin-blue); outline-offset: -2px; }
+        body.is-dragging-row, body.is-dragging-row * { cursor: grabbing !important; user-select: none !important; -webkit-user-select: none !important; }
+
+        .row-actions { display: flex; gap: 6px; align-items: center; }
+        .btn-mini { padding: 6px 10px !important; font-size: 0.75rem !important; }
+        .btn-ghost { background: transparent; border: 1px solid var(--glass-border); color: var(--text-light); }
+        .btn-ghost:hover { background: rgba(0, 99, 229, 0.15); border-color: var(--admin-blue); }
+        .btn-ghost:disabled { opacity: 0.3; cursor: default; transform: none; background: transparent; border-color: var(--glass-border); }
+        .cell-na { color: var(--text-muted); font-size: 0.8rem; padding-left: 10px; }
+
         @media (max-width: 768px) {
             .grid-2 { grid-template-columns: 1fr; gap: 0; }
             .container { padding: 25px; margin: 20px auto; }
@@ -1076,18 +1200,27 @@
                 </div>
             </div>
             
+            <div class="admin-hint">
+                ✏️ Kliknij dowolne pole w tabeli, aby je edytować — <strong>Enter</strong> zapisuje, <strong>Esc</strong> anuluje. Listy rozwijane zapisują się od razu.<br>
+                ⠿ Złap za uchwyt i przeciągnij wiersz, aby zmienić kolejność (działa też na telefonie), albo użyj strzałek ↑ ↓.
+            </div>
+
             <div class="admin-table-wrapper">
-                <table>
+                <table class="admin-table">
                     <thead>
                         <tr>
+                            <th>#</th>
                             <th>Status</th>
                             <th class="split-ui">Split</th>
-                            <th>Kierowca</th>
+                            <th>Imię</th>
+                            <th>Nazwisko</th>
                             <th>Gamertag</th>
-                            <th>Discord</th>
-                            <th>Sprzęt</th>
+                            <th>Discord ID</th>
+                            <th>Platforma</th>
+                            <th>Kontroler</th>
+                            <th>Asysty</th>
                             <th>Gł. Split</th>
-<th>Akcja</th>
+                            <th>Akcje</th>
                         </tr>
                     </thead>
                     <tbody id="adminTableBody">
@@ -1149,8 +1282,11 @@
             </div>
         </div>
     </div>
+</div>
 
-    <div id="editModalOverlay" class="edit-modal-overlay">
+<!-- Okno edycji jest poza .container: backdrop-filter kontenera "łapał" position:fixed,
+     przez co okno pojawiało się na górze strony zamiast na środku ekranu. -->
+<div id="editModalOverlay" class="edit-modal-overlay">
         <div class="edit-modal-box">
             <h2>✏️ Edytuj zgłoszenie</h2>
 
@@ -1245,7 +1381,6 @@
                 <button type="button" class="btn-submit" style="flex:1;" onclick="saveDriverEdit()">Zapisz zmiany</button>
             </div>
         </div>
-    </div>
 </div>
 
 <script>
@@ -1922,11 +2057,13 @@
             const data = await res.json();
             globalDriversList = [];
             if (data && typeof data === 'object') {
-                globalDriversList = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-                globalDriversList.sort((a, b) => 0);
+                globalDriversList = Object.keys(data)
+                    .filter(key => data[key] && typeof data[key] === 'object' && typeof data[key].gamertag === 'string')
+                    .map(key => ({ id: key, ...data[key] }));
+                sortDriversByOrder(globalDriversList);
             }
             updateGridSlotsTracker();
-            renderAdminTable();
+            filterAdminTable();
             calculateDashboardStats();
         } catch (err) {
             console.error(err);
@@ -2037,7 +2174,8 @@
             asysty: document.getElementById('asysty').value, 
             driverStatus,
             split: driverSplit,
-            reserveWantsMain: reserveWantsMain || false
+            reserveWantsMain: reserveWantsMain || false,
+            order: Date.now() // nowe zgłoszenie trafia na koniec listy; admin może je potem przesunąć
         };
 
         fetch(`${firebaseBaseUrl}drivers.json`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newDriver) })
@@ -2071,10 +2209,11 @@
 
     function toggleAdminPanel() {
         const panel = document.getElementById('adminPanel');
-        if (panel.style.display === 'block') { panel.style.display = 'none'; }
+        const container = document.querySelector('.container');
+        if (panel.style.display === 'block') { panel.style.display = 'none'; container.classList.remove('admin-wide'); }
         else {
             if (prompt("Autoryzacja administratora ligi. Podaj hasło:") === ADMIN_PASSWORD) {
-                panel.style.display = 'block'; renderAdminTable(); calculateDashboardStats(); panel.scrollIntoView({ behavior: 'smooth' });
+                panel.style.display = 'block'; container.classList.add('admin-wide'); filterAdminTable(); calculateDashboardStats(); panel.scrollIntoView({ behavior: 'smooth' });
             } else { alert("Hasło niepoprawne."); }
         }
     }
@@ -2092,24 +2231,348 @@
         document.getElementById('dashPlatforms').innerText = `PC: ${globalDriversList.filter(d => d.platform === "PC").length} | PS5: ${globalDriversList.filter(d => d.platform === "PS5").length} | XBX: ${globalDriversList.filter(d => d.platform === "Xbox").length}`;
     }
 
+    // ===================================================================
+    //  KOLEJNOŚĆ KIEROWCÓW
+    //  Każdy kierowca ma pole "order" w Firebase. Starsze zgłoszenia bez
+    //  tego pola sortują się chronologicznie (po kluczu Firebase), a przy
+    //  pierwszym przesunięciu dostają numery 0, 1, 2…
+    // ===================================================================
+    function sortDriversByOrder(list) {
+        list.sort((a, b) => {
+            const ao = typeof a.order === 'number' ? a.order : 0;
+            const bo = typeof b.order === 'number' ? b.order : 0;
+            if (ao !== bo) return ao - bo;
+            return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+        });
+    }
+
+    // Split kierowcy tak, jak widzi go tabela (stare zgłoszenia bez pola "split" = Split 2).
+    function splitOf(d) { return d.split === "" ? "" : (d.split || "Split 2"); }
+
+    // Nowa kolejność widocznych wierszy (np. przy aktywnym filtrze) jest wstawiana
+    // w te same miejsca listy, które zajmowały — ukryci kierowcy zostają na swoich pozycjach.
+    function applyVisibleOrder(visibleIds) {
+        const visibleSet = new Set(visibleIds);
+        const byId = new Map(globalDriversList.map(d => [d.id, d]));
+        const newList = globalDriversList.slice();
+        let k = 0;
+        globalDriversList.forEach((d, i) => {
+            if (visibleSet.has(d.id)) newList[i] = byId.get(visibleIds[k++]);
+        });
+        globalDriversList = newList;
+        filterAdminTable();
+        persistDriverOrder();
+    }
+
+    async function persistDriverOrder() {
+        const updates = {};
+        globalDriversList.forEach((d, i) => {
+            if (d.order !== i) { updates[`${d.id}/order`] = i; d.order = i; }
+        });
+        if (Object.keys(updates).length === 0) return;
+        try {
+            // Jeden PATCH z wieloma ścieżkami — Firebase zapisuje wszystkie pozycje naraz.
+            const res = await fetch(`${firebaseBaseUrl}drivers.json`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updates) });
+            if (!res.ok) throw new Error();
+        } catch {
+            alert("❌ Nie udało się zapisać nowej kolejności. Odświeżam listę z bazy.");
+            fetchDriversFromFirebase();
+        }
+    }
+
+    function getVisibleRowIds() {
+        return [...document.querySelectorAll('#adminTableBody tr[data-id]')].map(tr => tr.dataset.id);
+    }
+
+    function moveDriverRow(id, delta) {
+        const ids = getVisibleRowIds();
+        const i = ids.indexOf(id);
+        const j = i + delta;
+        if (i < 0 || j < 0 || j >= ids.length) return;
+        [ids[i], ids[j]] = [ids[j], ids[i]];
+        applyVisibleOrder(ids);
+    }
+
+    // Przeciąganie za uchwyt ⠿ — Pointer Events, więc działa myszką i palcem.
+    // Ruch śledzimy na całym oknie: przeniesienie wiersza w DOM zrywa przechwycenie wskaźnika na uchwycie.
+    let rowDragState = null;
+    function attachRowDrag(handle, tr) {
+        handle.addEventListener('pointerdown', e => {
+            if (e.button !== 0 || rowDragState) return;
+            e.preventDefault();
+            if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+
+            const tbody = tr.parentNode;
+            const pointerId = e.pointerId;
+            const startOrder = getVisibleRowIds().join('|');
+            tr.classList.add('row-dragging');
+            document.body.classList.add('is-dragging-row');
+
+            const onMove = ev => {
+                if (ev.pointerId !== pointerId) return;
+                ev.preventDefault();
+                const y = ev.clientY;
+                const edge = 70;
+                if (y < edge) window.scrollBy(0, -14);
+                else if (y > window.innerHeight - edge) window.scrollBy(0, 14);
+                const rows = [...tbody.querySelectorAll('tr[data-id]')].filter(r => r !== tr);
+                const before = rows.find(r => { const rect = r.getBoundingClientRect(); return y < rect.top + rect.height / 2; });
+                if (before) { if (tr.nextElementSibling !== before) tbody.insertBefore(tr, before); }
+                else if (tbody.lastElementChild !== tr) tbody.appendChild(tr);
+            };
+            const onEnd = ev => {
+                if (ev.pointerId !== pointerId) return;
+                window.removeEventListener('pointermove', onMove);
+                window.removeEventListener('pointerup', onEnd);
+                window.removeEventListener('pointercancel', onEnd);
+                tr.classList.remove('row-dragging');
+                document.body.classList.remove('is-dragging-row');
+                rowDragState = null;
+                if (getVisibleRowIds().join('|') !== startOrder) applyVisibleOrder(getVisibleRowIds());
+            };
+            rowDragState = { tr };
+            window.addEventListener('pointermove', onMove, { passive: false });
+            window.addEventListener('pointerup', onEnd);
+            window.addEventListener('pointercancel', onEnd);
+        });
+    }
+
+    // ===================================================================
+    //  EDYCJA W TABELI
+    // ===================================================================
+    const CELL_SELECT_OPTIONS = {
+        driverStatus: [["Główny", "Główny"], ["Rezerwowy", "Rezerwowy"]],
+        split: [["", "—"], ["Split 1", "Split 1"], ["Split 2", "Split 2"]],
+        platform: [["PC", "PC"], ["PS5", "PS5"], ["Xbox", "Xbox"]],
+        device: [["Kierownica", "Kierownica"], ["Pad", "Pad"]],
+        asysty: [["Brak", "Brak"], ["Częściowe", "Częściowe"], ["Pełne", "Pełne"]],
+        reserveWantsMain: [["tak", "✅ Tak"], ["nie", "❌ Nie"]]
+    };
+
+    function cellValue(driver, field) {
+        if (field === 'split') return splitOf(driver);
+        if (field === 'reserveWantsMain') return driver.reserveWantsMain ? 'tak' : 'nie';
+        return driver[field] == null ? '' : String(driver[field]);
+    }
+
+    function styleCellSelect(sel) {
+        sel.classList.remove('is-main', 'is-reserve', 'is-split1', 'is-split2');
+        const f = sel.dataset.field, v = sel.value;
+        if (f === 'driverStatus') sel.classList.add(v === 'Główny' ? 'is-main' : 'is-reserve');
+        if (f === 'split' && v) sel.classList.add(v === 'Split 1' ? 'is-split1' : 'is-split2');
+    }
+
+    function fitInput(inp) { inp.size = Math.max(inp.value.length + 1, 4); }
+
+    function makeCellInput(driver, field, extraClass = '') {
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.className = `cell-input ${extraClass}`.trim();
+        inp.dataset.field = field;
+        inp.value = cellValue(driver, field);
+        inp.dataset.original = inp.value;
+        inp.spellcheck = false;
+        if (field === 'discordTag') inp.inputMode = 'numeric';
+        fitInput(inp);
+        inp.addEventListener('input', () => fitInput(inp));
+        inp.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); inp.blur(); }
+            else if (e.key === 'Escape') { inp.value = inp.dataset.original; fitInput(inp); inp.blur(); }
+        });
+        inp.addEventListener('change', () => commitCell(driver.id, field, inp));
+        return inp;
+    }
+
+    function makeCellSelect(driver, field) {
+        const sel = document.createElement('select');
+        sel.className = 'cell-select';
+        sel.dataset.field = field;
+        CELL_SELECT_OPTIONS[field].forEach(([val, label]) => {
+            const o = document.createElement('option'); o.value = val; o.textContent = label; sel.appendChild(o);
+        });
+        const current = cellValue(driver, field);
+        if (![...sel.options].some(o => o.value === current)) {
+            const o = document.createElement('option'); o.value = current; o.textContent = current || '—'; sel.appendChild(o);
+        }
+        sel.value = current;
+        sel.dataset.original = current;
+        styleCellSelect(sel);
+        sel.addEventListener('change', () => commitCell(driver.id, field, sel));
+        return sel;
+    }
+
+    function flashCell(el, cls) {
+        el.classList.remove('cell-ok', 'cell-err');
+        void el.offsetWidth; // restart animacji
+        el.classList.add(cls);
+        setTimeout(() => el.classList.remove(cls), 1500);
+    }
+
+    async function commitCell(id, field, el) {
+        let value = el.value;
+        if (el.tagName === 'INPUT') {
+            value = value.trim();
+            if (field === 'discordTag') value = value.replace(/[^0-9]/g, '');
+            el.value = value;
+            fitInput(el);
+        }
+        if (value === el.dataset.original) return;
+
+        const patchValue = field === 'reserveWantsMain' ? value === 'tak' : value;
+        el.classList.add('cell-saving');
+        el.disabled = true;
+        const ok = await updateDriverFields(id, { [field]: patchValue });
+        el.disabled = false;
+        el.classList.remove('cell-saving');
+
+        if (!ok) {
+            el.value = el.dataset.original;
+            if (el.tagName === 'INPUT') fitInput(el);
+            if (el.tagName === 'SELECT') styleCellSelect(el);
+            flashCell(el, 'cell-err');
+            return;
+        }
+
+        el.dataset.original = value;
+        if (field === 'driverStatus' || field === 'split') {
+            // Zmiana roli/splitu wpływa na inne kolumny (np. "Gł. Split") — przerysuj tabelę.
+            filterAdminTable();
+            const fresh = document.querySelector(`#adminTableBody tr[data-id="${CSS.escape(id)}"] [data-field="${field}"]`);
+            if (fresh) flashCell(fresh, 'cell-ok');
+        } else {
+            if (el.tagName === 'SELECT') styleCellSelect(el);
+            flashCell(el, 'cell-ok');
+        }
+    }
+
+    // Zapisuje zmienione pola jednego kierowcy (PATCH), odświeża statystyki i aktualizuje wiadomość na Discordzie.
+    async function updateDriverFields(id, patch) {
+        const driver = globalDriversList.find(d => d.id === id);
+        if (!driver) return false;
+        const fail = (msg) => { alert(msg); return false; };
+
+        if ('firstname' in patch && patch.firstname.length < 2) return fail("Imię musi mieć co najmniej 2 znaki.");
+        if ('lastname' in patch && patch.lastname.length < 2) return fail("Nazwisko musi mieć co najmniej 2 znaki.");
+        if ('gamertag' in patch) {
+            if (!patch.gamertag) return fail("Gamertag nie może być pusty.");
+            if (globalDriversList.some(d => d.id !== id && d.gamertag.toLowerCase() === patch.gamertag.toLowerCase())) return fail("Ten gamertag jest już zajęty przez innego kierowcę.");
+        }
+        if ('discordTag' in patch) {
+            if (!patch.discordTag) return fail("Discord ID może zawierać tylko cyfry i nie może być puste.");
+            if (globalDriversList.some(d => d.id !== id && d.discordTag === patch.discordTag)) return fail("To Discord ID jest już przypisane do innego kierowcy.");
+        }
+
+        const nextStatus = 'driverStatus' in patch ? patch.driverStatus : driver.driverStatus;
+        const nextSplit = 'split' in patch ? patch.split : splitOf(driver);
+        if (('driverStatus' in patch || 'split' in patch) && nextStatus === "Główny" && nextSplit) {
+            const taken = globalDriversList.filter(d => d.id !== id && d.driverStatus === "Główny" && splitOf(d) === nextSplit).length;
+            if (taken >= MAX_MAIN_SEATS && !confirm(`W ${nextSplit} jest już ${taken}/${MAX_MAIN_SEATS} kierowców głównych. Czy mimo to dodać tego kierowcę do składu głównego?`)) return false;
+        }
+        if (patch.driverStatus === "Główny") patch.reserveWantsMain = false;
+
+        try {
+            const res = await fetch(`${firebaseBaseUrl}drivers/${id}.json`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
+            if (!res.ok) throw new Error();
+        } catch {
+            return fail("❌ Nie udało się zapisać zmiany w bazie danych.");
+        }
+
+        Object.assign(driver, patch);
+        calculateDashboardStats();
+        updateGridSlotsTracker();
+
+        queueDiscordUpdate(id);
+        return true;
+    }
+
+    // Aktualizacje Discorda dla jednego kierowcy idą po kolei — dzięki temu kilka szybkich edycji
+    // nie tworzy kilku nowych wiadomości, tylko edytuje tę samą.
+    const discordUpdateQueue = {};
+    function queueDiscordUpdate(id) {
+        discordUpdateQueue[id] = (discordUpdateQueue[id] || Promise.resolve()).then(() => {
+            const d = globalDriversList.find(x => x.id === id);
+            if (!d) return;
+            return sendDiscordNotification(id, d.driverStatus, d.gamertag, d.discordTag, d.firstname, d.lastname, d.platform, d.device, d.asysty, !!d.reserveWantsMain, true, d.discordMessageId || null, splitOf(d));
+        }).catch(err => console.warn(err));
+    }
+
     function renderAdminTable(filterText = '', splitFilter = '') {
         const tbody = document.getElementById('adminTableBody'); tbody.innerHTML = '';
-        if (globalDriversList.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 30px; color:var(--text-muted); font-weight:600;">Baza danych jest pusta.</td></tr>`; return; }
-        const lowerFilter = filterText.toLowerCase();
-        const filtered = globalDriversList.filter(d =>
-            (d.gamertag.toLowerCase().includes(lowerFilter) || d.firstname.toLowerCase().includes(lowerFilter) || d.lastname.toLowerCase().includes(lowerFilter)) &&
-            (!splitFilter || d.split === splitFilter)
-        );
-        if (filtered.length === 0) { tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 30px; color:var(--text-muted); font-weight:600;">Brak wyników dla podanych filtrów.</td></tr>`; return; }
-        filtered.forEach((driver) => {
+        const emptyRow = (text) => { tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; padding: 30px; color:var(--text-muted); font-weight:600;">${text}</td></tr>`; };
+        if (globalDriversList.length === 0) { emptyRow("Baza danych jest pusta."); return; }
+
+        const lowerFilter = filterText.trim().toLowerCase();
+        const filtered = globalDriversList.filter(d => {
+            const haystack = [d.gamertag, d.firstname, d.lastname, d.discordTag, d.driverStatus, splitOf(d), d.platform, d.device, d.asysty]
+                .map(v => String(v ?? '').toLowerCase()).join(' ');
+            return (!lowerFilter || haystack.includes(lowerFilter)) && (!splitFilter || splitOf(d) === splitFilter);
+        });
+        if (filtered.length === 0) { emptyRow("Brak wyników dla podanych filtrów."); return; }
+
+        const td = (child, className) => {
+            const cell = document.createElement('td');
+            if (className) cell.className = className;
+            if (child) cell.appendChild(child);
+            return cell;
+        };
+        const button = (label, cls, title, onClick) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = `btn-admin btn-mini ${cls}`.trim();
+            b.textContent = label;
+            if (title) b.title = title;
+            b.addEventListener('click', onClick);
+            return b;
+        };
+
+        filtered.forEach((driver, visibleIndex) => {
             const tr = document.createElement('tr');
-            
-            const splitBadge = driver.driverStatus === "Rezerwowy" && driver.reserveWantsMain
-                ? '<span style="color:#fb923c; font-weight:700;">✅ Tak</span>'
-                : driver.driverStatus === "Rezerwowy" ? '<span style="color:var(--text-muted); font-weight:600;">❌ Nie</span>' : '<span style="color:var(--text-muted); font-size:0.8rem;">N/D</span>';
-            const splitLabel = driver.split === "" ? "—" : (driver.split || "Split 2");
-            const splitClass = splitLabel === "Split 2" ? "badge-split2" : "badge-split1";
-            tr.innerHTML = `<td><span class="badge ${driver.driverStatus === "Główny" ? "badge-main" : "badge-reserve"}">${driver.driverStatus}</span></td><td class="split-ui"><span class="badge ${splitClass}">${splitLabel}</span></td><td><div>${driver.firstname} ${driver.lastname}</div></td><td><strong>${driver.gamertag}</strong></td><td><span style="font-family:monospace; font-weight:600;">${driver.discordTag}</span></td><td>${driver.platform} (${driver.device})</td><td>${splitBadge}</td><td style="display:flex; gap:6px;"><button class="btn-admin" style="padding:6px 12px; font-size:0.75rem;" onclick="openEditModal('${driver.id}')">✏️ Edytuj</button><button class="btn-admin btn-danger" style="padding:6px 12px; font-size:0.75rem;" onclick="deleteDriver('${driver.id}', '${driver.gamertag}')">Usuń</button></td>`;
+            tr.dataset.id = driver.id;
+
+            // # + uchwyt do przeciągania
+            const dragWrap = document.createElement('div');
+            dragWrap.className = 'drag-cell';
+            const handle = document.createElement('span');
+            handle.className = 'drag-handle';
+            handle.textContent = '⠿';
+            handle.title = 'Przeciągnij, aby zmienić kolejność';
+            const pos = document.createElement('span');
+            pos.className = 'row-pos';
+            pos.textContent = globalDriversList.indexOf(driver) + 1;
+            dragWrap.append(handle, pos);
+            tr.appendChild(td(dragWrap));
+            attachRowDrag(handle, tr);
+
+            tr.appendChild(td(makeCellSelect(driver, 'driverStatus')));
+            tr.appendChild(td(makeCellSelect(driver, 'split'), 'split-ui'));
+            tr.appendChild(td(makeCellInput(driver, 'firstname')));
+            tr.appendChild(td(makeCellInput(driver, 'lastname')));
+            tr.appendChild(td(makeCellInput(driver, 'gamertag', 'strong')));
+            tr.appendChild(td(makeCellInput(driver, 'discordTag', 'mono')));
+            tr.appendChild(td(makeCellSelect(driver, 'platform')));
+            tr.appendChild(td(makeCellSelect(driver, 'device')));
+            tr.appendChild(td(makeCellSelect(driver, 'asysty')));
+
+            if (driver.driverStatus === "Rezerwowy") {
+                tr.appendChild(td(makeCellSelect(driver, 'reserveWantsMain')));
+            } else {
+                const na = document.createElement('span'); na.className = 'cell-na'; na.textContent = 'N/D';
+                tr.appendChild(td(na));
+            }
+
+            const actions = document.createElement('div');
+            actions.className = 'row-actions';
+            const up = button('↑', 'btn-ghost', 'Przesuń wyżej', () => moveDriverRow(driver.id, -1));
+            const down = button('↓', 'btn-ghost', 'Przesuń niżej', () => moveDriverRow(driver.id, 1));
+            up.disabled = visibleIndex === 0;
+            down.disabled = visibleIndex === filtered.length - 1;
+            actions.append(
+                up, down,
+                button('✏️', '', 'Pełna edycja (w tym link do wiadomości Discord)', () => openEditModal(driver.id)),
+                button('Usuń', 'btn-danger', '', () => deleteDriver(driver.id, driver.gamertag))
+            );
+            tr.appendChild(td(actions));
+
             tbody.appendChild(tr);
         });
     }
@@ -2197,7 +2660,8 @@
         const updatedDriver = { firstname, lastname, gamertag, discordTag, platform, device, asysty, driverStatus, split: driverSplit, reserveWantsMain: reserveWantsMain || false };
         if (existingMessageId) updatedDriver.discordMessageId = existingMessageId;
 
-        fetch(`${firebaseBaseUrl}drivers/${editingDriverId}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedDriver) })
+        // PATCH (a nie PUT), żeby nie skasować pól spoza formularza, np. pozycji na liście ("order").
+        fetch(`${firebaseBaseUrl}drivers/${editingDriverId}.json`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedDriver) })
             .then(res => { if (!res.ok) throw new Error(); return res.json(); })
             .then(async () => {
                 await sendDiscordNotification(editingDriverId, driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, updatedDriver.reserveWantsMain, true, existingMessageId, reserveOnlyMode ? "" : driverSplit);
@@ -2240,6 +2704,8 @@
                 const msg = res.ok ? await res.json() : null;
                 if (msg && msg.id && driverId) {
                     await fetch(`${firebaseBaseUrl}drivers/${driverId}/discordMessageId.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(msg.id) });
+                    const local = globalDriversList.find(x => x.id === driverId);
+                    if (local) local.discordMessageId = msg.id;
                 }
             }
         } catch (err) {
@@ -2250,7 +2716,11 @@
     function clearAllDrivers() { if(confirm("Usunąć wszystkich zawodników?")) { fetch(`${firebaseBaseUrl}drivers.json`, { method: 'DELETE' }).then(() => fetchDriversFromFirebase()); } }
     function exportToTXT() {
         let txt = "=== EKSPORT BAZY KIEROWCÓW LIGI F1 ===\n\n";
-        globalDriversList.forEach(d => { txt += `Status: ${d.driverStatus} | Nick: ${d.gamertag} | ID: ${d.discordTag} | ${d.firstname} ${d.lastname} | ${d.platform} (${d.device})\n`; });
+        globalDriversList.forEach((d, i) => {
+            const split = splitOf(d) || '—';
+            const wantsMain = d.driverStatus === "Rezerwowy" ? ` | Chce do gł. składu: ${d.reserveWantsMain ? 'Tak' : 'Nie'}` : '';
+            txt += `${i + 1}. Status: ${d.driverStatus} | Split: ${split} | Nick: ${d.gamertag} | ID: ${d.discordTag} | ${d.firstname} ${d.lastname} | ${d.platform} (${d.device}) | Asysty: ${d.asysty}${wantsMain}\n`;
+        });
         const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain;charset=utf-8' })); link.download = 'lista_kierowcow.txt'; link.click();
     }
 </script>
