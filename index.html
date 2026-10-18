@@ -349,6 +349,8 @@
 
         input[type="text"],
         input[type="date"],
+        input[type="number"],
+        textarea.cf-input,
         select {
             width: 100%;
             padding: 16px;
@@ -1269,6 +1271,69 @@
         .text-popover .tp-field span { display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
         .text-popover input[type="text"] { padding: 10px 12px; font-size: 0.9rem; border-radius: 8px; }
         .text-popover .tp-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+        .text-popover #tpFields { max-height: 55vh; overflow-y: auto; }
+        .tp-hint { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px; line-height: 1.45; }
+        .tp-opt-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+        .tp-opt-row input { flex: 1; }
+        .tp-opt-row.is-removed input { opacity: 0.4; text-decoration: line-through; }
+        .tp-opt-btn {
+            flex-shrink: 0;
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: transparent;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .tp-opt-btn:hover { border-color: var(--f1-red); background: rgba(225, 6, 0, 0.12); }
+        .tp-opt-row.is-removed .tp-opt-btn { border-color: #15803d; }
+        .tp-add-opt {
+            width: 100%;
+            margin: 2px 0 8px;
+            padding: 9px;
+            border-radius: 8px;
+            border: 1px dashed var(--input-border);
+            background: transparent;
+            color: var(--text-light);
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .tp-add-opt:hover { border-color: #15803d; background: rgba(21, 128, 61, 0.12); }
+
+        /* ===== Rubryki: usunięte wbudowane i własne ===== */
+        body:not(.page-edit-mode) [data-block].block-removed { display: none !important; }
+        body.page-edit-mode [data-block].block-removed > :not(.block-tools) { opacity: 0.3; }
+        body.page-edit-mode [data-block].block-removed { outline-color: rgba(185, 28, 28, 0.7) !important; }
+        .block-tools .bt-hide, .block-tools .bt-del { background: #b91c1c; cursor: pointer; }
+        .block-tools .bt-hide.is-off { background: #15803d; }
+        .block-tools .bt-gear, .block-tools .bt-opts { background: #334155; cursor: pointer; }
+        .block-tools .bt-gear:hover, .block-tools .bt-opts:hover { background: #1e293b; }
+        body.page-edit-mode .custom-field { cursor: pointer; }
+        body.page-edit-mode .custom-field input,
+        body.page-edit-mode .custom-field select,
+        body.page-edit-mode .custom-field textarea { pointer-events: none; }
+        textarea.cf-input { resize: vertical; min-height: 90px; line-height: 1.5; }
+        #registrationForm > .checkbox-group.cf-check {
+            margin-top: 0;
+            margin-bottom: 25px;
+            background: var(--radio-bg);
+            border: 1px solid var(--input-border);
+            border-left: 4px solid #5bb0ff;
+        }
+        [data-theme="light"] #registrationForm > .checkbox-group.cf-check { border-left-color: var(--admin-blue); }
+        .edit-modal-box textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-light);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            resize: vertical;
+        }
+        .fm-hint { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
         .text-popover .tp-actions .btn-admin { padding: 9px 14px; font-size: 0.72rem; }
 
         .texts-drawer {
@@ -1550,7 +1615,7 @@
                             <th>Platforma</th>
                             <th>Kontroler</th>
                             <th>Asysty</th>
-                            <th>Gł. Split</th>
+                            <th id="thWantsMain">Gł. Split</th>
                             <th>Akcje</th>
                         </tr>
                     </thead>
@@ -1723,6 +1788,9 @@
                 </div>
             </div>
 
+            <!-- Własne rubryki dodane w edycji strony -->
+            <div id="editCustomFields"></div>
+
             <div class="form-group" style="margin-top:10px; padding-top:18px; border-top:1px solid var(--glass-border);">
                 <label for="editDiscordMessageLink" style="color:var(--text-muted);">🔗 Link / ID wiadomości Discord (opcjonalne)</label>
                 <input type="text" id="editDiscordMessageLink" placeholder="Wklej link do wiadomości (Prawy klik → Kopiuj link) lub samo ID">
@@ -1742,6 +1810,7 @@
         🎨 <strong>Tryb edycji strony</strong> · język: <strong id="pebLang">PL</strong><br>
         Kliknij napis, by go zmienić. Listy, pola i przycisk edytujesz kliknięciem. Ramki przesuwasz za „⠿”.
     </div>
+    <button type="button" class="btn-admin" style="background:#15803d;" onclick="openFieldDialog()">➕ Dodaj rubrykę</button>
     <button type="button" class="btn-admin btn-ghost" onclick="openTextsDrawer()">📝 Wszystkie teksty</button>
     <button type="button" class="btn-admin btn-ghost" onclick="resetPageToDefaults()">↺ Domyślne</button>
     <button type="button" class="btn-admin btn-ghost" onclick="cancelPageEdit()">Anuluj</button>
@@ -1754,6 +1823,62 @@
     <div class="tp-actions">
         <button type="button" class="btn-admin btn-ghost" onclick="closeTextPopover()">Anuluj</button>
         <button type="button" class="btn-admin" onclick="applyTextPopover()">Zastosuj</button>
+    </div>
+</div>
+
+<!-- Okno dodawania / ustawień własnej rubryki (tryb edycji strony) -->
+<div id="fieldModalOverlay" class="edit-modal-overlay" style="z-index:1700;">
+    <div class="edit-modal-box">
+        <h2 id="fmTitle">➕ Nowa rubryka</h2>
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="fmLabelPl">Nazwa rubryki (PL)</label>
+                <input type="text" id="fmLabelPl" placeholder="np. Numer startowy" maxlength="120">
+            </div>
+            <div class="form-group">
+                <label for="fmLabelEn">Nazwa (EN) — opcjonalnie</label>
+                <input type="text" id="fmLabelEn" placeholder="np. Race number" maxlength="120">
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="fmType">Rodzaj pola</label>
+                <select id="fmType" onchange="updateFieldDialogType()">
+                    <option value="text">Tekst (krótki)</option>
+                    <option value="textarea">Tekst (dłuższy)</option>
+                    <option value="number">Liczba</option>
+                    <option value="date">Data</option>
+                    <option value="select">Lista wyboru</option>
+                    <option value="checkbox">Pole do zaznaczenia (tak / nie)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fmWidth">Szerokość</label>
+                <select id="fmWidth">
+                    <option value="full">Cały wiersz</option>
+                    <option value="half">Połowa wiersza</option>
+                </select>
+            </div>
+        </div>
+        <div id="fmOptionsGroup">
+            <div class="form-group">
+                <label for="fmOptionsPl">Opcje listy (PL) — każda w osobnej linii</label>
+                <textarea id="fmOptionsPl" rows="4" placeholder="np.&#10;Tak&#10;Nie&#10;Jeszcze nie wiem"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="fmOptionsEn">Opcje listy (EN) — opcjonalnie, w tej samej kolejności</label>
+                <textarea id="fmOptionsEn" rows="3"></textarea>
+            </div>
+        </div>
+        <label class="split-toggle-label" for="fmRequired" style="margin-bottom:8px;">
+            <input type="checkbox" id="fmRequired">
+            <span id="fmRequiredText">Pole obowiązkowe</span>
+        </label>
+        <div class="fm-hint" id="fmHint"></div>
+        <div class="edit-modal-actions" style="margin-top:18px;">
+            <button type="button" class="btn-cancel-edit" onclick="closeFieldDialog()">Anuluj</button>
+            <button type="button" class="btn-submit" style="flex:1; margin-top:0;" onclick="saveFieldDialog()">Zapisz rubrykę</button>
+        </div>
     </div>
 </div>
 
@@ -1960,6 +2085,8 @@
             const val = langData[currentLang][el.dataset.phKey];
             if (val != null) el.placeholder = val;
         });
+
+        refreshCustomLanguage(); // własne rubryki i dodane opcje list
     }
 
     function initTheme() {
@@ -2718,7 +2845,7 @@
 
         const firstname = document.getElementById('firstname').value.trim();
         const lastname = document.getElementById('lastname').value.trim();
-        const birthdate = document.getElementById('birthdate').value; // opcjonalne
+        const birthdate = isBlockRemoved('birthdate') ? '' : document.getElementById('birthdate').value; // opcjonalne
         const gamertag = document.getElementById('gamertag').value.trim();
         let discordTag = document.getElementById('discordTag').value.trim().replace(/[^0-9]/g, '');
 
@@ -2756,7 +2883,7 @@
 
         submitBtn.innerText = langData[currentLang].btnSaving;
 
-        const reserveWantsMain = driverStatus === "Rezerwowy" && document.getElementById('reserveInterestMain').checked;
+        const reserveWantsMain = driverStatus === "Rezerwowy" && !isBlockRemoved('reserveInterest') && document.getElementById('reserveInterestMain').checked;
 
         const newDriver = { 
             firstname, 
@@ -2764,12 +2891,14 @@
             birthdate,
             gamertag, 
             discordTag, 
-            platform: document.getElementById('platform').value, 
-            device: document.querySelector('input[name="input_device"]:checked').value, 
-            asysty: document.getElementById('asysty').value, 
+            // Rubryki usunięte przez admina zapisują się jako puste.
+            platform: isBlockRemoved('platform') ? '' : document.getElementById('platform').value, 
+            device: isBlockRemoved('device') ? '' : (document.querySelector('input[name="input_device"]:checked') || {}).value || '', 
+            asysty: isBlockRemoved('assists') ? '' : document.getElementById('asysty').value, 
             driverStatus,
             split: driverSplit,
             reserveWantsMain: reserveWantsMain || false,
+            extra: collectCustomAnswers(), // odpowiedzi na własne rubryki
             order: Date.now() // nowe zgłoszenie trafia na koniec listy; admin może je potem przesunąć
         };
 
@@ -2780,7 +2909,7 @@
             successAlert.innerText = (driverSplit ? langData[currentLang].successReg : langData[currentLang].successRegNoSplit).replace('{rola}', rolaLabel).replace('{split}', driverSplit);
             successAlert.style.display = 'block';
             errorAlert.style.display = 'none';
-            await sendDiscordNotification(data.name, driverStatus, gamertag, discordTag, firstname, lastname, newDriver.platform, newDriver.device, newDriver.asysty, newDriver.reserveWantsMain, false, null, driverSplit, newDriver.birthdate);
+            await sendDiscordNotification(data.name, driverStatus, gamertag, discordTag, firstname, lastname, newDriver.platform, newDriver.device, newDriver.asysty, newDriver.reserveWantsMain, false, null, driverSplit, newDriver.birthdate, newDriver.extra);
             document.getElementById('registrationForm').reset();
             // reset() przywraca domyślny split i rolę — zostajemy w tej samej zakładce i dopasowujemy rolę.
             document.getElementById('driverSplit').value = driverSplit;
@@ -3004,7 +3133,7 @@
         const sel = document.createElement('select');
         sel.className = 'cell-select';
         sel.dataset.field = field;
-        CELL_SELECT_OPTIONS[field].forEach(([val, label]) => {
+        [...CELL_SELECT_OPTIONS[field], ...(field in EDITABLE_SELECTS ? extraOptionsFor(field) : [])].forEach(([val, label]) => {
             const o = document.createElement('option'); o.value = val; o.textContent = label; sel.appendChild(o);
         });
         const current = cellValue(driver, field);
@@ -3112,18 +3241,29 @@
         discordUpdateQueue[id] = (discordUpdateQueue[id] || Promise.resolve()).then(() => {
             const d = globalDriversList.find(x => x.id === id);
             if (!d) return;
-            return sendDiscordNotification(id, d.driverStatus, d.gamertag, d.discordTag, d.firstname, d.lastname, d.platform, d.device, d.asysty, !!d.reserveWantsMain, true, d.discordMessageId || null, splitOf(d), d.birthdate || "");
+            return sendDiscordNotification(id, d.driverStatus, d.gamertag, d.discordTag, d.firstname, d.lastname, d.platform, d.device, d.asysty, !!d.reserveWantsMain, true, d.discordMessageId || null, splitOf(d), d.birthdate || "", d.extra || {});
         }).catch(err => console.warn(err));
     }
 
     function renderAdminTable(filterText = '', splitFilter = '') {
         const tbody = document.getElementById('adminTableBody'); tbody.innerHTML = '';
-        const emptyRow = (text) => { tbody.innerHTML = `<tr><td colspan="13" style="text-align:center; padding: 30px; color:var(--text-muted); font-weight:600;">${text}</td></tr>`; };
+        // Kolumny własnych rubryk (tylko podgląd — edycja przez ✏️).
+        const customFields = savedPageCustom.fields || [];
+        const thWants = document.getElementById('thWantsMain');
+        thWants.parentElement.querySelectorAll('th.cf-col').forEach(th => th.remove());
+        customFields.forEach(f => {
+            const th = document.createElement('th');
+            th.className = 'cf-col';
+            th.textContent = f.pl;
+            thWants.before(th);
+        });
+        const emptyRow = (text) => { tbody.innerHTML = `<tr><td colspan="${13 + customFields.length}" style="text-align:center; padding: 30px; color:var(--text-muted); font-weight:600;">${text}</td></tr>`; };
         if (globalDriversList.length === 0) { emptyRow("Baza danych jest pusta."); return; }
 
         const lowerFilter = filterText.trim().toLowerCase();
         const filtered = globalDriversList.filter(d => {
-            const haystack = [d.gamertag, d.firstname, d.lastname, formatBirthdate(d.birthdate), d.discordTag, d.driverStatus, splitOf(d), d.platform, d.device, d.asysty]
+            const haystack = [d.gamertag, d.firstname, d.lastname, formatBirthdate(d.birthdate), d.discordTag, d.driverStatus, splitOf(d), d.platform, d.device, d.asysty,
+                ...customFields.map(f => formatCustomValue(f, (d.extra || {})[f.id]))]
                 .map(v => String(v ?? '').toLowerCase()).join(' ');
             return (!lowerFilter || haystack.includes(lowerFilter)) && (!splitFilter || splitOf(d) === (splitFilter === 'none' ? '' : splitFilter));
         });
@@ -3173,6 +3313,14 @@
             tr.appendChild(td(makeCellSelect(driver, 'platform')));
             tr.appendChild(td(makeCellSelect(driver, 'device')));
             tr.appendChild(td(makeCellSelect(driver, 'asysty')));
+            customFields.forEach(f => {
+                const shown = formatCustomValue(f, (driver.extra || {})[f.id]);
+                const span = document.createElement('span');
+                span.className = shown ? 'cf-cell' : 'cell-na';
+                span.textContent = shown ? (shown.length > 40 ? shown.slice(0, 40) + '…' : shown) : '—';
+                span.title = shown ? `${shown}\n(zmienisz przez ✏️)` : 'Brak odpowiedzi (uzupełnisz przez ✏️)';
+                tr.appendChild(td(span));
+            });
 
             if (driver.driverStatus === "Rezerwowy") {
                 tr.appendChild(td(makeCellSelect(driver, 'reserveWantsMain')));
@@ -3228,8 +3376,9 @@
         document.getElementById('editBirthdate').classList.remove('is-empty');
         document.getElementById('editGamertag').value = driver.gamertag;
         document.getElementById('editDiscordTag').value = driver.discordTag;
-        document.getElementById('editPlatform').value = driver.platform;
-        document.getElementById('editAsysty').value = driver.asysty;
+        fillEditSelect(document.getElementById('editPlatform'), 'platform', driver.platform || '');
+        fillEditSelect(document.getElementById('editAsysty'), 'asysty', driver.asysty || '');
+        renderEditCustomFields(driver);
         document.querySelectorAll('input[name="edit_input_device"]').forEach(r => { r.checked = (r.value === driver.device); });
         document.getElementById('editReserveWantsMain').value = driver.reserveWantsMain ? "tak" : "nie";
         document.getElementById('editDiscordMessageLink').value = driver.discordMessageId || "";
@@ -3255,7 +3404,7 @@
         const discordTag = document.getElementById('editDiscordTag').value.trim().replace(/[^0-9]/g, '');
         const platform = document.getElementById('editPlatform').value;
         const deviceEl = document.querySelector('input[name="edit_input_device"]:checked');
-        const device = deviceEl ? deviceEl.value : 'Kierownica';
+        const device = deviceEl ? deviceEl.value : ((globalDriversList.find(d => d.id === editingDriverId) || {}).device || '');
         const asysty = document.getElementById('editAsysty').value;
         const reserveWantsMain = driverStatus === "Rezerwowy" && document.getElementById('editReserveWantsMain').value === "tak";
 
@@ -3283,21 +3432,26 @@
         const manualMessageId = manualIdMatch ? manualIdMatch[1] : null;
         const existingMessageId = manualMessageId || (existingDriver ? existingDriver.discordMessageId : null) || null;
 
-        const updatedDriver = { firstname, lastname, birthdate, gamertag, discordTag, platform, device, asysty, driverStatus, split: driverSplit, reserveWantsMain: reserveWantsMain || false };
+        const updatedDriver = { firstname, lastname, birthdate, gamertag, discordTag, platform, device, asysty, driverStatus, split: driverSplit, reserveWantsMain: reserveWantsMain || false, extra: readEditCustomFields(existingDriver) };
         if (existingMessageId) updatedDriver.discordMessageId = existingMessageId;
 
         // PATCH (a nie PUT), żeby nie skasować pól spoza formularza, np. pozycji na liście ("order").
         fetch(`${firebaseBaseUrl}drivers/${editingDriverId}.json`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedDriver) })
             .then(res => { if (!res.ok) throw new Error(); return res.json(); })
             .then(async () => {
-                await sendDiscordNotification(editingDriverId, driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, updatedDriver.reserveWantsMain, true, existingMessageId, driverSplit, birthdate);
+                await sendDiscordNotification(editingDriverId, driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, updatedDriver.reserveWantsMain, true, existingMessageId, driverSplit, birthdate, updatedDriver.extra);
                 closeEditModal();
                 fetchDriversFromFirebase();
             })
             .catch(() => alert("❌ Wystąpił problem podczas zapisywania zmian."));
     }
 
-    async function sendDiscordNotification(driverId, driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, reserveWantsMain, isEdit = false, existingMessageId = null, driverSplit = "Split 2", birthdate = "") {
+    async function sendDiscordNotification(driverId, driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, reserveWantsMain, isEdit = false, existingMessageId = null, driverSplit = "Split 2", birthdate = "", extra = {}) {
+        // Własne rubryki jako dodatkowe pola wiadomości.
+        const customFields = (savedPageCustom.fields || []).map(f => {
+            const shown = formatCustomValue(f, extra ? extra[f.id] : undefined);
+            return shown ? { name: f.pl.slice(0, 256), value: shown.slice(0, 1024), inline: true } : null;
+        }).filter(Boolean);
         const isReserve = driverStatus === "Rezerwowy";
         const discordPayload = { 
             content: isEdit ? `✏️ Zaktualizowano zgłoszenie! Rola: **${driverStatus.toUpperCase()}**` : `🔔 Nowe zgłoszenie! Rola: **${driverStatus.toUpperCase()}**`, 
@@ -3313,8 +3467,9 @@
                     { name: "💻 Platforma", value: platform, inline: true }, 
                     { name: "🕹️ Kontroler", value: device, inline: true }, 
                     { name: "🛠️ Asysty", value: asysty, inline: true }, 
-                    ...(isReserve ? [{ name: "⭐ Chęć jazdy w gł. splicie", value: reserveWantsMain ? "✅ Tak" : "❌ Nie", inline: true }] : [])
-                ], 
+                    ...(isReserve ? [{ name: "⭐ Chęć jazdy w gł. splicie", value: reserveWantsMain ? "✅ Tak" : "❌ Nie", inline: true }] : []),
+                    ...customFields
+                ].filter(f => f.value !== '' && f.value != null).slice(0, 25), // Discord odrzuca puste pola i więcej niż 25
                 footer: { text: isEdit ? "Liga F1 · Edycja zgłoszenia (Admin)" : "Liga F1 · System rejestracji" }, 
                 timestamp: new Date().toISOString() 
             }] 
@@ -3347,7 +3502,9 @@
             const split = splitOf(d) || '—';
             const wantsMain = d.driverStatus === "Rezerwowy" ? ` | Chce do gł. składu: ${d.reserveWantsMain ? 'Tak' : 'Nie'}` : '';
             const born = d.birthdate ? ` (ur. ${formatBirthdate(d.birthdate)})` : '';
-            txt += `${i + 1}. Status: ${d.driverStatus} | Split: ${split} | Nick: ${d.gamertag} | ID: ${d.discordTag} | ${d.firstname} ${d.lastname}${born} | ${d.platform} (${d.device}) | Asysty: ${d.asysty}${wantsMain}\n`;
+            const hw = [d.platform, d.device ? `(${d.device})` : ''].filter(Boolean).join(' ') || '—';
+            const custom = (savedPageCustom.fields || []).map(f => { const v = formatCustomValue(f, (d.extra || {})[f.id]); return v ? ` | ${f.pl}: ${v}` : ''; }).join('');
+            txt += `${i + 1}. Status: ${d.driverStatus} | Split: ${split} | Nick: ${d.gamertag} | ID: ${d.discordTag} | ${d.firstname} ${d.lastname}${born} | ${hw} | Asysty: ${d.asysty || '—'}${wantsMain}${custom}\n`;
         });
         const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain;charset=utf-8' })); link.download = 'lista_kierowcow.txt'; link.click();
     }
@@ -3367,7 +3524,7 @@
     const DEFAULT_TEXTS = JSON.parse(JSON.stringify(langData));
     let DEFAULT_LAYOUT = {};
     let DEFAULT_WIDTHS = {};
-    let savedPageCustom = { texts: { pl: {}, en: {} }, layout: {}, widths: {} };
+    let savedPageCustom = { texts: { pl: {}, en: {} }, layout: {}, widths: {}, hidden: {}, options: {}, fields: [] };
     let pageEditMode = false;
     let pageDraft = null;
     let pageDraftStart = '';
@@ -3472,7 +3629,13 @@
             blocks.filter(b => !sorted.includes(b)).forEach(b => {
                 const di = defaultOrder.indexOf(b.dataset.block);
                 let at = 0;
-                sorted.forEach((x, i) => { if (defaultOrder.indexOf(x.dataset.block) < di) at = i + 1; });
+                if (di === -1) {
+                    // Własna rubryka, której nie ma jeszcze w zapisanym układzie — przed regulaminem / przyciskiem.
+                    at = sorted.findIndex(x => x.dataset.block === 'rules' || x.dataset.block === 'submit');
+                    if (at === -1) at = sorted.length;
+                } else {
+                    sorted.forEach((x, i) => { if (defaultOrder.indexOf(x.dataset.block) < di) at = i + 1; });
+                }
                 sorted.splice(at, 0, b);
             });
             sorted.forEach(b => zone.appendChild(b));
@@ -3493,7 +3656,7 @@
 
     function normalizeCustom(raw) {
         const out = { texts: { pl: {}, en: {} }, layout: {}, widths: {} };
-        if (!raw || typeof raw !== 'object') return out;
+        if (!raw || typeof raw !== 'object') return normalizeFieldsCustom(null, out);
         Object.keys(out.texts).forEach(lang => {
             const t = raw.texts && raw.texts[lang];
             if (t && typeof t === 'object') {
@@ -3509,7 +3672,7 @@
         if (raw.widths && typeof raw.widths === 'object') {
             Object.entries(raw.widths).forEach(([id, w]) => { if (w === 'half' || w === 'full') out.widths[id] = w; });
         }
-        return out;
+        return normalizeFieldsCustom(raw, out); // + usunięte rubryki, opcje list, własne rubryki
     }
 
     async function fetchPageCustom() {
@@ -3521,8 +3684,7 @@
 
     function applyPageCustom(raw) {
         savedPageCustom = normalizeCustom(raw);
-        applyTexts(savedPageCustom.texts);
-        applyLayout(savedPageCustom.layout, savedPageCustom.widths);
+        applyCustomState(savedPageCustom);
         updateLanguageUI();
     }
 
@@ -3547,7 +3709,7 @@
 
     // ---------- wejście / wyjście z trybu edycji ----------
     function draftSnapshot() {
-        return JSON.stringify({ texts: pageDraft.texts, layout: readLayout(), widths: readWidths() });
+        return JSON.stringify({ texts: pageDraft.texts, layout: readLayout(), widths: readWidths(), hidden: pageDraft.hidden, options: pageDraft.options, fields: pageDraft.fields });
     }
 
     function enterPageEditMode() {
@@ -3556,7 +3718,10 @@
         pageDraft = {
             texts: JSON.parse(JSON.stringify(savedPageCustom.texts)),
             layout: readLayout(),
-            widths: readWidths()
+            widths: readWidths(),
+            hidden: clone(savedPageCustom.hidden || {}),
+            options: clone(savedPageCustom.options || {}),
+            fields: clone(savedPageCustom.fields || [])
         };
         if (!pageDraft.texts.pl) pageDraft.texts.pl = {};
         if (!pageDraft.texts.en) pageDraft.texts.en = {};
@@ -3572,6 +3737,7 @@
     function exitPageEditMode() {
         pageEditMode = false;
         closeTextPopover();
+        closeFieldDialog();
         closeTextsDrawer();
         document.querySelectorAll('.inline-editable').forEach(el => {
             el.classList.remove('inline-editable');
@@ -3603,7 +3769,7 @@
         if (!pageEditMode) return;
         blurActiveEditable();
         closeTextPopover();
-        const payload = { texts: pageDraft.texts, layout: readLayout(), widths: readWidths() };
+        const payload = { texts: pageDraft.texts, layout: readLayout(), widths: readWidths(), hidden: pageDraft.hidden, options: pageDraft.options, fields: pageDraft.fields };
         const btn = document.getElementById('pebSaveBtn');
         btn.disabled = true;
         btn.textContent = 'Zapisywanie...';
@@ -3612,6 +3778,7 @@
             if (!res.ok) throw new Error();
             savedPageCustom = normalizeCustom(payload);
             exitPageEditMode();
+            filterAdminTable(); // kolumny własnych rubryk w tabeli
             alert("✅ Zmiany strony zapisane — widzi je każdy odwiedzający.");
         } catch {
             alert("❌ Nie udało się zapisać zmian strony w bazie danych.");
@@ -3625,19 +3792,21 @@
         if (!pageEditMode) return;
         blurActiveEditable();
         if (draftSnapshot() !== pageDraftStart && !confirm("Odrzucić niezapisane zmiany strony?")) return;
-        applyTexts(savedPageCustom.texts);
-        applyLayout(savedPageCustom.layout, savedPageCustom.widths);
+        closeFieldDialog();
+        applyCustomState(savedPageCustom);
         exitPageEditMode();
     }
 
     function resetPageToDefaults() {
         if (!pageEditMode) return;
-        if (!confirm("Przywrócić domyślne teksty (PL i EN) oraz domyślny układ ramek?\nOdwiedzający zobaczą to dopiero po kliknięciu „Zapisz”.")) return;
+        if (!confirm("Przywrócić domyślną stronę?\n• domyślne teksty (PL i EN) i układ ramek\n• przywrócenie usuniętych rubryk i opcji list\n• usunięcie dodanych rubryk\nOdwiedzający zobaczą to dopiero po kliknięciu „Zapisz”.")) return;
         blurActiveEditable();
         closeTextPopover();
         pageDraft.texts = { pl: {}, en: {} };
-        applyTexts(pageDraft.texts);
-        applyLayout(DEFAULT_LAYOUT, DEFAULT_WIDTHS);
+        pageDraft.hidden = {};
+        pageDraft.options = {};
+        pageDraft.fields = [];
+        applyCustomState({ texts: pageDraft.texts, layout: DEFAULT_LAYOUT, widths: DEFAULT_WIDTHS, hidden: {}, options: {}, fields: [] });
         updateLanguageUI();
         updateGridSlotsTracker();
         if (document.getElementById('textsDrawer').classList.contains('visible')) renderTextsDrawer();
@@ -3717,6 +3886,8 @@
     publicArea.addEventListener('click', e => {
         if (!pageEditMode) return;
         if (e.target.closest('.block-tools')) return;
+        const cf = e.target.closest('[data-custom-field]');
+        if (cf) { e.preventDefault(); e.stopPropagation(); openFieldDialog(cf.dataset.customField); return; }
         const hit = [...publicArea.querySelectorAll('.popover-editable')].find(el => {
             const r = el.getBoundingClientRect();
             return r.width > 0 && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
@@ -3730,6 +3901,9 @@
     let popoverFields = [];
     function openPopoverFor(el) {
         blurActiveEditable();
+        if (el.tagName === 'SELECT' && el.closest('[data-custom-field]')) { openFieldDialog(el.closest('[data-custom-field]').dataset.customField); return; }
+        if (el.tagName === 'SELECT' && openOptionsEditor(el)) return;
+        popoverMode = 'texts';
         const blockName = (el.closest('[data-block]') || {}).dataset?.blockName || '';
         let title;
         if (el.tagName === 'SELECT') {
@@ -3777,6 +3951,7 @@
         if (first) { first.focus(); first.select(); }
     }
     function applyTextPopover() {
+        if (popoverMode === 'options') return applyOptionsPopover();
         document.querySelectorAll('#tpFields input').forEach(inp => {
             const key = inp.dataset.key;
             const v = inp.value.replace(/\s+/g, ' ').trim() || DEFAULT_TEXTS[currentLang][key];
@@ -3789,6 +3964,7 @@
     function closeTextPopover() {
         document.getElementById('textPopover').classList.remove('visible');
         popoverFields = [];
+        popoverMode = 'texts';
     }
     document.addEventListener('mousedown', e => {
         const pop = document.getElementById('textPopover');
@@ -3869,6 +4045,7 @@
                 });
                 tools.appendChild(w);
             }
+            addFieldBlockTools(block, tools); // usuń / przywróć, opcje listy, ustawienia własnej rubryki
             if (block.dataset.editNote) {
                 const note = document.createElement('span');
                 note.className = 'bt-note';
@@ -3932,6 +4109,572 @@
             window.addEventListener('pointerup', onEnd);
             window.addEventListener('pointercancel', onEnd);
         });
+    }
+
+    // =====================================================================
+    //  RUBRYKI FORMULARZA — usuwanie wbudowanych, opcje list, własne rubryki
+    //  settings/pageCustom (oprócz texts / layout / widths):
+    //    hidden:  { idRamki: true }                                       — usunięte wbudowane rubryki
+    //    options: { platform | asysty: { hidden: [wartość], extra: [{ v, pl, en }] } }
+    //    fields:  [{ id: "f_…", type, pl, en, required, options: [{ pl, en }] }] — własne rubryki
+    //  Odpowiedzi kierowców na własne rubryki: drivers/<id>/extra/<id rubryki>.
+    // =====================================================================
+    const HIDEABLE_BLOCKS = {
+        birthdate: 'Data urodzenia',
+        platform: 'Platforma',
+        assists: 'Poziom asyst',
+        device: 'Kontroler',
+        rules: 'Regulamin',
+        reserveInterest: 'Rezerwa: chęć jazdy w gł. splicie'
+    };
+    const EDITABLE_SELECTS = { platform: 'platform', asysty: 'asysty' }; // pole w bazie → id listy w formularzu
+    const FIELD_TYPES = { text: 'Tekst (krótki)', textarea: 'Tekst (dłuższy)', number: 'Liczba', date: 'Data', select: 'Lista wyboru', checkbox: 'Pole do zaznaczenia' };
+    const OPTIONAL_SUFFIX = { pl: ' (opcjonalnie)', en: ' (optional)' };
+    const CHOOSE_PLACEHOLDER = { pl: 'Wybierz…', en: 'Choose…' };
+
+    const toArr = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []);
+    const str = v => typeof v === 'string' ? v : '';
+    const clone = v => JSON.parse(JSON.stringify(v));
+
+    // Stan, który jest teraz na stronie: szkic w trybie edycji albo zapisana wersja.
+    function currentCustom() { return pageDraft || savedPageCustom; }
+
+    function normalizeFieldsCustom(raw, out) {
+        out.hidden = {};
+        out.options = {};
+        out.fields = [];
+        if (!raw || typeof raw !== 'object') return out;
+        if (raw.hidden && typeof raw.hidden === 'object') {
+            Object.entries(raw.hidden).forEach(([id, v]) => { if (v === true && id in HIDEABLE_BLOCKS) out.hidden[id] = true; });
+        }
+        if (raw.options && typeof raw.options === 'object') {
+            Object.keys(EDITABLE_SELECTS).forEach(field => {
+                const o = raw.options[field];
+                if (!o || typeof o !== 'object') return;
+                const hidden = toArr(o.hidden).filter(v => typeof v === 'string');
+                const extra = toArr(o.extra)
+                    .filter(x => x && typeof x.v === 'string' && x.v.trim())
+                    .map(x => ({ v: x.v, pl: str(x.pl) || x.v, en: str(x.en) || str(x.pl) || x.v }));
+                if (hidden.length || extra.length) out.options[field] = { hidden, extra };
+            });
+        }
+        out.fields = toArr(raw.fields)
+            .filter(f => f && typeof f.id === 'string' && /^f_[a-z0-9]+$/.test(f.id) && f.type in FIELD_TYPES && str(f.pl).trim())
+            .map(f => ({
+                id: f.id,
+                type: f.type,
+                pl: f.pl.trim(),
+                en: str(f.en).trim(),
+                required: f.required === true,
+                options: f.type === 'select'
+                    ? toArr(f.options).filter(o => o && str(o.pl).trim()).map(o => ({ pl: o.pl.trim(), en: str(o.en).trim() }))
+                    : []
+            }))
+            .filter(f => f.type !== 'select' || f.options.length);
+        return out;
+    }
+
+    // Wszystko, co admin ustawił w edycji strony, nakładane na formularz.
+    function applyCustomState(c) {
+        applyTexts(c.texts);
+        renderCustomFields(c.fields);
+        applyHiddenBlocks(c.hidden);
+        applySelectOptions(c.options);
+        applyLayout(c.layout, c.widths);
+    }
+
+    // Po zmianie języka: napisy własnych rubryk i dodanych opcji list.
+    function refreshCustomLanguage() {
+        const c = currentCustom();
+        renderCustomFields(c.fields);
+        applySelectOptions(c.options);
+    }
+
+    // ---------- usuwanie / przywracanie wbudowanych rubryk ----------
+    function applyHiddenBlocks(hidden = {}) {
+        Object.keys(HIDEABLE_BLOCKS).forEach(id => {
+            const block = document.querySelector(`[data-block="${id}"]`);
+            if (!block) return;
+            const off = !!hidden[id];
+            block.classList.toggle('block-removed', off);
+            // Ukryte pole nie może być wymagane — inaczej przeglądarka nie wyśle formularza.
+            block.querySelectorAll('input, select, textarea').forEach(el => {
+                if (off) { if (el.required) { el.dataset.wasRequired = '1'; el.required = false; } }
+                else if (el.dataset.wasRequired) { el.required = true; delete el.dataset.wasRequired; }
+            });
+        });
+        document.querySelectorAll('.bt-hide').forEach(b => b._update && b._update());
+    }
+    function isBlockRemoved(id) {
+        const b = document.querySelector(`[data-block="${id}"]`);
+        return !!b && b.classList.contains('block-removed');
+    }
+
+    // ---------- opcje list (Platforma, Asysty) ----------
+    function applySelectOptions(options = {}) {
+        Object.entries(EDITABLE_SELECTS).forEach(([field, selId]) => {
+            const sel = document.getElementById(selId);
+            if (!sel) return;
+            const cfg = options[field] || {};
+            const prev = sel.value;
+            sel.querySelectorAll('option.opt-extra').forEach(o => o.remove());
+            [...sel.options].forEach(o => {
+                if (!o.value) return; // „Gdzie grasz?” zostaje zawsze
+                const off = toArr(cfg.hidden).includes(o.value);
+                o.hidden = off;
+                o.disabled = off;
+            });
+            toArr(cfg.extra).forEach(x => {
+                const o = document.createElement('option');
+                o.value = x.v;
+                o.className = 'opt-extra';
+                o.textContent = (currentLang === 'en' ? (x.en || x.pl) : x.pl) || x.v;
+                sel.appendChild(o);
+            });
+            const keep = [...sel.options].find(o => o.value === prev && !o.hidden);
+            if (keep) sel.value = prev;
+            else {
+                const placeholder = [...sel.options].find(o => !o.value);
+                const first = [...sel.options].find(o => o.value && !o.hidden);
+                sel.value = placeholder ? '' : (first ? first.value : '');
+            }
+        });
+    }
+
+    // Dodane opcje list — do tabeli admina i okna edycji (pokazujemy wszystkie, także usunięte z formularza).
+    function extraOptionsFor(field) {
+        const cfg = (savedPageCustom.options || {})[field];
+        return toArr(cfg && cfg.extra).map(x => [x.v, x.v]);
+    }
+    function fillEditSelect(sel, field, current) {
+        sel.querySelectorAll('option.opt-extra').forEach(o => o.remove());
+        const add = (v, label) => { const o = document.createElement('option'); o.value = v; o.textContent = label; o.className = 'opt-extra'; sel.appendChild(o); };
+        extraOptionsFor(field).forEach(([v, label]) => { if (![...sel.options].some(o => o.value === v)) add(v, label); });
+        if (![...sel.options].some(o => o.value === current)) add(current, current || '—');
+        sel.value = current;
+    }
+
+    // ---------- własne rubryki ----------
+    function cfLabel(f) { return (currentLang === 'en' && f.en) ? f.en : f.pl; }
+    function cfOptionLabel(o) { return (currentLang === 'en' && o.en) ? o.en : o.pl; }
+
+    function buildCustomFieldContent(f) {
+        const id = `cf_${f.id}`;
+        const frag = document.createDocumentFragment();
+        if (f.type === 'checkbox') {
+            const inp = document.createElement('input');
+            inp.type = 'checkbox';
+            inp.id = id;
+            inp.className = 'cf-input';
+            inp.required = f.required;
+            const lab = document.createElement('label');
+            lab.htmlFor = id;
+            lab.textContent = cfLabel(f);
+            frag.append(inp, lab);
+            return frag;
+        }
+        const lab = document.createElement('label');
+        lab.htmlFor = id;
+        lab.textContent = cfLabel(f) + (f.required ? '' : OPTIONAL_SUFFIX[currentLang]);
+        let inp;
+        if (f.type === 'textarea') {
+            inp = document.createElement('textarea');
+            inp.rows = 3;
+            inp.maxLength = 1000;
+        } else if (f.type === 'select') {
+            inp = document.createElement('select');
+            const ph = document.createElement('option');
+            ph.value = '';
+            ph.textContent = CHOOSE_PLACEHOLDER[currentLang];
+            ph.defaultSelected = true;
+            inp.appendChild(ph);
+            f.options.forEach(o => {
+                const op = document.createElement('option');
+                op.value = o.pl;
+                op.textContent = cfOptionLabel(o);
+                inp.appendChild(op);
+            });
+        } else {
+            inp = document.createElement('input');
+            inp.type = f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : 'text';
+            if (f.type === 'text') inp.maxLength = 200;
+            if (f.type === 'number') inp.step = 'any';
+        }
+        inp.id = id;
+        inp.className = 'cf-input';
+        inp.required = f.required;
+        frag.append(lab, inp);
+        return frag;
+    }
+
+    function readCustomValue(f) {
+        const el = document.getElementById(`cf_${f.id}`);
+        if (!el) return undefined;
+        if (f.type === 'checkbox') return el.checked;
+        return el.value.trim();
+    }
+
+    // Tworzy / odświeża ramki własnych rubryk w formularzu (bez gubienia pozycji, szerokości i wpisanych wartości).
+    function renderCustomFields(fields = []) {
+        const zone = formZone();
+        const ids = new Set(fields.map(f => f.id));
+        zone.querySelectorAll(':scope > [data-custom-field]').forEach(b => { if (!ids.has(b.dataset.customField)) b.remove(); });
+        fields.forEach(f => {
+            let block = zone.querySelector(`:scope > [data-custom-field="${f.id}"]`);
+            let prev;
+            if (!block) {
+                block = document.createElement('div');
+                block.dataset.customField = f.id;
+                block.dataset.block = f.id;
+                const before = zone.querySelector(':scope > [data-block="rules"]') || zone.querySelector(':scope > [data-block="submit"]');
+                zone.insertBefore(block, before);
+            } else {
+                const old = document.getElementById(`cf_${f.id}`);
+                if (old && block.dataset.type === f.type) prev = f.type === 'checkbox' ? old.checked : old.value;
+            }
+            const half = block.classList.contains('half');
+            const dragging = block.classList.contains('block-dragging');
+            block.className = f.type === 'checkbox' ? 'checkbox-group cf-check custom-field' : 'form-group custom-field';
+            block.classList.toggle('half', half);
+            block.classList.toggle('block-dragging', dragging);
+            block.dataset.type = f.type;
+            block.dataset.blockName = `Rubryka: ${f.pl}`;
+            const tools = block.querySelector(':scope > .block-tools');
+            block.textContent = '';
+            block.appendChild(buildCustomFieldContent(f));
+            if (tools) {
+                block.prepend(tools);
+                const handle = tools.querySelector('.bt-handle');
+                if (handle) handle.textContent = `⠿ ${block.dataset.blockName}`;
+            }
+            if (prev !== undefined) {
+                const el = document.getElementById(`cf_${f.id}`);
+                if (f.type === 'checkbox') el.checked = prev; else el.value = prev;
+            }
+        });
+    }
+
+    // Wartość rubryki do tabeli / Discorda / eksportu.
+    function formatCustomValue(f, v) {
+        if (v === undefined || v === null || v === '') return '';
+        if (f.type === 'checkbox') return v ? '✅ Tak' : '❌ Nie';
+        if (f.type === 'date') return formatBirthdate(String(v));
+        return String(v);
+    }
+    function collectCustomAnswers() {
+        const extra = {};
+        (savedPageCustom.fields || []).forEach(f => {
+            const v = readCustomValue(f);
+            if (v === undefined) return;
+            if (f.type === 'checkbox') extra[f.id] = v;
+            else if (v !== '') extra[f.id] = v;
+        });
+        return extra;
+    }
+
+    // ---------- okno: nowa rubryka / ustawienia rubryki ----------
+    let editingFieldId = null;
+
+    function updateFieldDialogType() {
+        const type = document.getElementById('fmType').value;
+        document.getElementById('fmOptionsGroup').style.display = type === 'select' ? '' : 'none';
+        document.getElementById('fmRequiredText').textContent = type === 'checkbox'
+            ? 'Obowiązkowe zaznaczenie (np. zgoda — bez zaznaczenia nie da się wysłać)'
+            : 'Pole obowiązkowe';
+    }
+
+    function openFieldDialog(id = null) {
+        if (!pageEditMode) return;
+        blurActiveEditable();
+        closeTextPopover();
+        editingFieldId = id;
+        const f = id ? pageDraft.fields.find(x => x.id === id) : null;
+        const block = id ? document.querySelector(`[data-custom-field="${id}"]`) : null;
+        document.getElementById('fmTitle').textContent = f ? '⚙ Ustawienia rubryki' : '➕ Nowa rubryka';
+        document.getElementById('fmLabelPl').value = f ? f.pl : '';
+        document.getElementById('fmLabelEn').value = f ? f.en : '';
+        document.getElementById('fmType').value = f ? f.type : 'text';
+        document.getElementById('fmWidth').value = block && block.classList.contains('half') ? 'half' : 'full';
+        document.getElementById('fmOptionsPl').value = f ? f.options.map(o => o.pl).join('\n') : '';
+        document.getElementById('fmOptionsEn').value = f ? f.options.map(o => o.en).join('\n').replace(/\n+$/, '') : '';
+        document.getElementById('fmRequired').checked = f ? f.required : false;
+        document.getElementById('fmHint').textContent = f
+            ? 'Zmiany zobaczą odwiedzający po kliknięciu „💾 Zapisz” na dolnym pasku. Odpowiedzi, które kierowcy już wysłali, zostają w bazie.'
+            : 'Rubryka pojawi się nad regulaminem — potem możesz ją przeciągnąć za „⠿”. Odwiedzający zobaczą ją po kliknięciu „💾 Zapisz” na dolnym pasku.';
+        updateFieldDialogType();
+        document.getElementById('fieldModalOverlay').classList.add('visible');
+        setTimeout(() => document.getElementById('fmLabelPl').focus(), 50);
+    }
+
+    function closeFieldDialog() {
+        editingFieldId = null;
+        document.getElementById('fieldModalOverlay').classList.remove('visible');
+    }
+
+    function saveFieldDialog() {
+        if (!pageDraft) return;
+        const pl = document.getElementById('fmLabelPl').value.replace(/\s+/g, ' ').trim();
+        const en = document.getElementById('fmLabelEn').value.replace(/\s+/g, ' ').trim();
+        const type = document.getElementById('fmType').value;
+        const width = document.getElementById('fmWidth').value;
+        const required = document.getElementById('fmRequired').checked;
+        if (!pl) { alert('Podaj nazwę rubryki (PL).'); return; }
+
+        let options = [];
+        if (type === 'select') {
+            const linesPl = document.getElementById('fmOptionsPl').value.split('\n').map(x => x.trim());
+            const linesEn = document.getElementById('fmOptionsEn').value.split('\n').map(x => x.trim());
+            const seen = new Set();
+            linesPl.forEach((p, i) => {
+                if (!p || seen.has(p)) return;
+                seen.add(p);
+                options.push({ pl: p, en: linesEn[i] || '' });
+            });
+            if (!options.length) { alert('Wpisz co najmniej jedną opcję listy (każdą w osobnej linii).'); return; }
+        }
+
+        const isNew = !editingFieldId;
+        const id = editingFieldId || `f_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+        const field = { id, type, pl, en, required, options };
+        if (isNew) pageDraft.fields.push(field);
+        else pageDraft.fields = pageDraft.fields.map(x => x.id === id ? field : x);
+
+        renderCustomFields(pageDraft.fields);
+        const block = document.querySelector(`[data-custom-field="${id}"]`);
+        if (block) block.classList.toggle('half', width === 'half');
+        injectBlockTools();
+        document.querySelectorAll('.bt-width').forEach(btn => btn._update && btn._update());
+        closeFieldDialog();
+        if (isNew && block) block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function deleteCustomField(id) {
+        const f = pageDraft && pageDraft.fields.find(x => x.id === id);
+        if (!f) return;
+        if (!confirm(`Usunąć rubrykę „${f.pl}”?\nOdpowiedzi, które kierowcy już wysłali, zostaną w bazie, ale przestaną być widoczne.`)) return;
+        pageDraft.fields = pageDraft.fields.filter(x => x.id !== id);
+        renderCustomFields(pageDraft.fields);
+    }
+
+    document.getElementById('fieldModalOverlay').addEventListener('mousedown', e => {
+        if (e.target.id === 'fieldModalOverlay') closeFieldDialog();
+    });
+
+    // ---------- okienko: opcje listy (usuń / przywróć / dodaj) ----------
+    let popoverMode = 'texts';
+    let popoverOptionsField = null;
+
+    function makeOptionRow({ text, key, value, extraV }) {
+        const row = document.createElement('div');
+        row.className = 'tp-opt-row';
+        if (key) { row.dataset.key = key; row.dataset.value = value; }
+        else if (extraV != null) row.dataset.extraV = extraV;
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.value = text;
+        inp.placeholder = 'Nazwa opcji';
+        inp.addEventListener('keydown', ev => {
+            if (ev.key === 'Enter') { ev.preventDefault(); applyOptionsPopover(); }
+            if (ev.key === 'Escape') { ev.preventDefault(); closeTextPopover(); }
+        });
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'tp-opt-btn';
+        const sync = () => {
+            const off = row.classList.contains('is-removed');
+            btn.textContent = off ? '↺' : '✕';
+            btn.title = off ? 'Przywróć opcję' : 'Usuń opcję z listy';
+            inp.disabled = off;
+        };
+        btn.addEventListener('click', () => {
+            if (key) { row.classList.toggle('is-removed'); sync(); } // wbudowaną da się przywrócić
+            else row.remove();                                          // dodaną usuwamy całkiem
+        });
+        sync();
+        row.append(inp, btn);
+        return row;
+    }
+
+    function openOptionsEditor(sel) {
+        const field = Object.keys(EDITABLE_SELECTS).find(k => EDITABLE_SELECTS[k] === sel.id);
+        if (!field) return false;
+        popoverMode = 'options';
+        popoverOptionsField = field;
+        const cfg = pageDraft.options[field] || { hidden: [], extra: [] };
+        const blockName = (sel.closest('[data-block]') || {}).dataset?.blockName || '';
+        document.getElementById('tpTitle').textContent = `Opcje listy · ${blockName}`;
+        const box = document.getElementById('tpFields');
+        box.innerHTML = '';
+        const hint = document.createElement('div');
+        hint.className = 'tp-hint';
+        hint.textContent = `Napisy zmieniasz w języku ${currentLang.toUpperCase()}. ✕ usuwa opcję z formularza (wbudowaną możesz przywrócić ↺).`;
+        box.appendChild(hint);
+        [...sel.options].filter(o => o.value && o.dataset.i18n).forEach(o => {
+            const row = makeOptionRow({ text: langData[currentLang][o.dataset.i18n] ?? o.textContent, key: o.dataset.i18n, value: o.value });
+            if (toArr(cfg.hidden).includes(o.value)) row.querySelector('.tp-opt-btn').click();
+            box.appendChild(row);
+        });
+        toArr(cfg.extra).forEach(x => box.appendChild(makeOptionRow({ text: (currentLang === 'en' ? (x.en || x.pl) : x.pl) || x.v, extraV: x.v })));
+        const add = document.createElement('button');
+        add.type = 'button';
+        add.className = 'tp-add-opt';
+        add.textContent = '➕ Dodaj opcję';
+        add.addEventListener('click', () => {
+            const row = makeOptionRow({ text: '' });
+            box.insertBefore(row, add);
+            row.querySelector('input').focus();
+        });
+        box.appendChild(add);
+        positionPopover(sel);
+        return true;
+    }
+
+    function applyOptionsPopover() {
+        const field = popoverOptionsField;
+        const sel = document.getElementById(EDITABLE_SELECTS[field]);
+        const cfg = pageDraft.options[field] || { hidden: [], extra: [] };
+        const oldExtra = new Map(toArr(cfg.extra).map(x => [x.v, x]));
+        const builtInValues = [...sel.options].filter(o => o.value && o.dataset.i18n).map(o => o.value);
+        const hidden = [];
+        const extra = [];
+        const rows = [...document.querySelectorAll('#tpFields .tp-opt-row')];
+        rows.forEach(r => {
+            const txt = r.querySelector('input').value.replace(/\s+/g, ' ').trim();
+            if (r.dataset.key) {
+                if (r.classList.contains('is-removed')) hidden.push(r.dataset.value);
+                setDraftText(r.dataset.key, txt || DEFAULT_TEXTS[currentLang][r.dataset.key]);
+            } else if (r.dataset.extraV != null) {
+                if (!txt) return; // wyczyszczona = usunięta
+                const x = { ...oldExtra.get(r.dataset.extraV) };
+                x[currentLang] = txt;
+                if (!x.pl) x.pl = txt;
+                if (!x.en) x.en = txt;
+                extra.push(x);
+            } else if (txt) {
+                const taken = new Set([...builtInValues, ...extra.map(e => e.v), ...oldExtra.keys()]);
+                let v = txt, n = 2;
+                while (taken.has(v)) v = `${txt} (${n++})`;
+                extra.push({ v, pl: txt, en: txt });
+            }
+        });
+        if (builtInValues.length - hidden.length + extra.length <= 0) {
+            alert('Lista musi mieć co najmniej jedną opcję. Jeśli chcesz pozbyć się całej rubryki, użyj „🗑 Usuń” na jej ramce.');
+            return;
+        }
+        if (hidden.length || extra.length) pageDraft.options[field] = { hidden, extra };
+        else delete pageDraft.options[field];
+        applySelectOptions(pageDraft.options);
+        updateLanguageUI();
+        closeTextPopover();
+    }
+
+    function positionPopover(el) {
+        const pop = document.getElementById('textPopover');
+        pop.classList.add('visible');
+        const r = el.getBoundingClientRect();
+        const pw = pop.offsetWidth, ph = pop.offsetHeight;
+        let top = r.bottom + 8;
+        if (top + ph > window.innerHeight - 100) top = Math.max(12, r.top - ph - 8);
+        const left = Math.min(Math.max(12, r.left), window.innerWidth - pw - 12);
+        pop.style.top = `${top}px`;
+        pop.style.left = `${left}px`;
+        const first = document.querySelector('#tpFields input:not(:disabled)');
+        if (first) { first.focus(); first.select(); }
+    }
+
+    // Dodatkowe przyciski na ramkach w trybie edycji: usuń/przywróć, opcje listy, ustawienia własnej rubryki.
+    function addFieldBlockTools(block, tools) {
+        const id = block.dataset.block;
+        const mk = (cls, onClick) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = cls;
+            b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); onClick(b); });
+            tools.appendChild(b);
+            return b;
+        };
+        const selectId = { platform: 'platform', assists: 'asysty' }[id];
+        if (selectId) {
+            const b = mk('bt-opts', () => { closeTextPopover(); openOptionsEditor(document.getElementById(selectId)); });
+            b.textContent = '☰ Opcje';
+            b.title = 'Usuń, przywróć albo dodaj opcje tej listy';
+        }
+        if (id in HIDEABLE_BLOCKS) {
+            const b = mk('bt-hide', () => {
+                if (pageDraft.hidden[id]) delete pageDraft.hidden[id];
+                else pageDraft.hidden[id] = true;
+                applyHiddenBlocks(pageDraft.hidden);
+            });
+            b._update = () => {
+                const off = !!(pageDraft && pageDraft.hidden[id]);
+                b.classList.toggle('is-off', off);
+                b.textContent = off ? '↺ Przywróć' : '🗑 Usuń';
+                b.title = off ? 'Przywróć rubrykę do formularza' : 'Usuń rubrykę z formularza (później możesz ją przywrócić)';
+            };
+            b._update();
+        }
+        if (block.dataset.customField) {
+            const g = mk('bt-gear', () => openFieldDialog(id));
+            g.textContent = '⚙ Ustawienia';
+            const d = mk('bt-del', () => deleteCustomField(id));
+            d.textContent = '🗑 Usuń';
+            d.title = 'Usuń tę rubrykę';
+        }
+    }
+
+    // ---------- własne rubryki w oknie ✏️ edycji kierowcy ----------
+    function renderEditCustomFields(driver) {
+        const box = document.getElementById('editCustomFields');
+        box.innerHTML = '';
+        const extra = driver.extra || {};
+        (savedPageCustom.fields || []).forEach(f => {
+            const group = document.createElement('div');
+            group.className = 'form-group';
+            const lab = document.createElement('label');
+            lab.htmlFor = `edit_cf_${f.id}`;
+            lab.textContent = f.pl;
+            let inp;
+            const v = extra[f.id];
+            if (f.type === 'select' || f.type === 'checkbox') {
+                inp = document.createElement('select');
+                const opts = f.type === 'checkbox'
+                    ? [['', '—'], ['tak', '✅ Tak'], ['nie', '❌ Nie']]
+                    : [['', '—'], ...f.options.map(o => [o.pl, o.pl])];
+                const cur = f.type === 'checkbox' ? (v === true ? 'tak' : v === false ? 'nie' : '') : (v == null ? '' : String(v));
+                if (!opts.some(([val]) => val === cur)) opts.push([cur, cur]);
+                opts.forEach(([val, label]) => { const o = document.createElement('option'); o.value = val; o.textContent = label; inp.appendChild(o); });
+                inp.value = cur;
+            } else if (f.type === 'textarea') {
+                inp = document.createElement('textarea');
+                inp.rows = 3;
+                inp.value = v == null ? '' : String(v);
+            } else {
+                inp = document.createElement('input');
+                inp.type = f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : 'text';
+                if (f.type === 'number') inp.step = 'any';
+                inp.value = v == null ? '' : String(v);
+            }
+            inp.id = `edit_cf_${f.id}`;
+            group.append(lab, inp);
+            box.appendChild(group);
+        });
+    }
+
+    // Zwraca nowe "extra" kierowcy — odpowiedzi na usunięte rubryki zostają nietknięte.
+    function readEditCustomFields(driver) {
+        const extra = { ...((driver && driver.extra) || {}) };
+        (savedPageCustom.fields || []).forEach(f => {
+            const el = document.getElementById(`edit_cf_${f.id}`);
+            if (!el) return;
+            const raw = el.value.trim();
+            if (f.type === 'checkbox') {
+                if (raw === 'tak') extra[f.id] = true;
+                else if (raw === 'nie') extra[f.id] = false;
+                else delete extra[f.id];
+            } else if (raw) extra[f.id] = raw;
+            else delete extra[f.id];
+        });
+        return extra;
     }
 </script>
 
