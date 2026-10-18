@@ -2688,6 +2688,13 @@
         updateGridSlotsTracker(); // → przełącza rubryki formularza (syncSplitForm) i zakładki
     }
 
+    // Link z #split1 / #split2 przełącza zakładkę także bez przeładowania (ważne, gdy zakładki zostały usunięte ze strony).
+    window.addEventListener('hashchange', () => {
+        if (pageEditMode) return;
+        const split = Object.keys(SPLIT_HASH).find(k => SPLIT_HASH[k] === (location.hash || '').toLowerCase());
+        if (split) selectSplitTab(split, false);
+    });
+
     // Na start: zakładka z linku (#split1 / #split2), a jeśli jej nie ma albo jest zamknięta — pierwsza otwarta.
     function selectInitialSplitTab() {
         document.getElementById('driverSplit').value = ''; // wymusza pełne ustawienie zakładki i roli od zera
@@ -2777,6 +2784,7 @@
         selectInitialSplitTab();
         fetchDriversFromFirebase();
         checkRegistrationLock();
+        openAdminFromHash();
     });
 
     async function fetchDriversFromFirebase() {
@@ -2858,11 +2866,13 @@
             return;
         }
 
-        const firstname = document.getElementById('firstname').value.trim();
-        const lastname = document.getElementById('lastname').value.trim();
-        const birthdate = isBlockRemoved('birthdate') ? '' : document.getElementById('birthdate').value; // opcjonalne
-        const gamertag = document.getElementById('gamertag').value.trim();
-        let discordTag = document.getElementById('discordTag').value.trim().replace(/[^0-9]/g, '');
+        // Rubryki usunięte przez admina w edycji strony zapisują się jako puste.
+        const val = (block, id) => isBlockRemoved(block) ? '' : document.getElementById(id).value.trim();
+        const firstname = val('firstname', 'firstname');
+        const lastname = val('lastname', 'lastname');
+        const birthdate = val('birthdate', 'birthdate'); // opcjonalne
+        const gamertag = val('gamertag', 'gamertag');
+        let discordTag = val('discord', 'discordTag').replace(/[^0-9]/g, '');
 
         if (!isValidBirthdate(birthdate)) {
             errorAlert.innerText = langData[currentLang].errBirthdate;
@@ -2871,14 +2881,14 @@
             return;
         }
 
-        if (globalDriversList.some(d => d.gamertag.toLowerCase() === gamertag.toLowerCase())) {
+        if (gamertag && globalDriversList.some(d => (d.gamertag || '').toLowerCase() === gamertag.toLowerCase())) {
             errorAlert.innerText = langData[currentLang].errGamer;
             errorAlert.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
         }
 
-        if (globalDriversList.some(d => d.discordTag === discordTag)) {
+        if (discordTag && globalDriversList.some(d => d.discordTag === discordTag)) {
             errorAlert.innerText = langData[currentLang].errDiscord;
             errorAlert.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2944,6 +2954,13 @@
             setTimeout(() => { successAlert.style.display = 'none'; errorAlert.style.display = 'none'; }, 8000);
         });
     });
+
+    // Panel admina otworzysz też przez #admin na końcu adresu (przydatne, gdy link do panelu został usunięty ze strony).
+    function openAdminFromHash() {
+        if ((location.hash || '').toLowerCase() !== '#admin') return;
+        if (document.getElementById('adminPanel').style.display !== 'block') toggleAdminPanel();
+    }
+    window.addEventListener('hashchange', openAdminFromHash);
 
     function toggleAdminPanel() {
         if (pageEditMode) return;
@@ -3214,16 +3231,14 @@
         if (!driver) return false;
         const fail = (msg) => { alert(msg); return false; };
 
-        if ('firstname' in patch && patch.firstname.length < 2) return fail("Imię musi mieć co najmniej 2 znaki.");
-        if ('lastname' in patch && patch.lastname.length < 2) return fail("Nazwisko musi mieć co najmniej 2 znaki.");
+        if ('firstname' in patch && patch.firstname.length === 1) return fail("Imię musi mieć co najmniej 2 znaki (albo zostaw puste).");
+        if ('lastname' in patch && patch.lastname.length === 1) return fail("Nazwisko musi mieć co najmniej 2 znaki (albo zostaw puste).");
         if ('birthdate' in patch && !isValidBirthdate(patch.birthdate)) return fail("Nieprawidłowa data urodzenia — popraw ją albo zostaw pole puste.");
         if ('gamertag' in patch) {
-            if (!patch.gamertag) return fail("Gamertag nie może być pusty.");
-            if (globalDriversList.some(d => d.id !== id && d.gamertag.toLowerCase() === patch.gamertag.toLowerCase())) return fail("Ten gamertag jest już zajęty przez innego kierowcę.");
+            if (patch.gamertag && globalDriversList.some(d => d.id !== id && (d.gamertag || '').toLowerCase() === patch.gamertag.toLowerCase())) return fail("Ten gamertag jest już zajęty przez innego kierowcę.");
         }
         if ('discordTag' in patch) {
-            if (!patch.discordTag) return fail("Discord ID może zawierać tylko cyfry i nie może być puste.");
-            if (globalDriversList.some(d => d.id !== id && d.discordTag === patch.discordTag)) return fail("To Discord ID jest już przypisane do innego kierowcy.");
+            if (patch.discordTag && globalDriversList.some(d => d.id !== id && d.discordTag === patch.discordTag)) return fail("To Discord ID jest już przypisane do innego kierowcy.");
         }
 
         const nextStatus = 'driverStatus' in patch ? patch.driverStatus : driver.driverStatus;
@@ -3353,7 +3368,7 @@
             actions.append(
                 up, down,
                 button('✏️', '', 'Pełna edycja (w tym link do wiadomości Discord)', () => openEditModal(driver.id)),
-                button('Usuń', 'btn-danger', '', () => deleteDriver(driver.id, driver.gamertag))
+                button('Usuń', 'btn-danger', '', () => deleteDriver(driver.id, driverLabel(driver)))
             );
             tr.appendChild(td(actions));
 
@@ -3362,6 +3377,11 @@
     }
 
     function filterAdminTable() { renderAdminTable(document.getElementById('adminSearch').value, document.getElementById('adminSplitFilter').value); }
+    // Czytelna nazwa kierowcy, nawet gdy jakaś rubryka (np. gamertag) została usunięta z formularza.
+    function driverLabel(d) {
+        return (d.gamertag || '').trim() || `${d.firstname || ''} ${d.lastname || ''}`.trim() || (d.discordTag ? `Discord ${d.discordTag}` : 'kierowca');
+    }
+
     function deleteDriver(id, tag) { if(confirm(`Usunąć kierowcę ${tag}?`)) { fetch(`${firebaseBaseUrl}drivers/${id}.json`, { method: 'DELETE' }).then(() => fetchDriversFromFirebase()); } }
 
     let editingDriverId = null;
@@ -3423,8 +3443,8 @@
         const asysty = document.getElementById('editAsysty').value;
         const reserveWantsMain = driverStatus === "Rezerwowy" && document.getElementById('editReserveWantsMain').value === "tak";
 
-        if (!firstname || !lastname || !gamertag || !discordTag) {
-            alert("Wszystkie wymagane pola muszą być wypełnione.");
+        if (!firstname && !lastname && !gamertag && !discordTag) {
+            alert("Uzupełnij przynajmniej jedno z pól: imię, nazwisko, gamertag albo Discord ID.");
             return;
         }
         if (!isValidBirthdate(birthdate)) {
@@ -3432,11 +3452,11 @@
             return;
         }
 
-        if (globalDriversList.some(d => d.id !== editingDriverId && d.gamertag.toLowerCase() === gamertag.toLowerCase())) {
+        if (gamertag && globalDriversList.some(d => d.id !== editingDriverId && (d.gamertag || '').toLowerCase() === gamertag.toLowerCase())) {
             alert("Ten gamertag jest już zajęty przez innego kierowcę.");
             return;
         }
-        if (globalDriversList.some(d => d.id !== editingDriverId && d.discordTag === discordTag)) {
+        if (discordTag && globalDriversList.some(d => d.id !== editingDriverId && d.discordTag === discordTag)) {
             alert("To Discord ID jest już przypisane do innego kierowcy.");
             return;
         }
@@ -3471,13 +3491,13 @@
         const discordPayload = { 
             content: isEdit ? `✏️ Zaktualizowano zgłoszenie! Rola: **${driverStatus.toUpperCase()}**` : `🔔 Nowe zgłoszenie! Rola: **${driverStatus.toUpperCase()}**`, 
             embeds: [{ 
-                title: isReserve ? `🟠 [REZERWA${driverSplit ? ' · ' + driverSplit : ''}] ${gamertag}` : `🏎️ Nowy profil w bazie: ${gamertag}`, 
+                title: isReserve ? `🟠 [REZERWA${driverSplit ? ' · ' + driverSplit : ''}] ${driverLabel({ gamertag, firstname, lastname, discordTag })}` : `🏎️ Nowy profil w bazie: ${driverLabel({ gamertag, firstname, lastname, discordTag })}`, 
                 color: isEdit ? 3901635 : (driverStatus === "Główny" ? 3066993 : 15105570), 
                 fields: [
                     { name: "🎭 Rola", value: isReserve ? "⭐ Kierowca Rezerwowy" : "🏁 Kierowca Podstawowy", inline: true },
                     ...(driverSplit ? [{ name: driverSplit === "Split 1" ? "🔴 Split" : "🔵 Split", value: driverSplit, inline: true }] : []),
-                    { name: "📱 Discord ID", value: `<@${discordTag}>`, inline: true }, 
-                    { name: "👤 Kierowca", value: `${firstname} ${lastname}`, inline: true }, 
+                    { name: "📱 Discord ID", value: discordTag ? `<@${discordTag}>` : '', inline: true }, 
+                    { name: "👤 Kierowca", value: `${firstname || ''} ${lastname || ''}`.trim(), inline: true }, 
                     ...(birthdate ? [{ name: "🎂 Data urodzenia", value: birthdateLabel(birthdate), inline: true }] : []),
                     { name: "💻 Platforma", value: platform, inline: true }, 
                     { name: "🕹️ Kontroler", value: device, inline: true }, 
@@ -3539,7 +3559,7 @@
     const DEFAULT_TEXTS = JSON.parse(JSON.stringify(langData));
     let DEFAULT_LAYOUT = {};
     let DEFAULT_WIDTHS = {};
-    let savedPageCustom = { texts: { pl: {}, en: {} }, layout: {}, splits: { s1: { layout: null, widths: {}, hidden: {}, options: {}, fields: [] }, s2: { layout: null, widths: {}, hidden: {}, options: {}, fields: [] } } };
+    let savedPageCustom = { texts: { pl: {}, en: {} }, layout: {}, splits: { s1: { layout: null, widths: {}, hidden: {}, options: {}, fields: [] }, s2: { layout: null, widths: {}, hidden: {}, options: {}, fields: [] } }, pageHidden: {} };
     let pageEditMode = false;
     let pageDraft = null;
     let pageDraftStart = '';
@@ -3684,7 +3704,7 @@
 
     function normalizeCustom(raw) {
         const out = { texts: { pl: {}, en: {} }, layout: {}, widths: {} };
-        if (!raw || typeof raw !== 'object') { out.splits = normalizeSplits(null); return out; }
+        if (!raw || typeof raw !== 'object') { out.splits = normalizeSplits(null); out.pageHidden = {}; return out; }
         Object.keys(out.texts).forEach(lang => {
             const t = raw.texts && raw.texts[lang];
             if (t && typeof t === 'object') {
@@ -3701,6 +3721,7 @@
             Object.entries(raw.widths).forEach(([id, w]) => { if (w === 'half' || w === 'full') out.widths[id] = w; });
         }
         out.splits = normalizeSplits(raw); // rubryki i układ formularza — osobno dla Split 1 i Split 2
+        out.pageHidden = normalizePageHidden(raw.pageHidden); // usunięte elementy wspólne dla całej strony
         return out;
     }
 
@@ -3739,7 +3760,7 @@
     // ---------- wejście / wyjście z trybu edycji ----------
     function draftSnapshot() {
         captureDraftForm(activeSplitKey());
-        return JSON.stringify({ texts: pageDraft.texts, layout: readPageLayout(), splits: pageDraft.splits });
+        return JSON.stringify({ texts: pageDraft.texts, layout: readPageLayout(), splits: pageDraft.splits, pageHidden: pageDraft.pageHidden });
     }
 
     function enterPageEditMode() {
@@ -3747,7 +3768,8 @@
         pageEditMode = true;
         pageDraft = {
             texts: JSON.parse(JSON.stringify(savedPageCustom.texts)),
-            splits: clone(savedPageCustom.splits)
+            splits: clone(savedPageCustom.splits),
+            pageHidden: clone(savedPageCustom.pageHidden || {})
         };
         if (!pageDraft.texts.pl) pageDraft.texts.pl = {};
         if (!pageDraft.texts.en) pageDraft.texts.en = {};
@@ -3798,7 +3820,7 @@
         blurActiveEditable();
         closeTextPopover();
         captureDraftForm(activeSplitKey());
-        const payload = { texts: pageDraft.texts, layout: readPageLayout(), splits: pageDraft.splits };
+        const payload = { texts: pageDraft.texts, layout: readPageLayout(), splits: pageDraft.splits, pageHidden: pageDraft.pageHidden };
         const btn = document.getElementById('pebSaveBtn');
         btn.disabled = true;
         btn.textContent = 'Zapisywanie...';
@@ -3833,7 +3855,8 @@
         closeTextPopover();
         pageDraft.texts = { pl: {}, en: {} };
         pageDraft.splits = { s1: emptyFormConfig(), s2: emptyFormConfig() };
-        applyCustomState({ texts: pageDraft.texts, layout: DEFAULT_LAYOUT, splits: pageDraft.splits });
+        pageDraft.pageHidden = {};
+        applyCustomState({ texts: pageDraft.texts, layout: DEFAULT_LAYOUT, splits: pageDraft.splits, pageHidden: {} });
         updateLanguageUI();
         updateGridSlotsTracker();
         if (document.getElementById('textsDrawer').classList.contains('visible')) renderTextsDrawer();
@@ -4146,13 +4169,30 @@
     //    fields:  [{ id: "f_…", type, pl, en, required, options: [{ pl, en }] }] — własne rubryki
     //  Odpowiedzi kierowców na własne rubryki: drivers/<id>/extra/<id rubryki>.
     // =====================================================================
+    // Rubryki formularza, które da się usunąć — osobno w każdym splicie.
+    // Nie da się usunąć tylko przycisku wysyłania, całego formularza i ramki komunikatów (bez nich zapisy nie działają).
     const HIDEABLE_BLOCKS = {
+        splitRole: 'Rola',
+        reserveOnlyNotice: 'Info: tylko rezerwa',
+        firstname: 'Imię',
+        lastname: 'Nazwisko',
+        gamertag: 'Gamertag',
+        discord: 'Discord ID',
         birthdate: 'Data urodzenia',
         platform: 'Platforma',
         assists: 'Poziom asyst',
         device: 'Kontroler',
         rules: 'Regulamin',
         reserveInterest: 'Rezerwa: chęć jazdy w gł. splicie'
+    };
+    // Elementy wspólne dla całej strony (nad zakładkami albo same zakładki) — usuwane w obu splitach naraz.
+    const GLOBAL_HIDEABLE = {
+        header: 'Nagłówek',
+        tracker: 'Paski wolnych miejsc',
+        trackerS1: 'Pasek Split 1',
+        trackerS2: 'Pasek Split 2',
+        splitTabs: 'Zakładki zapisów',
+        adminTrigger: 'Link do panelu admina'
     };
     const EDITABLE_SELECTS = { platform: 'platform', asysty: 'asysty' }; // pole w bazie → id listy w formularzu
     const FIELD_TYPES = { text: 'Tekst (krótki)', textarea: 'Tekst (dłuższy)', number: 'Liczba', date: 'Data', select: 'Lista wyboru', checkbox: 'Pole do zaznaczenia' };
@@ -4251,6 +4291,7 @@
     function applyCustomState(c) {
         applyTexts(c.texts);
         getZones().filter(z => z.dataset.zone !== 'form').forEach(z => applyZoneOrder(z, (c.layout || {})[z.dataset.zone]));
+        applyPageHidden(c.pageHidden || {});
         syncSplitForm(true, c);
     }
 
@@ -4298,19 +4339,30 @@
     }
 
     // ---------- usuwanie / przywracanie wbudowanych rubryk ----------
-    function applyHiddenBlocks(hidden = {}) {
-        Object.keys(HIDEABLE_BLOCKS).forEach(id => {
-            const block = document.querySelector(`[data-block="${id}"]`);
-            if (!block) return;
-            const off = !!hidden[id];
-            block.classList.toggle('block-removed', off);
-            // Ukryte pole nie może być wymagane — inaczej przeglądarka nie wyśle formularza.
-            block.querySelectorAll('input, select, textarea').forEach(el => {
-                if (off) { if (el.required) { el.dataset.wasRequired = '1'; el.required = false; } }
-                else if (el.dataset.wasRequired) { el.required = true; delete el.dataset.wasRequired; }
-            });
+    function setBlockRemoved(id, off) {
+        const block = document.querySelector(`[data-block="${id}"]`);
+        if (!block) return;
+        block.classList.toggle('block-removed', off);
+        // Ukryte pole nie może być wymagane — inaczej przeglądarka nie wyśle formularza.
+        block.querySelectorAll('input, select, textarea').forEach(el => {
+            if (off) { if (el.required) { el.dataset.wasRequired = '1'; el.required = false; } }
+            else if (el.dataset.wasRequired) { el.required = true; delete el.dataset.wasRequired; }
         });
+    }
+    // Rubryki formularza bieżącego splitu.
+    function applyHiddenBlocks(hidden = {}) {
+        Object.keys(HIDEABLE_BLOCKS).forEach(id => setBlockRemoved(id, !!hidden[id]));
         document.querySelectorAll('.bt-hide').forEach(b => b._update && b._update());
+    }
+    // Elementy wspólne dla całej strony.
+    function applyPageHidden(pageHidden = {}) {
+        Object.keys(GLOBAL_HIDEABLE).forEach(id => setBlockRemoved(id, !!pageHidden[id]));
+        document.querySelectorAll('.bt-hide').forEach(b => b._update && b._update());
+    }
+    function normalizePageHidden(src) {
+        const out = {};
+        if (src && typeof src === 'object') Object.entries(src).forEach(([id, v]) => { if (v === true && id in GLOBAL_HIDEABLE) out[id] = true; });
+        return out;
     }
     function isBlockRemoved(id) {
         const b = document.querySelector(`[data-block="${id}"]`);
@@ -4712,6 +4764,25 @@
             b.textContent = '☰ Opcje';
             b.title = 'Usuń, przywróć albo dodaj opcje tej listy';
         }
+        if (id in GLOBAL_HIDEABLE) {
+            const b = mk('bt-hide', () => {
+                const ph = pageDraft.pageHidden;
+                if (ph[id]) delete ph[id];
+                else {
+                    ph[id] = true;
+                    if (id === 'adminTrigger') alert('Link do panelu admina zniknie ze strony.\nPanel otworzysz wtedy, dopisując #admin na końcu adresu strony (np. …/zapisy/#admin).');
+                    if (id === 'splitTabs') alert('Zakładki znikną w obu splitach.\nOdwiedzający trafią wtedy do pierwszego otwartego splitu — do drugiego prowadzi link z #split1 / #split2 na końcu adresu.\nW edycji zakładki zostają widoczne (wyszarzone), żeby dało się przełączać splity.');
+                }
+                applyPageHidden(ph);
+            });
+            b._update = () => {
+                const off = !!(pageDraft && pageDraft.pageHidden[id]);
+                b.classList.toggle('is-off', off);
+                b.textContent = off ? '↺ Przywróć' : '🗑 Usuń';
+                b.title = off ? 'Przywróć element na stronę' : 'Usuń element z całej strony (oba splity)';
+            };
+            b._update();
+        }
         if (id in HIDEABLE_BLOCKS) {
             const b = mk('bt-hide', () => {
                 const hidden = draftCfg().hidden;
@@ -4723,7 +4794,7 @@
                 const off = !!(pageDraft && draftCfg().hidden[id]);
                 b.classList.toggle('is-off', off);
                 b.textContent = off ? '↺ Przywróć' : '🗑 Usuń';
-                b.title = off ? 'Przywróć rubrykę do formularza' : 'Usuń rubrykę z formularza (później możesz ją przywrócić)';
+                b.title = off ? 'Przywróć rubrykę do formularza tego splitu' : 'Usuń rubrykę z formularza tego splitu (później możesz ją przywrócić)';
             };
             b._update();
         }
