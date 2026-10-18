@@ -1302,6 +1302,30 @@
         }
         .tp-add-opt:hover { border-color: #15803d; background: rgba(21, 128, 61, 0.12); }
 
+        /* ===== Pojedyncze elementy (tytuł, napisy, paski, zakładki…) ===== */
+        body:not(.page-edit-mode) .part-removed { display: none !important; }
+        body.page-edit-mode .part-removed { opacity: 0.28; }
+        body.page-edit-mode [data-part].part-hover { box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.55); border-radius: 4px; }
+        .part-tool {
+            display: none;
+            position: fixed;
+            z-index: 1550;
+            padding: 4px 8px;
+            border: none;
+            border-radius: 6px;
+            background: #b91c1c;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1.2;
+            white-space: nowrap;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+        }
+        .part-tool.is-off { background: #15803d; }
+        .part-tool.visible { display: block; }
+
         /* ===== Rubryki: usunięte wbudowane i własne ===== */
         body:not(.page-edit-mode) [data-block].block-removed { display: none !important; }
         body.page-edit-mode [data-block].block-removed > :not(.block-tools) { opacity: 0.3; }
@@ -1412,32 +1436,32 @@
 
     <div id="publicArea" data-zone="page">
     <header data-block="header" data-block-name="Nagłówek">
-        <h1 data-i18n="headerTitle">Formularz Zgłoszeniowy</h1>
-        <p data-i18n="headerSubtitle">Oficjalne zapisy do nowego sezonu ligowego F1 2026/27</p>
+        <h1 data-i18n="headerTitle" data-part="headerTitle" data-part-name="Tytuł">Formularz Zgłoszeniowy</h1>
+        <p data-i18n="headerSubtitle" data-part="headerSubtitle" data-part-name="Podtytuł">Oficjalne zapisy do nowego sezonu ligowego F1 2026/27</p>
     </header>
 
     <div class="grid-status-tracker" data-block="tracker" data-block-name="Paski wolnych miejsc" data-zone="tracker">
         <div class="split-tracker-block" id="split1TrackerBlock" style="display:none;" data-block="trackerS1" data-block-name="Split 1" data-edit-note="widoczny, gdy w Split 1 otwarty jest skład główny lub rezerwa">
-            <div class="split-tracker-heading" data-i18n="split1Heading">🔴 Split 1</div>
+            <div class="split-tracker-heading" data-i18n="split1Heading" data-part="s1Heading" data-part-name="Nagłówek paska">🔴 Split 1</div>
             <div class="tracker-info">
-                <span data-i18n="trackerLabel">Fotele w składzie głównym</span>
-                <span id="liveTrackerTextS1">Pobieranie statusu padoku...</span>
+                <span data-i18n="trackerLabel" data-part="s1Label" data-part-name="Opis paska">Fotele w składzie głównym</span>
+                <span id="liveTrackerTextS1" data-part="s1Status" data-part-name="Liczba wolnych miejsc">Pobieranie statusu padoku...</span>
             </div>
-            <div class="tracker-bar-bg">
+            <div class="tracker-bar-bg" data-part="s1Bar" data-part-name="Pasek">
                 <div id="liveTrackerBarS1" class="tracker-bar-fill"></div>
             </div>
-            <div class="tracker-reserve" id="liveReserveS1"></div>
+            <div class="tracker-reserve" id="liveReserveS1" data-part="s1Reserve" data-part-name="Status rezerwy"></div>
         </div>
         <div class="split-tracker-block" id="split2TrackerBlock" data-block="trackerS2" data-block-name="Split 2" data-edit-note="widoczny, gdy w Split 2 otwarty jest skład główny lub rezerwa">
-            <div class="split-tracker-heading" data-i18n="split2Heading">🔵 Split 2</div>
+            <div class="split-tracker-heading" data-i18n="split2Heading" data-part="s2Heading" data-part-name="Nagłówek paska">🔵 Split 2</div>
             <div class="tracker-info">
-                <span data-i18n="trackerLabel">Fotele w składzie głównym</span>
-                <span id="liveTrackerTextS2">Pobieranie statusu padoku...</span>
+                <span data-i18n="trackerLabel" data-part="s2Label" data-part-name="Opis paska">Fotele w składzie głównym</span>
+                <span id="liveTrackerTextS2" data-part="s2Status" data-part-name="Liczba wolnych miejsc">Pobieranie statusu padoku...</span>
             </div>
-            <div class="tracker-bar-bg">
+            <div class="tracker-bar-bg" data-part="s2Bar" data-part-name="Pasek">
                 <div id="liveTrackerBarS2" class="tracker-bar-fill"></div>
             </div>
-            <div class="tracker-reserve" id="liveReserveS2"></div>
+            <div class="tracker-reserve" id="liveReserveS2" data-part="s2Reserve" data-part-name="Status rezerwy"></div>
         </div>
     </div>
 
@@ -1454,15 +1478,15 @@
         <!-- Osobne zapisy w jednym formularzu: zakładka "Split 1 + Rezerwa" i zakładka "Split 2 + Rezerwa".
              Wybór trzyma ukryta lista #driverSplit. Link z #split1 / #split2 otwiera od razu właściwą zakładkę. -->
         <div class="form-group" id="driverSplitGroup" data-block="splitTabs" data-block-name="Zakładki zapisów">
-            <label data-i18n="lblSplit">Wybierz zapisy</label>
+            <label data-i18n="lblSplit" data-part="tabsLabel" data-part-name="Napis nad zakładkami">Wybierz zapisy</label>
             <div class="split-tabs" role="tablist">
-                <div class="split-tab s1" data-split="Split 1" role="tab" tabindex="0" aria-selected="false">
+                <div class="split-tab s1" data-split="Split 1" data-part="tab1" data-part-name="Zakładka Split 1" role="tab" tabindex="0" aria-selected="false">
                     <span class="split-tab-title" data-i18n="tabSplit1">🔴 Split 1 + Rezerwa</span>
-                    <span class="split-tab-status" id="tabStatusS1"></span>
+                    <span class="split-tab-status" id="tabStatusS1" data-part="tab1Status" data-part-name="Status zakładki"></span>
                 </div>
-                <div class="split-tab s2" data-split="Split 2" role="tab" tabindex="0" aria-selected="false">
+                <div class="split-tab s2" data-split="Split 2" data-part="tab2" data-part-name="Zakładka Split 2" role="tab" tabindex="0" aria-selected="false">
                     <span class="split-tab-title" data-i18n="tabSplit2">🔵 Split 2 + Rezerwa</span>
-                    <span class="split-tab-status" id="tabStatusS2"></span>
+                    <span class="split-tab-status" id="tabStatusS2" data-part="tab2Status" data-part-name="Status zakładki"></span>
                 </div>
             </div>
             <select id="driverSplit" hidden>
@@ -1471,7 +1495,7 @@
             </select>
         </div>
         <div class="form-group" id="driverRoleGroup" data-block="splitRole" data-block-name="Rola">
-            <label for="driverRole" data-i18n="lblRole">Typ Zgłoszenia / Rola</label>
+            <label for="driverRole" data-i18n="lblRole" data-part="roleLabel" data-part-name="Napis">Typ Zgłoszenia / Rola</label>
             <select id="driverRole" required>
                 <option value="Główny" data-i18n="optMain" id="driverRoleOptionMain">Kierowca Podstawowy (Stały etat)</option>
                 <option value="Rezerwowy" data-i18n="optReserve" id="driverRoleOptionReserve">Kierowca Rezerwowy (Okazyjne starty)</option>
@@ -1481,30 +1505,30 @@
         <div class="info-message" id="reserveOnlyNotice" style="display:none; margin-bottom: 18px;" data-block="reserveOnlyNotice" data-block-name="Info: tylko rezerwa" data-edit-note="widoczne, gdy w wybranym splicie otwarta jest tylko rezerwa"><span data-i18n="reserveOnlyInfo">⭐ W wybranym splicie otwarte są obecnie zapisy wyłącznie na Kierowcę Rezerwowego. Jeżeli ktoś poda nieprawidłowe imię i nazwisko, zgłoszenie zostanie automatycznie odrzucone. Taki kierowca musi liczyć się również z możliwością usunięcia z ligi KLW.</span></div>
 
         <div class="form-group half" data-block="firstname" data-block-name="Imię">
-            <label for="firstname" data-i18n="lblFirstname">Imię</label>
+            <label for="firstname" data-i18n="lblFirstname" data-part="firstnameLabel" data-part-name="Napis">Imię</label>
             <input type="text" id="firstname" data-ph-key="phFirstname" placeholder="np. Jan" required minlength="2">
         </div>
         <div class="form-group half" data-block="lastname" data-block-name="Nazwisko">
-            <label for="lastname" data-i18n="lblLastname">Nazwisko</label>
+            <label for="lastname" data-i18n="lblLastname" data-part="lastnameLabel" data-part-name="Napis">Nazwisko</label>
             <input type="text" id="lastname" data-ph-key="phLastname" placeholder="np. Kowalski" required minlength="2">
         </div>
 
         <div class="form-group" data-block="birthdate" data-block-name="Data urodzenia">
-            <label for="birthdate" data-i18n="lblBirthdate">Data urodzenia (opcjonalnie)</label>
+            <label for="birthdate" data-i18n="lblBirthdate" data-part="birthdateLabel" data-part-name="Napis">Data urodzenia (opcjonalnie)</label>
             <input type="date" id="birthdate" min="1900-01-01">
         </div>
 
         <div class="form-group half" data-block="gamertag" data-block-name="Gamertag">
-            <label for="gamertag" data-i18n="lblGamertag">Nick / Gamertag (w grze)</label>
+            <label for="gamertag" data-i18n="lblGamertag" data-part="gamertagLabel" data-part-name="Napis">Nick / Gamertag (w grze)</label>
             <input type="text" id="gamertag" data-ph-key="phGamertag" placeholder="np. DriverX_F1" required>
         </div>
         <div class="form-group half" data-block="discord" data-block-name="Discord ID">
-            <label for="discordTag" data-i18n="lblDiscord">Discord ID</label>
+            <label for="discordTag" data-i18n="lblDiscord" data-part="discordLabel" data-part-name="Napis">Discord ID</label>
             <input type="text" id="discordTag" data-ph-key="phDiscord" placeholder="Skopiuj numeryczne ID (np. 511295...)" required pattern="[0-9]+" title="Tylko cyfry z Twojego Discord ID">
         </div>
 
         <div class="form-group" id="platformContainer" data-block="platform" data-block-name="Platforma">
-            <label for="platform" data-i18n="lblPlatform">Platforma</label>
+            <label for="platform" data-i18n="lblPlatform" data-part="platformLabel" data-part-name="Napis">Platforma</label>
             <select id="platform" required>
                 <option value="" disabled selected data-i18n="optPlatformDef">Gdzie grasz?</option>
                 <option value="PC" data-i18n="optPC">PC (Steam / EA App)</option>
@@ -1514,7 +1538,7 @@
         </div>
 
         <div class="form-group" data-block="assists" data-block-name="Asysty">
-            <label for="asysty" data-i18n="lblAssists">Poziom asyst</label>
+            <label for="asysty" data-i18n="lblAssists" data-part="assistsLabel" data-part-name="Napis">Poziom asyst</label>
             <select id="asysty" required>
                 <option value="Brak" data-i18n="optAssistsNone">Brak asyst (Hardcore)</option>
                 <option value="Częściowe" data-i18n="optAssistsPart">Dozwolone częściowe (ABS / Średnia trakcja)</option>
@@ -1523,7 +1547,7 @@
         </div>
 
         <div class="form-group" data-block="device" data-block-name="Kontroler">
-            <label data-i18n="lblDevice">Kontroler</label>
+            <label data-i18n="lblDevice" data-part="deviceLabel" data-part-name="Napis">Kontroler</label>
             <div class="radio-group">
                 <label class="radio-option">
                     <input type="radio" name="input_device" value="Kierownica" checked> <span data-i18n="lblWheel">Kierownica</span>
@@ -1536,12 +1560,12 @@
 
         <div class="checkbox-group" data-block="rules" data-block-name="Regulamin">
             <input type="checkbox" id="rulesAccept" required>
-            <label for="rulesAccept" data-i18n="lblRules">Akceptuję regulamin ligi i zobowiązuję się do czystej jazdy na torze. Rozumiem, że celowe powodowanie kolizji grozi dyskwalifikacją.</label>
+            <label for="rulesAccept" data-i18n="lblRules" data-part="rulesText" data-part-name="Tekst zgody">Akceptuję regulamin ligi i zobowiązuję się do czystej jazdy na torze. Rozumiem, że celowe powodowanie kolizji grozi dyskwalifikacją.</label>
         </div>
 
         <div class="reserve-interest-group" id="reserveInterestGroup" data-block="reserveInterest" data-block-name="Rezerwa: chęć jazdy w gł. splicie" data-edit-note="widoczne po wybraniu roli Rezerwowy">
             <input type="checkbox" id="reserveInterestMain">
-            <label for="reserveInterestMain"><span class="reserve-interest-badge" data-i18n="reserveBadge">Opcjonalne</span> <span data-i18n="lblReserveInterest">Jestem zainteresowany/a jazdą w głównym splicie, jeśli zwolni się miejsce w składzie podstawowym.</span></label>
+            <label for="reserveInterestMain"><span class="reserve-interest-badge" data-i18n="reserveBadge" data-part="reserveBadge" data-part-name="Plakietka">Opcjonalne</span> <span data-i18n="lblReserveInterest" data-part="reserveText" data-part-name="Tekst">Jestem zainteresowany/a jazdą w głównym splicie, jeśli zwolni się miejsce w składzie podstawowym.</span></label>
         </div>
 
         <div class="submit-block" data-block="submit" data-block-name="Przycisk wysyłania">
@@ -1827,6 +1851,9 @@
         <button type="button" class="btn-admin" onclick="applyTextPopover()">Zastosuj</button>
     </div>
 </div>
+
+<!-- Pływający przycisk do usuwania pojedynczych elementów (tryb edycji strony) -->
+<button type="button" id="partTool" class="part-tool"></button>
 
 <!-- Okno dodawania / ustawień własnej rubryki (tryb edycji strony) -->
 <div id="fieldModalOverlay" class="edit-modal-overlay" style="z-index:1700;">
@@ -2590,7 +2617,7 @@
             // W edycji strony da się przygotować formularz także zamkniętego splitu.
             if (!SPLITS.includes(splitSel.value)) splitSel.value = SPLITS[0];
         } else if (!splitIsOpen(splitSel.value)) {
-            const firstOpen = SPLITS.find(splitIsOpen);
+            const firstOpen = SPLITS.find(sp => splitIsOpen(sp) && !splitTabRemoved(sp)) || SPLITS.find(splitIsOpen);
             if (firstOpen) splitSel.value = firstOpen;
         }
         syncSplitForm(); // rubryki i układ formularza wybranego splitu
@@ -2700,7 +2727,7 @@
         document.getElementById('driverSplit').value = ''; // wymusza pełne ustawienie zakładki i roli od zera
         const fromHash = Object.keys(SPLIT_HASH).find(split => SPLIT_HASH[split] === (location.hash || '').toLowerCase());
         if (fromHash && selectSplitTab(fromHash, false)) return;
-        const firstOpen = SPLITS.find(splitIsOpen);
+        const firstOpen = SPLITS.find(sp => splitIsOpen(sp) && !splitTabRemoved(sp)) || SPLITS.find(splitIsOpen);
         if (firstOpen) selectSplitTab(firstOpen, false);
     }
 
@@ -2767,7 +2794,7 @@
         // Puste pole daty jest szare jak podpowiedzi w innych polach.
         const markBirthdateEmpty = () => birthdateInput.classList.toggle('is-empty', !birthdateInput.value);
         ['input', 'change', 'blur'].forEach(ev => birthdateInput.addEventListener(ev, markBirthdateEmpty));
-        document.getElementById('registrationForm').addEventListener('reset', () => setTimeout(markBirthdateEmpty, 0));
+        document.getElementById('registrationForm').addEventListener('reset', () => setTimeout(() => { markBirthdateEmpty(); applySelectOptions(activeCfg().options); }, 0));
         markBirthdateEmpty();
         initTheme();
         capturePageDefaults();
@@ -2918,7 +2945,7 @@
             discordTag, 
             // Rubryki usunięte przez admina zapisują się jako puste.
             platform: isBlockRemoved('platform') ? '' : document.getElementById('platform').value, 
-            device: isBlockRemoved('device') ? '' : (document.querySelector('input[name="input_device"]:checked') || {}).value || '', 
+            device: isBlockRemoved('device') ? '' : (document.querySelector('input[name="input_device"]:checked:not(:disabled)') || {}).value || '', 
             asysty: isBlockRemoved('assists') ? '' : document.getElementById('asysty').value, 
             driverStatus,
             split: driverSplit,
@@ -3165,7 +3192,7 @@
         const sel = document.createElement('select');
         sel.className = 'cell-select';
         sel.dataset.field = field;
-        [...CELL_SELECT_OPTIONS[field], ...(field in EDITABLE_SELECTS ? extraOptionsFor(field) : [])].forEach(([val, label]) => {
+        [...CELL_SELECT_OPTIONS[field], ...(field in OPTION_FIELDS ? extraOptionsFor(field) : [])].forEach(([val, label]) => {
             const o = document.createElement('option'); o.value = val; o.textContent = label; sel.appendChild(o);
         });
         const current = cellValue(driver, field);
@@ -3414,7 +3441,7 @@
         fillEditSelect(document.getElementById('editPlatform'), 'platform', driver.platform || '');
         fillEditSelect(document.getElementById('editAsysty'), 'asysty', driver.asysty || '');
         renderEditCustomFields(driver);
-        document.querySelectorAll('input[name="edit_input_device"]').forEach(r => { r.checked = (r.value === driver.device); });
+        fillEditDeviceRadios(driver.device || '');
         document.getElementById('editReserveWantsMain').value = driver.reserveWantsMain ? "tak" : "nie";
         document.getElementById('editDiscordMessageLink').value = driver.discordMessageId || "";
         document.getElementById('editDriverRole').dispatchEvent(new Event('change'));
@@ -3559,7 +3586,7 @@
     const DEFAULT_TEXTS = JSON.parse(JSON.stringify(langData));
     let DEFAULT_LAYOUT = {};
     let DEFAULT_WIDTHS = {};
-    let savedPageCustom = { texts: { pl: {}, en: {} }, layout: {}, splits: { s1: { layout: null, widths: {}, hidden: {}, options: {}, fields: [] }, s2: { layout: null, widths: {}, hidden: {}, options: {}, fields: [] } }, pageHidden: {} };
+    let savedPageCustom = { texts: { pl: {}, en: {} }, layout: {}, splits: { s1: { layout: null, widths: {}, hidden: {}, options: {}, fields: [] }, s2: { layout: null, widths: {}, hidden: {}, options: {}, fields: [] } }, pageHidden: {}, pageHiddenParts: {} };
     let pageEditMode = false;
     let pageDraft = null;
     let pageDraftStart = '';
@@ -3704,7 +3731,7 @@
 
     function normalizeCustom(raw) {
         const out = { texts: { pl: {}, en: {} }, layout: {}, widths: {} };
-        if (!raw || typeof raw !== 'object') { out.splits = normalizeSplits(null); out.pageHidden = {}; return out; }
+        if (!raw || typeof raw !== 'object') { out.splits = normalizeSplits(null); out.pageHidden = {}; out.pageHiddenParts = {}; return out; }
         Object.keys(out.texts).forEach(lang => {
             const t = raw.texts && raw.texts[lang];
             if (t && typeof t === 'object') {
@@ -3722,6 +3749,7 @@
         }
         out.splits = normalizeSplits(raw); // rubryki i układ formularza — osobno dla Split 1 i Split 2
         out.pageHidden = normalizePageHidden(raw.pageHidden); // usunięte elementy wspólne dla całej strony
+        out.pageHiddenParts = normalizePartsMap(raw.pageHiddenParts); // usunięte pojedyncze elementy poza formularzem
         return out;
     }
 
@@ -3760,7 +3788,7 @@
     // ---------- wejście / wyjście z trybu edycji ----------
     function draftSnapshot() {
         captureDraftForm(activeSplitKey());
-        return JSON.stringify({ texts: pageDraft.texts, layout: readPageLayout(), splits: pageDraft.splits, pageHidden: pageDraft.pageHidden });
+        return JSON.stringify({ texts: pageDraft.texts, layout: readPageLayout(), splits: pageDraft.splits, pageHidden: pageDraft.pageHidden, pageHiddenParts: pageDraft.pageHiddenParts });
     }
 
     function enterPageEditMode() {
@@ -3769,7 +3797,8 @@
         pageDraft = {
             texts: JSON.parse(JSON.stringify(savedPageCustom.texts)),
             splits: clone(savedPageCustom.splits),
-            pageHidden: clone(savedPageCustom.pageHidden || {})
+            pageHidden: clone(savedPageCustom.pageHidden || {}),
+            pageHiddenParts: clone(savedPageCustom.pageHiddenParts || {})
         };
         if (!pageDraft.texts.pl) pageDraft.texts.pl = {};
         if (!pageDraft.texts.en) pageDraft.texts.en = {};
@@ -3788,6 +3817,7 @@
         pageEditMode = false;
         closeTextPopover();
         closeFieldDialog();
+        hidePartTool();
         closeTextsDrawer();
         document.querySelectorAll('.inline-editable').forEach(el => {
             el.classList.remove('inline-editable');
@@ -3820,7 +3850,7 @@
         blurActiveEditable();
         closeTextPopover();
         captureDraftForm(activeSplitKey());
-        const payload = { texts: pageDraft.texts, layout: readPageLayout(), splits: pageDraft.splits, pageHidden: pageDraft.pageHidden };
+        const payload = { texts: pageDraft.texts, layout: readPageLayout(), splits: pageDraft.splits, pageHidden: pageDraft.pageHidden, pageHiddenParts: pageDraft.pageHiddenParts };
         const btn = document.getElementById('pebSaveBtn');
         btn.disabled = true;
         btn.textContent = 'Zapisywanie...';
@@ -3856,7 +3886,8 @@
         pageDraft.texts = { pl: {}, en: {} };
         pageDraft.splits = { s1: emptyFormConfig(), s2: emptyFormConfig() };
         pageDraft.pageHidden = {};
-        applyCustomState({ texts: pageDraft.texts, layout: DEFAULT_LAYOUT, splits: pageDraft.splits, pageHidden: {} });
+        pageDraft.pageHiddenParts = {};
+        applyCustomState({ texts: pageDraft.texts, layout: DEFAULT_LAYOUT, splits: pageDraft.splits, pageHidden: {}, pageHiddenParts: {} });
         updateLanguageUI();
         updateGridSlotsTracker();
         if (document.getElementById('textsDrawer').classList.contains('visible')) renderTextsDrawer();
@@ -3952,7 +3983,10 @@
     function openPopoverFor(el) {
         blurActiveEditable();
         if (el.tagName === 'SELECT' && el.closest('[data-custom-field]')) { openFieldDialog(el.closest('[data-custom-field]').dataset.customField); return; }
-        if (el.tagName === 'SELECT' && openOptionsEditor(el)) return;
+        if (el.tagName === 'SELECT') {
+            const field = Object.keys(OPTION_FIELDS).find(k => OPTION_FIELDS[k].id === el.id);
+            if (field && openOptionsEditor(field, el)) return;
+        }
         popoverMode = 'texts';
         const blockName = (el.closest('[data-block]') || {}).dataset?.blockName || '';
         let title;
@@ -4194,7 +4228,13 @@
         splitTabs: 'Zakładki zapisów',
         adminTrigger: 'Link do panelu admina'
     };
-    const EDITABLE_SELECTS = { platform: 'platform', asysty: 'asysty' }; // pole w bazie → id listy w formularzu
+    // Pola z opcjami, które można usuwać / przywracać / dodawać (osobno w każdym splicie).
+    // Klucz = pole w bazie. select → lista rozwijana, radio → przyciski wyboru (Kontroler).
+    const OPTION_FIELDS = {
+        platform: { kind: 'select', id: 'platform', block: 'platform' },
+        asysty:   { kind: 'select', id: 'asysty',   block: 'assists' },
+        device:   { kind: 'radio',  name: 'input_device', block: 'device' }
+    };
     const FIELD_TYPES = { text: 'Tekst (krótki)', textarea: 'Tekst (dłuższy)', number: 'Liczba', date: 'Data', select: 'Lista wyboru', checkbox: 'Pole do zaznaczenia' };
     const OPTIONAL_SUFFIX = { pl: ' (opcjonalnie)', en: ' (optional)' };
     const CHOOSE_PLACEHOLDER = { pl: 'Wybierz…', en: 'Choose…' };
@@ -4212,7 +4252,14 @@
     const SPLIT_KEY = { "Split 1": 's1', "Split 2": 's2' };
     const SPLIT_BY_KEY = { s1: "Split 1", s2: "Split 2" };
 
-    function emptyFormConfig() { return { layout: null, widths: {}, hidden: {}, options: {}, fields: [] }; }
+    function emptyFormConfig() { return { layout: null, widths: {}, hidden: {}, hiddenParts: {}, options: {}, fields: [] }; }
+
+    // Usunięte pojedyncze elementy: { idElementu: true }.
+    function normalizePartsMap(src) {
+        const out = {};
+        if (src && typeof src === 'object') Object.entries(src).forEach(([k, v]) => { if (v === true && /^[A-Za-z0-9]+$/.test(k)) out[k] = true; });
+        return out;
+    }
 
     function normalizeFormConfig(src) {
         const out = emptyFormConfig();
@@ -4225,8 +4272,9 @@
         if (src.hidden && typeof src.hidden === 'object') {
             Object.entries(src.hidden).forEach(([id, v]) => { if (v === true && id in HIDEABLE_BLOCKS) out.hidden[id] = true; });
         }
+        out.hiddenParts = normalizePartsMap(src.hiddenParts);
         if (src.options && typeof src.options === 'object') {
-            Object.keys(EDITABLE_SELECTS).forEach(field => {
+            Object.keys(OPTION_FIELDS).forEach(field => {
                 const o = src.options[field];
                 if (!o || typeof o !== 'object') return;
                 const hidden = toArr(o.hidden).filter(v => typeof v === 'string');
@@ -4278,9 +4326,11 @@
         if (!force && key === formSplitKey) return;
         if (pageEditMode && !source && formSplitKey && formSplitKey !== key) captureDraftForm(formSplitKey);
         formSplitKey = key;
-        const cfg = (source || currentCustom()).splits[key]; // source: np. zapisana wersja przy „Anuluj”
+        const src = source || currentCustom(); // source: np. zapisana wersja przy „Anuluj”
+        const cfg = src.splits[key];
         renderCustomFields(cfg.fields);
         applyHiddenBlocks(cfg.hidden);
+        applyHiddenParts(src.pageHiddenParts || {}, cfg.hiddenParts || {});
         applySelectOptions(cfg.options);
         applyZoneOrder(formZone(), cfg.layout);
         applyFormWidths(cfg.widths);
@@ -4370,32 +4420,77 @@
     }
 
     // ---------- opcje list (Platforma, Asysty) ----------
+    // Wbudowane opcje pola (wartość + klucz tekstu), bez dodanych przez admina.
+    function builtInOptions(field) {
+        const f = OPTION_FIELDS[field];
+        if (f.kind === 'select') {
+            return [...document.getElementById(f.id).options]
+                .filter(o => o.dataset.i18n && !o.classList.contains('opt-extra')) // z „Gdzie grasz?” (wartość "")
+                .map(o => ({ value: o.value, key: o.dataset.i18n }));
+        }
+        return [...document.querySelectorAll(`input[name="${f.name}"]`)]
+            .filter(r => !r.closest('.opt-extra'))
+            .map(r => { const span = r.closest('label').querySelector('[data-i18n]'); return { value: r.value, key: span ? span.dataset.i18n : null }; })
+            .filter(o => o.key);
+    }
+
     function applySelectOptions(options = {}) {
-        Object.entries(EDITABLE_SELECTS).forEach(([field, selId]) => {
-            const sel = document.getElementById(selId);
-            if (!sel) return;
+        Object.entries(OPTION_FIELDS).forEach(([field, f]) => {
             const cfg = options[field] || {};
-            const prev = sel.value;
-            sel.querySelectorAll('option.opt-extra').forEach(o => o.remove());
-            [...sel.options].forEach(o => {
-                if (!o.value) return; // „Gdzie grasz?” zostaje zawsze
-                const off = toArr(cfg.hidden).includes(o.value);
-                o.hidden = off;
-                o.disabled = off;
-            });
-            toArr(cfg.extra).forEach(x => {
-                const o = document.createElement('option');
-                o.value = x.v;
-                o.className = 'opt-extra';
-                o.textContent = (currentLang === 'en' ? (x.en || x.pl) : x.pl) || x.v;
-                sel.appendChild(o);
-            });
-            const keep = [...sel.options].find(o => o.value === prev && !o.hidden);
-            if (keep) sel.value = prev;
-            else {
-                const placeholder = [...sel.options].find(o => !o.value);
-                const first = [...sel.options].find(o => o.value && !o.hidden);
-                sel.value = placeholder ? '' : (first ? first.value : '');
+            const hidden = toArr(cfg.hidden);
+            const labelOf = x => (currentLang === 'en' ? (x.en || x.pl) : x.pl) || x.v;
+            if (f.kind === 'select') {
+                const sel = document.getElementById(f.id);
+                if (!sel) return;
+                const prev = sel.value;
+                sel.querySelectorAll('option.opt-extra').forEach(o => o.remove());
+                [...sel.options].forEach(o => {
+                    const off = hidden.includes(o.value);
+                    o.hidden = off;
+                    if (o.value) o.disabled = off; // „Gdzie grasz?” jest zawsze nie do wybrania (tylko podpowiedź)
+                });
+                toArr(cfg.extra).forEach(x => {
+                    const o = document.createElement('option');
+                    o.value = x.v;
+                    o.className = 'opt-extra';
+                    o.textContent = labelOf(x);
+                    sel.appendChild(o);
+                });
+                const keep = [...sel.options].find(o => o.value === prev && !o.hidden);
+                if (keep) sel.value = prev;
+                else {
+                    const placeholder = [...sel.options].find(o => !o.value && !o.hidden);
+                    const first = [...sel.options].find(o => o.value && !o.hidden);
+                    sel.value = placeholder ? '' : (first ? first.value : '');
+                }
+            } else {
+                const group = document.querySelector(`[data-block="${f.block}"] .radio-group`);
+                if (!group) return;
+                const prevEl = group.querySelector(`input[name="${f.name}"]:checked:not(:disabled)`);
+                const prev = prevEl ? prevEl.value : null;
+                group.querySelectorAll('.opt-extra').forEach(el => el.remove());
+                group.querySelectorAll(`input[name="${f.name}"]`).forEach(r => {
+                    const off = hidden.includes(r.value);
+                    r.disabled = off;
+                    if (off) r.checked = false;
+                    r.closest('label').style.display = off ? 'none' : '';
+                });
+                toArr(cfg.extra).forEach(x => {
+                    const lab = document.createElement('label');
+                    lab.className = 'radio-option opt-extra';
+                    const r = document.createElement('input');
+                    r.type = 'radio';
+                    r.name = f.name;
+                    r.value = x.v;
+                    const span = document.createElement('span');
+                    span.textContent = labelOf(x);
+                    lab.append(r, ' ', span);
+                    group.appendChild(lab);
+                });
+                // Zawsze zaznaczona jest jedna z widocznych opcji.
+                const radios = [...group.querySelectorAll(`input[name="${f.name}"]`)].filter(r => !r.disabled);
+                const pick = radios.find(r => r.value === prev) || radios[0];
+                if (pick) pick.checked = true;
             }
         });
     }
@@ -4660,22 +4755,22 @@
         return row;
     }
 
-    function openOptionsEditor(sel) {
-        const field = Object.keys(EDITABLE_SELECTS).find(k => EDITABLE_SELECTS[k] === sel.id);
-        if (!field) return false;
+    function openOptionsEditor(field, anchorEl) {
+        if (!OPTION_FIELDS[field]) return false;
         popoverMode = 'options';
         popoverOptionsField = field;
         const cfg = draftCfg().options[field] || { hidden: [], extra: [] };
-        const blockName = (sel.closest('[data-block]') || {}).dataset?.blockName || '';
-        document.getElementById('tpTitle').textContent = `Opcje listy · ${blockName}`;
+        const blockEl = document.querySelector(`[data-block="${OPTION_FIELDS[field].block}"]`);
+        const blockName = blockEl ? blockEl.dataset.blockName || '' : '';
+        document.getElementById('tpTitle').textContent = `Opcje · ${blockName}`;
         const box = document.getElementById('tpFields');
         box.innerHTML = '';
         const hint = document.createElement('div');
         hint.className = 'tp-hint';
         hint.textContent = `Napisy zmieniasz w języku ${currentLang.toUpperCase()}. ✕ usuwa opcję z formularza (wbudowaną możesz przywrócić ↺).`;
         box.appendChild(hint);
-        [...sel.options].filter(o => o.value && o.dataset.i18n).forEach(o => {
-            const row = makeOptionRow({ text: langData[currentLang][o.dataset.i18n] ?? o.textContent, key: o.dataset.i18n, value: o.value });
+        builtInOptions(field).forEach(o => {
+            const row = makeOptionRow({ text: langData[currentLang][o.key] ?? o.value, key: o.key, value: o.value });
             if (toArr(cfg.hidden).includes(o.value)) row.querySelector('.tp-opt-btn').click();
             box.appendChild(row);
         });
@@ -4690,16 +4785,15 @@
             row.querySelector('input').focus();
         });
         box.appendChild(add);
-        positionPopover(sel);
+        positionPopover(anchorEl || blockEl);
         return true;
     }
 
     function applyOptionsPopover() {
         const field = popoverOptionsField;
-        const sel = document.getElementById(EDITABLE_SELECTS[field]);
         const cfg = draftCfg().options[field] || { hidden: [], extra: [] };
         const oldExtra = new Map(toArr(cfg.extra).map(x => [x.v, x]));
-        const builtInValues = [...sel.options].filter(o => o.value && o.dataset.i18n).map(o => o.value);
+        const builtInValues = builtInOptions(field).map(o => o.value);
         const hidden = [];
         const extra = [];
         const rows = [...document.querySelectorAll('#tpFields .tp-opt-row')];
@@ -4722,8 +4816,8 @@
                 extra.push({ v, pl: txt, en: txt });
             }
         });
-        if (builtInValues.length - hidden.length + extra.length <= 0) {
-            alert('Lista musi mieć co najmniej jedną opcję. Jeśli chcesz pozbyć się całej rubryki, użyj „🗑 Usuń” na jej ramce.');
+        if (builtInValues.filter(Boolean).length - hidden.filter(Boolean).length + extra.length <= 0) {
+            alert('Musi zostać co najmniej jedna opcja. Jeśli chcesz pozbyć się całej rubryki, użyj „🗑 Usuń” na jej ramce.');
             return;
         }
         if (hidden.length || extra.length) draftCfg().options[field] = { hidden, extra };
@@ -4758,11 +4852,15 @@
             tools.appendChild(b);
             return b;
         };
-        const selectId = { platform: 'platform', assists: 'asysty' }[id];
-        if (selectId) {
-            const b = mk('bt-opts', () => { closeTextPopover(); openOptionsEditor(document.getElementById(selectId)); });
+        const optField = Object.keys(OPTION_FIELDS).find(k => OPTION_FIELDS[k].block === id);
+        if (optField) {
+            const b = mk('bt-opts', () => {
+                closeTextPopover();
+                const f = OPTION_FIELDS[optField];
+                openOptionsEditor(optField, f.kind === 'select' ? document.getElementById(f.id) : block.querySelector('.radio-group'));
+            });
             b.textContent = '☰ Opcje';
-            b.title = 'Usuń, przywróć albo dodaj opcje tej listy';
+            b.title = 'Usuń, przywróć albo dodaj pojedyncze opcje';
         }
         if (id in GLOBAL_HIDEABLE) {
             const b = mk('bt-hide', () => {
@@ -4861,6 +4959,123 @@
         });
         return extra;
     }
+
+    // Okno ✏️: przyciski kontrolera z dodanymi opcjami (i obecną wartością kierowcy, jeśli jej brak).
+    function fillEditDeviceRadios(current) {
+        const group = document.querySelector('input[name="edit_input_device"]').closest('.radio-group');
+        group.querySelectorAll('.opt-extra').forEach(el => el.remove());
+        const has = v => [...group.querySelectorAll('input[name="edit_input_device"]')].some(r => r.value === v);
+        const add = v => {
+            const lab = document.createElement('label');
+            lab.className = 'radio-option opt-extra';
+            const r = document.createElement('input');
+            r.type = 'radio';
+            r.name = 'edit_input_device';
+            r.value = v;
+            const span = document.createElement('span');
+            span.textContent = v;
+            lab.append(r, ' ', span);
+            group.appendChild(lab);
+        };
+        extraOptionsFor('device').forEach(([v]) => { if (!has(v)) add(v); });
+        if (current && !has(current)) add(current);
+        group.querySelectorAll('input[name="edit_input_device"]').forEach(r => { r.checked = r.value === current; });
+    }
+
+    // =====================================================================
+    //  POJEDYNCZE ELEMENTY — tytuł, podtytuł, napisy rubryk, linie pasków, zakładki…
+    //  Każdy element z atrybutem data-part da się w edycji usunąć osobno.
+    //  Elementy w formularzu (napisy rubryk) — osobno w każdym splicie (splits.sX.hiddenParts),
+    //  pozostałe (nagłówek, paski miejsc, zakładki) — wspólnie dla strony (pageHiddenParts).
+    // =====================================================================
+    function isGlobalPart(el) {
+        return !el.closest('[data-zone="form"]') || !!el.closest('[data-block="splitTabs"]');
+    }
+    function applyHiddenParts(globalParts = {}, splitParts = {}) {
+        document.querySelectorAll('#publicArea [data-part]').forEach(el => {
+            const map = isGlobalPart(el) ? globalParts : splitParts;
+            el.classList.toggle('part-removed', !!map[el.dataset.part]);
+        });
+        if (partToolTarget) showPartTool(partToolTarget);
+    }
+    function splitTabRemoved(split) {
+        const tab = document.querySelector(`.split-tab[data-split="${split}"]`);
+        return !!tab && tab.classList.contains('part-removed');
+    }
+
+    // ---------- pływający przycisk „✕ Usuń” przy elemencie pod kursorem ----------
+    const partTool = document.getElementById('partTool');
+    let partToolTarget = null;
+    let partToolHideTimer = null;
+
+    function showPartTool(el) {
+        if (!pageEditMode || !el || !document.body.contains(el)) { hidePartTool(); return; }
+        clearTimeout(partToolHideTimer);
+        if (partToolTarget && partToolTarget !== el) partToolTarget.classList.remove('part-hover');
+        partToolTarget = el;
+        el.classList.add('part-hover');
+        const off = el.classList.contains('part-removed');
+        const name = el.dataset.partName || 'element';
+        partTool.classList.toggle('is-off', off);
+        partTool.textContent = off ? `↺ Przywróć: ${name}` : `✕ Usuń: ${name}`;
+        partTool.title = isGlobalPart(el) ? 'Dotyczy całej strony (oba splity)' : 'Dotyczy tylko formularza tego splitu';
+        partTool.classList.add('visible');
+        const r = el.getBoundingClientRect();
+        const tw = partTool.offsetWidth, th = partTool.offsetHeight;
+        const top = Math.max(4, Math.min(window.innerHeight - th - 4, r.top + Math.min(r.height, 30) / 2 - th / 2));
+        const left = Math.max(4, Math.min(window.innerWidth - tw - 4, r.right - tw));
+        partTool.style.top = `${top}px`;
+        partTool.style.left = `${left}px`;
+    }
+    function hidePartTool() {
+        clearTimeout(partToolHideTimer);
+        if (partToolTarget) partToolTarget.classList.remove('part-hover');
+        partToolTarget = null;
+        partTool.classList.remove('visible');
+    }
+    function scheduleHidePartTool() {
+        clearTimeout(partToolHideTimer);
+        partToolHideTimer = setTimeout(hidePartTool, 450);
+    }
+
+    publicArea.addEventListener('mouseover', e => {
+        if (!pageEditMode) return;
+        if (e.target.closest('.block-tools')) { scheduleHidePartTool(); return; }
+        const part = e.target.closest('[data-part]');
+        if (part) showPartTool(part); else scheduleHidePartTool();
+    });
+    publicArea.addEventListener('mouseleave', () => { if (pageEditMode) scheduleHidePartTool(); });
+    // Na telefonie (bez kursora) przycisk pokazuje się po dotknięciu elementu.
+    publicArea.addEventListener('focusin', e => {
+        if (!pageEditMode) return;
+        const part = e.target.closest && e.target.closest('[data-part]');
+        if (part) showPartTool(part);
+    });
+    publicArea.addEventListener('touchstart', e => {
+        if (!pageEditMode) return;
+        const part = e.target.closest('[data-part]');
+        if (part) showPartTool(part);
+    }, { passive: true });
+    partTool.addEventListener('mouseenter', () => clearTimeout(partToolHideTimer));
+    partTool.addEventListener('mouseleave', scheduleHidePartTool);
+    partTool.addEventListener('mousedown', e => e.preventDefault()); // nie zabieraj kursora z edytowanego napisu
+    partTool.addEventListener('click', () => {
+        const el = partToolTarget;
+        if (!el || !pageEditMode) return;
+        const part = el.dataset.part;
+        const map = isGlobalPart(el) ? pageDraft.pageHiddenParts : draftCfg().hiddenParts;
+        if (map[part]) delete map[part];
+        else {
+            map[part] = true;
+            if (part === 'tab1' || part === 'tab2') {
+                alert(`Zakładka zniknie dla odwiedzających (w obu splitach).\nDo tego splitu prowadzi wtedy tylko link z ${part === 'tab1' ? '#split1' : '#split2'} na końcu adresu.`);
+            }
+        }
+        applyHiddenParts(pageDraft.pageHiddenParts, draftCfg().hiddenParts);
+        showPartTool(el);
+    });
+    window.addEventListener('scroll', () => { if (partToolTarget) showPartTool(partToolTarget); }, { passive: true });
+    window.addEventListener('resize', () => { if (partToolTarget) showPartTool(partToolTarget); });
 </script>
 
 </body>
