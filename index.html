@@ -594,7 +594,8 @@
             box-shadow: inset 0 0 0 1px var(--tab-color);
         }
         .split-tab.is-closed { opacity: 0.45; cursor: not-allowed; }
-        body.page-edit-mode .split-tab { user-select: text; -webkit-user-select: text; cursor: default; }
+        body.page-edit-mode .split-tab { user-select: text; -webkit-user-select: text; cursor: pointer; }
+        body.page-edit-mode .split-tab.is-closed { opacity: 0.7; cursor: pointer; } /* w edycji można przygotować formularz zamkniętego splitu */
         .split-tab-title {
             font-family: 'Orbitron', sans-serif;
             font-size: 0.9rem;
@@ -1807,10 +1808,11 @@
 <!-- ===== Edytor strony (widoczny tylko w trybie edycji) ===== -->
 <div class="page-editor-bar" id="pageEditorBar">
     <div class="peb-info">
-        🎨 <strong>Tryb edycji strony</strong> · język: <strong id="pebLang">PL</strong><br>
-        Kliknij napis, by go zmienić. Listy, pola i przycisk edytujesz kliknięciem. Ramki przesuwasz za „⠿”.
+        🎨 <strong>Tryb edycji strony</strong> · język: <strong id="pebLang">PL</strong> · formularz: <span id="pebSplit">—</span><br>
+        Rubryki i układ formularza edytujesz osobno dla każdego splitu — wybierz zakładkę Split 1 / Split 2. Teksty są wspólne.
     </div>
     <button type="button" class="btn-admin" style="background:#15803d;" onclick="openFieldDialog()">➕ Dodaj rubrykę</button>
+    <button type="button" class="btn-admin btn-ghost" id="pebCopyBtn" onclick="copyFormFromOtherSplit()">⧉ Kopiuj rubryki z drugiego splitu</button>
     <button type="button" class="btn-admin btn-ghost" onclick="openTextsDrawer()">📝 Wszystkie teksty</button>
     <button type="button" class="btn-admin btn-ghost" onclick="resetPageToDefaults()">↺ Domyślne</button>
     <button type="button" class="btn-admin btn-ghost" onclick="cancelPageEdit()">Anuluj</button>
@@ -2584,10 +2586,14 @@
             const opt = splitSel.querySelector(`option[value="${split}"]`);
             if (opt) { const open = splitIsOpen(split); opt.hidden = !open; opt.disabled = !open; }
         });
-        if (!splitIsOpen(splitSel.value)) {
+        if (pageEditMode) {
+            // W edycji strony da się przygotować formularz także zamkniętego splitu.
+            if (!SPLITS.includes(splitSel.value)) splitSel.value = SPLITS[0];
+        } else if (!splitIsOpen(splitSel.value)) {
             const firstOpen = SPLITS.find(splitIsOpen);
             if (firstOpen) splitSel.value = firstOpen;
         }
+        syncSplitForm(); // rubryki i układ formularza wybranego splitu
 
         // 2. Role dostępne w wybranym splicie.
         const split = splitSel.value;
@@ -2630,11 +2636,11 @@
             const split = tab.dataset.split;
             const av = splitAvailability(split);
             const open = av.main || av.reserve;
-            const active = open && splitSel.value === split;
+            const active = splitSel.value === split && (open || pageEditMode);
             tab.classList.toggle('is-active', active);
             tab.classList.toggle('is-closed', !open);
             tab.setAttribute('aria-selected', active ? 'true' : 'false');
-            tab.setAttribute('aria-disabled', open ? 'false' : 'true');
+            tab.setAttribute('aria-disabled', (open || pageEditMode) ? 'false' : 'true');
             const status = tab.querySelector('.split-tab-status');
             if (!status) return;
             if (!open) { status.textContent = t.tabClosed; return; }
@@ -2664,14 +2670,23 @@
 
     document.querySelectorAll('.split-tab').forEach(tab => {
         tab.addEventListener('click', () => {
-            if (pageEditMode) return; // w trybie edycji klik służy do zmiany napisu na zakładce
+            if (pageEditMode) { editSplitTab(tab.dataset.split); return; }
             selectSplitTab(tab.dataset.split);
         });
         tab.addEventListener('keydown', e => {
-            if (pageEditMode) return;
+            if (pageEditMode) return; // w edycji Enter / spacja służą do pisania w nazwie zakładki
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectSplitTab(tab.dataset.split); }
         });
     });
+
+    // W trybie edycji strony zakładka wybiera, którego splitu formularz edytujesz (także zamkniętego).
+    function editSplitTab(split) {
+        const sel = document.getElementById('driverSplit');
+        if (sel.value === split) return;
+        closeTextPopover();
+        sel.value = split;
+        updateGridSlotsTracker(); // → przełącza rubryki formularza (syncSplitForm) i zakładki
+    }
 
     // Na start: zakładka z linku (#split1 / #split2), a jeśli jej nie ma albo jest zamknięta — pierwsza otwarta.
     function selectInitialSplitTab() {
@@ -3248,7 +3263,7 @@
     function renderAdminTable(filterText = '', splitFilter = '') {
         const tbody = document.getElementById('adminTableBody'); tbody.innerHTML = '';
         // Kolumny własnych rubryk (tylko podgląd — edycja przez ✏️).
-        const customFields = savedPageCustom.fields || [];
+        const customFields = allCustomFields();
         const thWants = document.getElementById('thWantsMain');
         thWants.parentElement.querySelectorAll('th.cf-col').forEach(th => th.remove());
         customFields.forEach(f => {
@@ -3448,7 +3463,7 @@
 
     async function sendDiscordNotification(driverId, driverStatus, gamertag, discordTag, firstname, lastname, platform, device, asysty, reserveWantsMain, isEdit = false, existingMessageId = null, driverSplit = "Split 2", birthdate = "", extra = {}) {
         // Własne rubryki jako dodatkowe pola wiadomości.
-        const customFields = (savedPageCustom.fields || []).map(f => {
+        const customFields = allCustomFields().map(f => {
             const shown = formatCustomValue(f, extra ? extra[f.id] : undefined);
             return shown ? { name: f.pl.slice(0, 256), value: shown.slice(0, 1024), inline: true } : null;
         }).filter(Boolean);
@@ -3503,7 +3518,7 @@
             const wantsMain = d.driverStatus === "Rezerwowy" ? ` | Chce do gł. składu: ${d.reserveWantsMain ? 'Tak' : 'Nie'}` : '';
             const born = d.birthdate ? ` (ur. ${formatBirthdate(d.birthdate)})` : '';
             const hw = [d.platform, d.device ? `(${d.device})` : ''].filter(Boolean).join(' ') || '—';
-            const custom = (savedPageCustom.fields || []).map(f => { const v = formatCustomValue(f, (d.extra || {})[f.id]); return v ? ` | ${f.pl}: ${v}` : ''; }).join('');
+            const custom = allCustomFields().map(f => { const v = formatCustomValue(f, (d.extra || {})[f.id]); return v ? ` | ${f.pl}: ${v}` : ''; }).join('');
             txt += `${i + 1}. Status: ${d.driverStatus} | Split: ${split} | Nick: ${d.gamertag} | ID: ${d.discordTag} | ${d.firstname} ${d.lastname}${born} | ${hw} | Asysty: ${d.asysty || '—'}${wantsMain}${custom}\n`;
         });
         const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain;charset=utf-8' })); link.download = 'lista_kierowcow.txt'; link.click();
@@ -3524,7 +3539,7 @@
     const DEFAULT_TEXTS = JSON.parse(JSON.stringify(langData));
     let DEFAULT_LAYOUT = {};
     let DEFAULT_WIDTHS = {};
-    let savedPageCustom = { texts: { pl: {}, en: {} }, layout: {}, widths: {}, hidden: {}, options: {}, fields: [] };
+    let savedPageCustom = { texts: { pl: {}, en: {} }, layout: {}, splits: { s1: { layout: null, widths: {}, hidden: {}, options: {}, fields: [] }, s2: { layout: null, widths: {}, hidden: {}, options: {}, fields: [] } } };
     let pageEditMode = false;
     let pageDraft = null;
     let pageDraftStart = '';
@@ -3616,35 +3631,48 @@
         DEFAULT_WIDTHS = readWidths();
     }
 
-    function applyLayout(layout = {}, widths = {}) {
-        getZones().forEach(zone => {
-            const name = zone.dataset.zone;
-            const blocks = zoneBlocks(zone);
-            const defaultOrder = DEFAULT_LAYOUT[name] || [];
-            const wanted = Array.isArray(layout[name]) ? layout[name] : defaultOrder;
-            const byId = new Map(blocks.map(b => [b.dataset.block, b]));
-            const sorted = [];
-            wanted.forEach(id => { const b = byId.get(id); if (b && !sorted.includes(b)) sorted.push(b); });
-            // Ramki spoza zapisanego układu (np. dodane w nowszej wersji strony) trafiają w swoje domyślne miejsce.
-            blocks.filter(b => !sorted.includes(b)).forEach(b => {
-                const di = defaultOrder.indexOf(b.dataset.block);
-                let at = 0;
-                if (di === -1) {
-                    // Własna rubryka, której nie ma jeszcze w zapisanym układzie — przed regulaminem / przyciskiem.
-                    at = sorted.findIndex(x => x.dataset.block === 'rules' || x.dataset.block === 'submit');
-                    if (at === -1) at = sorted.length;
-                } else {
-                    sorted.forEach((x, i) => { if (defaultOrder.indexOf(x.dataset.block) < di) at = i + 1; });
-                }
-                sorted.splice(at, 0, b);
-            });
-            sorted.forEach(b => zone.appendChild(b));
+    // Ustawia kolejność ramek w jednej strefie; ramki spoza zapisanej kolejności trafiają w swoje domyślne miejsce.
+    function applyZoneOrder(zone, wantedIds) {
+        const name = zone.dataset.zone;
+        const blocks = zoneBlocks(zone);
+        const defaultOrder = DEFAULT_LAYOUT[name] || [];
+        const wanted = Array.isArray(wantedIds) ? wantedIds : defaultOrder;
+        const byId = new Map(blocks.map(b => [b.dataset.block, b]));
+        const sorted = [];
+        wanted.forEach(id => { const b = byId.get(id); if (b && !sorted.includes(b)) sorted.push(b); });
+        blocks.filter(b => !sorted.includes(b)).forEach(b => {
+            const di = defaultOrder.indexOf(b.dataset.block);
+            let at = 0;
+            if (di === -1) {
+                // Własna rubryka, której nie ma jeszcze w zapisanym układzie — przed regulaminem / przyciskiem.
+                at = sorted.findIndex(x => x.dataset.block === 'rules' || x.dataset.block === 'submit');
+                if (at === -1) at = sorted.length;
+            } else {
+                sorted.forEach((x, i) => { if (defaultOrder.indexOf(x.dataset.block) < di) at = i + 1; });
+            }
+            sorted.splice(at, 0, b);
         });
+        sorted.forEach(b => zone.appendChild(b));
+    }
+
+    function applyFormWidths(widths = {}) {
         zoneBlocks(formZone()).forEach(b => {
             const w = widths[b.dataset.block] || DEFAULT_WIDTHS[b.dataset.block] || 'full';
             b.classList.toggle('half', w === 'half');
         });
         document.querySelectorAll('.bt-width').forEach(btn => btn._update && btn._update());
+    }
+
+    function applyLayout(layout = {}, widths = {}) {
+        getZones().forEach(zone => applyZoneOrder(zone, layout[zone.dataset.zone]));
+        applyFormWidths(widths);
+    }
+
+    // Układ stref poza formularzem (formularz ma własny układ w każdym splicie).
+    function readPageLayout() {
+        const layout = readLayout();
+        delete layout.form;
+        return layout;
     }
 
     // ---------- teksty ----------
@@ -3656,7 +3684,7 @@
 
     function normalizeCustom(raw) {
         const out = { texts: { pl: {}, en: {} }, layout: {}, widths: {} };
-        if (!raw || typeof raw !== 'object') return normalizeFieldsCustom(null, out);
+        if (!raw || typeof raw !== 'object') { out.splits = normalizeSplits(null); return out; }
         Object.keys(out.texts).forEach(lang => {
             const t = raw.texts && raw.texts[lang];
             if (t && typeof t === 'object') {
@@ -3672,7 +3700,8 @@
         if (raw.widths && typeof raw.widths === 'object') {
             Object.entries(raw.widths).forEach(([id, w]) => { if (w === 'half' || w === 'full') out.widths[id] = w; });
         }
-        return normalizeFieldsCustom(raw, out); // + usunięte rubryki, opcje list, własne rubryki
+        out.splits = normalizeSplits(raw); // rubryki i układ formularza — osobno dla Split 1 i Split 2
+        return out;
     }
 
     async function fetchPageCustom() {
@@ -3709,7 +3738,8 @@
 
     // ---------- wejście / wyjście z trybu edycji ----------
     function draftSnapshot() {
-        return JSON.stringify({ texts: pageDraft.texts, layout: readLayout(), widths: readWidths(), hidden: pageDraft.hidden, options: pageDraft.options, fields: pageDraft.fields });
+        captureDraftForm(activeSplitKey());
+        return JSON.stringify({ texts: pageDraft.texts, layout: readPageLayout(), splits: pageDraft.splits });
     }
 
     function enterPageEditMode() {
@@ -3717,11 +3747,7 @@
         pageEditMode = true;
         pageDraft = {
             texts: JSON.parse(JSON.stringify(savedPageCustom.texts)),
-            layout: readLayout(),
-            widths: readWidths(),
-            hidden: clone(savedPageCustom.hidden || {}),
-            options: clone(savedPageCustom.options || {}),
-            fields: clone(savedPageCustom.fields || [])
+            splits: clone(savedPageCustom.splits)
         };
         if (!pageDraft.texts.pl) pageDraft.texts.pl = {};
         if (!pageDraft.texts.en) pageDraft.texts.en = {};
@@ -3730,6 +3756,8 @@
         setupEditables();
         injectBlockTools();
         updateEditorLangLabels();
+        updateEditorSplitLabel();
+        renderSplitTabs();
         pageDraftStart = draftSnapshot();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -3769,7 +3797,8 @@
         if (!pageEditMode) return;
         blurActiveEditable();
         closeTextPopover();
-        const payload = { texts: pageDraft.texts, layout: readLayout(), widths: readWidths(), hidden: pageDraft.hidden, options: pageDraft.options, fields: pageDraft.fields };
+        captureDraftForm(activeSplitKey());
+        const payload = { texts: pageDraft.texts, layout: readPageLayout(), splits: pageDraft.splits };
         const btn = document.getElementById('pebSaveBtn');
         btn.disabled = true;
         btn.textContent = 'Zapisywanie...';
@@ -3799,14 +3828,12 @@
 
     function resetPageToDefaults() {
         if (!pageEditMode) return;
-        if (!confirm("Przywrócić domyślną stronę?\n• domyślne teksty (PL i EN) i układ ramek\n• przywrócenie usuniętych rubryk i opcji list\n• usunięcie dodanych rubryk\nOdwiedzający zobaczą to dopiero po kliknięciu „Zapisz”.")) return;
+        if (!confirm("Przywrócić domyślną stronę (oba splity)?\n• domyślne teksty (PL i EN) i układ ramek\n• przywrócenie usuniętych rubryk i opcji list\n• usunięcie dodanych rubryk\nOdwiedzający zobaczą to dopiero po kliknięciu „Zapisz”.")) return;
         blurActiveEditable();
         closeTextPopover();
         pageDraft.texts = { pl: {}, en: {} };
-        pageDraft.hidden = {};
-        pageDraft.options = {};
-        pageDraft.fields = [];
-        applyCustomState({ texts: pageDraft.texts, layout: DEFAULT_LAYOUT, widths: DEFAULT_WIDTHS, hidden: {}, options: {}, fields: [] });
+        pageDraft.splits = { s1: emptyFormConfig(), s2: emptyFormConfig() };
+        applyCustomState({ texts: pageDraft.texts, layout: DEFAULT_LAYOUT, splits: pageDraft.splits });
         updateLanguageUI();
         updateGridSlotsTracker();
         if (document.getElementById('textsDrawer').classList.contains('visible')) renderTextsDrawer();
@@ -4139,17 +4166,28 @@
     // Stan, który jest teraz na stronie: szkic w trybie edycji albo zapisana wersja.
     function currentCustom() { return pageDraft || savedPageCustom; }
 
-    function normalizeFieldsCustom(raw, out) {
-        out.hidden = {};
-        out.options = {};
-        out.fields = [];
-        if (!raw || typeof raw !== 'object') return out;
-        if (raw.hidden && typeof raw.hidden === 'object') {
-            Object.entries(raw.hidden).forEach(([id, v]) => { if (v === true && id in HIDEABLE_BLOCKS) out.hidden[id] = true; });
+    // ---------- konfiguracja formularza osobno dla każdego splitu ----------
+    // settings/pageCustom.splits = { s1: {...}, s2: {...} }, każdy:
+    //   { layout: [kolejność ramek formularza], widths: { id: half|full }, hidden, options, fields }
+    const SPLIT_KEY = { "Split 1": 's1', "Split 2": 's2' };
+    const SPLIT_BY_KEY = { s1: "Split 1", s2: "Split 2" };
+
+    function emptyFormConfig() { return { layout: null, widths: {}, hidden: {}, options: {}, fields: [] }; }
+
+    function normalizeFormConfig(src) {
+        const out = emptyFormConfig();
+        if (!src || typeof src !== 'object') return out;
+        const lay = toArr(src.layout).filter(x => typeof x === 'string');
+        out.layout = lay.length ? lay : null;
+        if (src.widths && typeof src.widths === 'object') {
+            Object.entries(src.widths).forEach(([id, w]) => { if (w === 'half' || w === 'full') out.widths[id] = w; });
         }
-        if (raw.options && typeof raw.options === 'object') {
+        if (src.hidden && typeof src.hidden === 'object') {
+            Object.entries(src.hidden).forEach(([id, v]) => { if (v === true && id in HIDEABLE_BLOCKS) out.hidden[id] = true; });
+        }
+        if (src.options && typeof src.options === 'object') {
             Object.keys(EDITABLE_SELECTS).forEach(field => {
-                const o = raw.options[field];
+                const o = src.options[field];
                 if (!o || typeof o !== 'object') return;
                 const hidden = toArr(o.hidden).filter(v => typeof v === 'string');
                 const extra = toArr(o.extra)
@@ -4158,7 +4196,7 @@
                 if (hidden.length || extra.length) out.options[field] = { hidden, extra };
             });
         }
-        out.fields = toArr(raw.fields)
+        out.fields = toArr(src.fields)
             .filter(f => f && typeof f.id === 'string' && /^f_[a-z0-9]+$/.test(f.id) && f.type in FIELD_TYPES && str(f.pl).trim())
             .map(f => ({
                 id: f.id,
@@ -4174,20 +4212,89 @@
         return out;
     }
 
-    // Wszystko, co admin ustawił w edycji strony, nakładane na formularz.
-    function applyCustomState(c) {
-        applyTexts(c.texts);
-        renderCustomFields(c.fields);
-        applyHiddenBlocks(c.hidden);
-        applySelectOptions(c.options);
-        applyLayout(c.layout, c.widths);
+    // Splity z zapisu; starszy zapis (wspólne rubryki dla całego formularza) trafia do obu splitów.
+    function normalizeSplits(raw) {
+        const r = raw && typeof raw === 'object' ? raw : {};
+        const legacy = { layout: r.layout && r.layout.form, widths: r.widths, hidden: r.hidden, options: r.options, fields: r.fields };
+        const sp = r.splits && typeof r.splits === 'object' ? r.splits : {};
+        return { s1: normalizeFormConfig(sp.s1 || legacy), s2: normalizeFormConfig(sp.s2 || legacy) };
     }
 
-    // Po zmianie języka: napisy własnych rubryk i dodanych opcji list.
+    function activeSplitKey() { return SPLIT_KEY[document.getElementById('driverSplit').value] || 's2'; }
+    function activeCfg() { return currentCustom().splits[activeSplitKey()]; }
+    function draftCfg() { return pageDraft.splits[activeSplitKey()]; }
+
+    // Kolejność i szerokość ramek formularza z ekranu → szkic splitu (przed przełączeniem zakładki i zapisem).
+    function captureDraftForm(key) {
+        if (!pageDraft || !key) return;
+        const cfg = pageDraft.splits[key];
+        cfg.layout = zoneBlocks(formZone()).map(b => b.dataset.block);
+        cfg.widths = readWidths();
+    }
+
+    let formSplitKey = null; // split, którego rubryki są teraz w formularzu
+    function syncSplitForm(force = false, source = null) {
+        const key = activeSplitKey();
+        if (!force && key === formSplitKey) return;
+        if (pageEditMode && !source && formSplitKey && formSplitKey !== key) captureDraftForm(formSplitKey);
+        formSplitKey = key;
+        const cfg = (source || currentCustom()).splits[key]; // source: np. zapisana wersja przy „Anuluj”
+        renderCustomFields(cfg.fields);
+        applyHiddenBlocks(cfg.hidden);
+        applySelectOptions(cfg.options);
+        applyZoneOrder(formZone(), cfg.layout);
+        applyFormWidths(cfg.widths);
+        if (pageEditMode) { injectBlockTools(); updateEditorSplitLabel(); }
+    }
+
+    // Wszystko, co admin ustawił w edycji strony, nakładane na stronę.
+    function applyCustomState(c) {
+        applyTexts(c.texts);
+        getZones().filter(z => z.dataset.zone !== 'form').forEach(z => applyZoneOrder(z, (c.layout || {})[z.dataset.zone]));
+        syncSplitForm(true, c);
+    }
+
+    // Po zmianie języka: napisy własnych rubryk i dodanych opcji list w bieżącym splicie.
     function refreshCustomLanguage() {
-        const c = currentCustom();
-        renderCustomFields(c.fields);
-        applySelectOptions(c.options);
+        const cfg = activeCfg();
+        renderCustomFields(cfg.fields);
+        applySelectOptions(cfg.options);
+    }
+
+    // Własne rubryki z obu splitów (bez powtórzeń) — do tabeli, Discorda, eksportu.
+    function allCustomFields() {
+        const seen = new Set();
+        const out = [];
+        ['s1', 's2'].forEach(k => (savedPageCustom.splits[k].fields || []).forEach(f => { if (!seen.has(f.id)) { seen.add(f.id); out.push(f); } }));
+        return out;
+    }
+    // Rubryki do okna ✏️: te z formularza splitu kierowcy + te, na które już odpowiedział.
+    function fieldsForDriver(driver) {
+        const key = SPLIT_KEY[splitOf(driver)];
+        const own = new Set(key ? savedPageCustom.splits[key].fields.map(f => f.id) : allCustomFields().map(f => f.id));
+        const extra = driver.extra || {};
+        return allCustomFields().filter(f => own.has(f.id) || f.id in extra);
+    }
+
+    // ---------- pasek edytora: który split edytujesz ----------
+    function updateEditorSplitLabel() {
+        const el = document.getElementById('pebSplit');
+        if (!el) return;
+        const split = SPLIT_BY_KEY[activeSplitKey()];
+        const other = split === "Split 1" ? "Split 2" : "Split 1";
+        el.innerHTML = `${split === "Split 1" ? '🔴' : '🔵'} <strong>${split}</strong>`;
+        const copyBtn = document.getElementById('pebCopyBtn');
+        if (copyBtn) copyBtn.textContent = `⧉ Kopiuj rubryki z ${other}`;
+    }
+
+    function copyFormFromOtherSplit() {
+        if (!pageEditMode) return;
+        const key = activeSplitKey();
+        const otherKey = key === 's1' ? 's2' : 's1';
+        if (!confirm(`Zastąpić rubryki i układ formularza ${SPLIT_BY_KEY[key]} ustawieniami z ${SPLIT_BY_KEY[otherKey]}?`)) return;
+        closeTextPopover();
+        pageDraft.splits[key] = clone(pageDraft.splits[otherKey]);
+        syncSplitForm(true);
     }
 
     // ---------- usuwanie / przywracanie wbudowanych rubryk ----------
@@ -4243,8 +4350,13 @@
 
     // Dodane opcje list — do tabeli admina i okna edycji (pokazujemy wszystkie, także usunięte z formularza).
     function extraOptionsFor(field) {
-        const cfg = (savedPageCustom.options || {})[field];
-        return toArr(cfg && cfg.extra).map(x => [x.v, x.v]);
+        const seen = new Set();
+        const out = [];
+        ['s1', 's2'].forEach(k => {
+            const cfg = (savedPageCustom.splits[k].options || {})[field];
+            toArr(cfg && cfg.extra).forEach(x => { if (!seen.has(x.v)) { seen.add(x.v); out.push([x.v, x.v]); } });
+        });
+        return out;
     }
     function fillEditSelect(sel, field, current) {
         sel.querySelectorAll('option.opt-extra').forEach(o => o.remove());
@@ -4363,7 +4475,7 @@
     }
     function collectCustomAnswers() {
         const extra = {};
-        (savedPageCustom.fields || []).forEach(f => {
+        (savedPageCustom.splits[activeSplitKey()].fields || []).forEach(f => {
             const v = readCustomValue(f);
             if (v === undefined) return;
             if (f.type === 'checkbox') extra[f.id] = v;
@@ -4388,7 +4500,7 @@
         blurActiveEditable();
         closeTextPopover();
         editingFieldId = id;
-        const f = id ? pageDraft.fields.find(x => x.id === id) : null;
+        const f = id ? draftCfg().fields.find(x => x.id === id) : null;
         const block = id ? document.querySelector(`[data-custom-field="${id}"]`) : null;
         document.getElementById('fmTitle').textContent = f ? '⚙ Ustawienia rubryki' : '➕ Nowa rubryka';
         document.getElementById('fmLabelPl').value = f ? f.pl : '';
@@ -4436,10 +4548,11 @@
         const isNew = !editingFieldId;
         const id = editingFieldId || `f_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
         const field = { id, type, pl, en, required, options };
-        if (isNew) pageDraft.fields.push(field);
-        else pageDraft.fields = pageDraft.fields.map(x => x.id === id ? field : x);
+        const cfg = draftCfg();
+        if (isNew) cfg.fields.push(field);
+        else cfg.fields = cfg.fields.map(x => x.id === id ? field : x);
 
-        renderCustomFields(pageDraft.fields);
+        renderCustomFields(cfg.fields);
         const block = document.querySelector(`[data-custom-field="${id}"]`);
         if (block) block.classList.toggle('half', width === 'half');
         injectBlockTools();
@@ -4449,11 +4562,11 @@
     }
 
     function deleteCustomField(id) {
-        const f = pageDraft && pageDraft.fields.find(x => x.id === id);
+        const f = pageDraft && draftCfg().fields.find(x => x.id === id);
         if (!f) return;
         if (!confirm(`Usunąć rubrykę „${f.pl}”?\nOdpowiedzi, które kierowcy już wysłali, zostaną w bazie, ale przestaną być widoczne.`)) return;
-        pageDraft.fields = pageDraft.fields.filter(x => x.id !== id);
-        renderCustomFields(pageDraft.fields);
+        draftCfg().fields = draftCfg().fields.filter(x => x.id !== id);
+        renderCustomFields(draftCfg().fields);
     }
 
     document.getElementById('fieldModalOverlay').addEventListener('mousedown', e => {
@@ -4500,7 +4613,7 @@
         if (!field) return false;
         popoverMode = 'options';
         popoverOptionsField = field;
-        const cfg = pageDraft.options[field] || { hidden: [], extra: [] };
+        const cfg = draftCfg().options[field] || { hidden: [], extra: [] };
         const blockName = (sel.closest('[data-block]') || {}).dataset?.blockName || '';
         document.getElementById('tpTitle').textContent = `Opcje listy · ${blockName}`;
         const box = document.getElementById('tpFields');
@@ -4532,7 +4645,7 @@
     function applyOptionsPopover() {
         const field = popoverOptionsField;
         const sel = document.getElementById(EDITABLE_SELECTS[field]);
-        const cfg = pageDraft.options[field] || { hidden: [], extra: [] };
+        const cfg = draftCfg().options[field] || { hidden: [], extra: [] };
         const oldExtra = new Map(toArr(cfg.extra).map(x => [x.v, x]));
         const builtInValues = [...sel.options].filter(o => o.value && o.dataset.i18n).map(o => o.value);
         const hidden = [];
@@ -4561,9 +4674,9 @@
             alert('Lista musi mieć co najmniej jedną opcję. Jeśli chcesz pozbyć się całej rubryki, użyj „🗑 Usuń” na jej ramce.');
             return;
         }
-        if (hidden.length || extra.length) pageDraft.options[field] = { hidden, extra };
-        else delete pageDraft.options[field];
-        applySelectOptions(pageDraft.options);
+        if (hidden.length || extra.length) draftCfg().options[field] = { hidden, extra };
+        else delete draftCfg().options[field];
+        applySelectOptions(draftCfg().options);
         updateLanguageUI();
         closeTextPopover();
     }
@@ -4601,12 +4714,13 @@
         }
         if (id in HIDEABLE_BLOCKS) {
             const b = mk('bt-hide', () => {
-                if (pageDraft.hidden[id]) delete pageDraft.hidden[id];
-                else pageDraft.hidden[id] = true;
-                applyHiddenBlocks(pageDraft.hidden);
+                const hidden = draftCfg().hidden;
+                if (hidden[id]) delete hidden[id];
+                else hidden[id] = true;
+                applyHiddenBlocks(hidden);
             });
             b._update = () => {
-                const off = !!(pageDraft && pageDraft.hidden[id]);
+                const off = !!(pageDraft && draftCfg().hidden[id]);
                 b.classList.toggle('is-off', off);
                 b.textContent = off ? '↺ Przywróć' : '🗑 Usuń';
                 b.title = off ? 'Przywróć rubrykę do formularza' : 'Usuń rubrykę z formularza (później możesz ją przywrócić)';
@@ -4627,7 +4741,7 @@
         const box = document.getElementById('editCustomFields');
         box.innerHTML = '';
         const extra = driver.extra || {};
-        (savedPageCustom.fields || []).forEach(f => {
+        fieldsForDriver(driver).forEach(f => {
             const group = document.createElement('div');
             group.className = 'form-group';
             const lab = document.createElement('label');
@@ -4663,7 +4777,7 @@
     // Zwraca nowe "extra" kierowcy — odpowiedzi na usunięte rubryki zostają nietknięte.
     function readEditCustomFields(driver) {
         const extra = { ...((driver && driver.extra) || {}) };
-        (savedPageCustom.fields || []).forEach(f => {
+        allCustomFields().forEach(f => {
             const el = document.getElementById(`edit_cf_${f.id}`);
             if (!el) return;
             const raw = el.value.trim();
