@@ -559,6 +559,67 @@
         [data-theme="light"] .error-message { background: #fef2f2; border: 1.5px solid #ef4444; color: #991b1b; }
         [data-theme="light"] .info-message { background: #fff7ed; border: 1.5px solid #f97316; color: #9a3412; }
 
+        /* ===== Zakładki zapisów: Split 1 + Rezerwa / Split 2 + Rezerwa ===== */
+        .split-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .split-tab {
+            --tab-color: var(--f1-red);
+            --tab-bg: rgba(225, 6, 0, 0.10);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 16px 18px;
+            border-radius: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-light);
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, opacity 0.2s;
+        }
+        .split-tab.s2 { --tab-color: #5bb0ff; --tab-bg: rgba(0, 99, 229, 0.12); }
+        [data-theme="light"] .split-tab.s1 { --tab-color: #b91c1c; --tab-bg: #fef2f2; }
+        [data-theme="light"] .split-tab.s2 { --tab-color: var(--admin-blue); --tab-bg: #eff6ff; }
+        .split-tab:hover:not(.is-closed),
+        .split-tab:focus-visible { border-color: var(--tab-color); outline: none; }
+        .split-tab.is-active {
+            background: var(--tab-bg);
+            border-color: var(--tab-color);
+            box-shadow: inset 0 0 0 1px var(--tab-color);
+        }
+        .split-tab.is-closed { opacity: 0.45; cursor: not-allowed; }
+        body.page-edit-mode .split-tab { user-select: text; -webkit-user-select: text; cursor: default; }
+        .split-tab-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .split-tab.is-active .split-tab-title { color: var(--tab-color); }
+        .split-tab-status {
+            font-size: 0.8rem;
+            font-weight: 600;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        /* Formularz w ramce w kolorze aktywnej zakładki — widać, do którego splitu idzie zgłoszenie. */
+        #registrationForm {
+            border: 1px solid var(--glass-border);
+            border-top: 4px solid var(--f1-red);
+            border-radius: 16px;
+            padding: 26px;
+            transition: border-color 0.3s ease;
+        }
+        #registrationForm[data-active-split="Split 2"] { border-top-color: #5bb0ff; }
+        [data-theme="light"] #registrationForm { border-top-color: #b91c1c; }
+        [data-theme="light"] #registrationForm[data-active-split="Split 2"] { border-top-color: var(--admin-blue); }
+
         /* Linia statusu rezerwy pod paskiem miejsc danego splitu. */
         .tracker-reserve {
             margin-top: 8px;
@@ -1258,6 +1319,10 @@
             header h1 { font-size: 1.9rem; }
             .admin-controls { flex-direction: column; align-items: stretch; }
             .split-settings-grid { grid-template-columns: 1fr; }
+            #registrationForm { padding: 18px 16px; }
+            .split-tabs { gap: 8px; }
+            .split-tab { padding: 12px; }
+            .split-tab-title { font-size: 0.78rem; letter-spacing: 0.5px; }
             .split-settings-card { padding: 12px; }
             .split-settings-card .split-toggle-label.sub { padding-left: 6px; }
             .search-bar { max-width: 100%; }
@@ -1320,14 +1385,26 @@
     <!-- Formularz to jedna siatka 2-kolumnowa: każda ramka ma szerokość ½ (klasa "half") albo pełną. -->
     <form id="registrationForm" data-block="form" data-block-name="Formularz" data-zone="form">
         <!-- Najpierw split, potem rola: każdy split ma własne zapisy do składu głównego i własną rezerwę. -->
-        <div class="form-group half" id="driverSplitGroup" data-block="split" data-block-name="Split">
-            <label for="driverSplit" data-i18n="lblSplit">Split</label>
-            <select id="driverSplit" required>
+        <!-- Osobne zapisy w jednym formularzu: zakładka "Split 1 + Rezerwa" i zakładka "Split 2 + Rezerwa".
+             Wybór trzyma ukryta lista #driverSplit. Link z #split1 / #split2 otwiera od razu właściwą zakładkę. -->
+        <div class="form-group" id="driverSplitGroup" data-block="splitTabs" data-block-name="Zakładki zapisów">
+            <label data-i18n="lblSplit">Wybierz zapisy</label>
+            <div class="split-tabs" role="tablist">
+                <div class="split-tab s1" data-split="Split 1" role="tab" tabindex="0" aria-selected="false">
+                    <span class="split-tab-title" data-i18n="tabSplit1">🔴 Split 1 + Rezerwa</span>
+                    <span class="split-tab-status" id="tabStatusS1"></span>
+                </div>
+                <div class="split-tab s2" data-split="Split 2" role="tab" tabindex="0" aria-selected="false">
+                    <span class="split-tab-title" data-i18n="tabSplit2">🔵 Split 2 + Rezerwa</span>
+                    <span class="split-tab-status" id="tabStatusS2"></span>
+                </div>
+            </div>
+            <select id="driverSplit" hidden>
                 <option value="Split 1" data-i18n="optSplit1" id="driverSplitOption1" hidden disabled>Split 1</option>
                 <option value="Split 2" data-i18n="optSplit2" id="driverSplitOption2">Split 2</option>
             </select>
         </div>
-        <div class="form-group half" id="driverRoleGroup" data-block="role" data-block-name="Rola">
+        <div class="form-group" id="driverRoleGroup" data-block="splitRole" data-block-name="Rola">
             <label for="driverRole" data-i18n="lblRole">Typ Zgłoszenia / Rola</label>
             <select id="driverRole" required>
                 <option value="Główny" data-i18n="optMain" id="driverRoleOptionMain">Kierowca Podstawowy (Stały etat)</option>
@@ -1732,9 +1809,17 @@
             lblDevice: "Kontroler",
             lblWheel: "Kierownica",
             lblPad: "Pad",
-            lblSplit: "Split",
+            lblSplit: "Wybierz zapisy",
             optSplit1: "Split 1",
             optSplit2: "Split 2",
+            tabSplit1: "🔴 Split 1 + Rezerwa",
+            tabSplit2: "🔵 Split 2 + Rezerwa",
+            tabMainFree: "Skład główny: {wolne} wolnych",
+            tabMainFull: "Skład główny: pełny",
+            tabMainClosed: "Skład główny: zamknięty",
+            tabReserveOpen: "Rezerwa: otwarta",
+            tabReserveClosed: "Rezerwa: zamknięta",
+            tabClosed: "🔒 Zapisy zamknięte",
             split1Heading: "🔴 Split 1",
             split2Heading: "🔵 Split 2",
 
@@ -1800,9 +1885,17 @@
             lblDevice: "Input Device",
             lblWheel: "Wheel",
             lblPad: "Pad",
-            lblSplit: "Split",
+            lblSplit: "Choose registration",
             optSplit1: "Split 1",
             optSplit2: "Split 2",
+            tabSplit1: "🔴 Split 1 + Reserve",
+            tabSplit2: "🔵 Split 2 + Reserve",
+            tabMainFree: "Main lineup: {wolne} free",
+            tabMainFull: "Main lineup: full",
+            tabMainClosed: "Main lineup: closed",
+            tabReserveOpen: "Reserve: open",
+            tabReserveClosed: "Reserve: closed",
+            tabClosed: "🔒 Registration closed",
             split1Heading: "🔴 Split 1",
             split2Heading: "🔵 Split 2",
 
@@ -2384,6 +2477,8 @@
         // Gdy w tym splicie zostaje tylko jedna rola, lista jest na niej zablokowana.
         roleSel.disabled = !(av.mainAvail && av.reserveAvail);
 
+        renderSplitTabs();
+
         // 3. Komunikaty.
         if (reserveOnlyNotice) reserveOnlyNotice.style.display = (av.reserve && !av.main) ? 'block' : 'none';
         if (infoAlert) {
@@ -2396,6 +2491,68 @@
         }
 
         updateFormBlockedState();
+    }
+
+    // ===== Zakładki "Split 1 + Rezerwa" / "Split 2 + Rezerwa" =====
+    const SPLIT_HASH = { "Split 1": '#split1', "Split 2": '#split2' };
+
+    function renderSplitTabs() {
+        const splitSel = document.getElementById('driverSplit');
+        const t = langData[currentLang];
+        document.querySelectorAll('.split-tab').forEach(tab => {
+            const split = tab.dataset.split;
+            const av = splitAvailability(split);
+            const open = av.main || av.reserve;
+            const active = open && splitSel.value === split;
+            tab.classList.toggle('is-active', active);
+            tab.classList.toggle('is-closed', !open);
+            tab.setAttribute('aria-selected', active ? 'true' : 'false');
+            tab.setAttribute('aria-disabled', open ? 'false' : 'true');
+            const status = tab.querySelector('.split-tab-status');
+            if (!status) return;
+            if (!open) { status.textContent = t.tabClosed; return; }
+            const main = !av.main ? t.tabMainClosed
+                : av.full ? t.tabMainFull
+                : t.tabMainFree.replace('{wolne}', getSplitStats(split).freeSlots);
+            status.textContent = `${main} · ${av.reserve ? t.tabReserveOpen : t.tabReserveClosed}`;
+        });
+        const form = document.getElementById('registrationForm');
+        if (form) form.dataset.activeSplit = splitSel.value;
+    }
+
+    function selectSplitTab(split, updateHash = true) {
+        if (!splitIsOpen(split)) return false;
+        const sel = document.getElementById('driverSplit');
+        if (sel.value !== split) {
+            // Każda zakładka to osobne zapisy — zaczynamy od kierowcy podstawowego (jeśli niedostępny, odświeżenie przełączy na rezerwę).
+            const roleSel = document.getElementById('driverRole');
+            roleSel.value = "Główny";
+            sel.value = split;
+            sel.dispatchEvent(new Event('change')); // odświeża role, komunikaty i zakładki
+            roleSel.dispatchEvent(new Event('change'));
+        }
+        if (updateHash) { try { history.replaceState(null, '', SPLIT_HASH[split]); } catch {} }
+        return true;
+    }
+
+    document.querySelectorAll('.split-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            if (pageEditMode) return; // w trybie edycji klik służy do zmiany napisu na zakładce
+            selectSplitTab(tab.dataset.split);
+        });
+        tab.addEventListener('keydown', e => {
+            if (pageEditMode) return;
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectSplitTab(tab.dataset.split); }
+        });
+    });
+
+    // Na start: zakładka z linku (#split1 / #split2), a jeśli jej nie ma albo jest zamknięta — pierwsza otwarta.
+    function selectInitialSplitTab() {
+        document.getElementById('driverSplit').value = ''; // wymusza pełne ustawienie zakładki i roli od zera
+        const fromHash = Object.keys(SPLIT_HASH).find(split => SPLIT_HASH[split] === (location.hash || '').toLowerCase());
+        if (fromHash && selectSplitTab(fromHash, false)) return;
+        const firstOpen = SPLITS.find(splitIsOpen);
+        if (firstOpen) selectSplitTab(firstOpen, false);
     }
 
     // Chowa formularz, gdy w ŻADNYM splicie nie jest otwarty ani skład główny, ani rezerwa,
@@ -2475,6 +2632,7 @@
         document.getElementById('liveTrackerTextS2').innerHTML = `<span style="color:var(--text-muted);">${escapeHtml(langData[currentLang].statusFetching)}</span>`;
         document.getElementById('liveTrackerTextS1').innerHTML = `<span style="color:var(--text-muted);">${escapeHtml(langData[currentLang].statusFetching)}</span>`;
         applySectionSettingsUI(settings);
+        selectInitialSplitTab();
         fetchDriversFromFirebase();
         checkRegistrationLock();
     });
@@ -2624,7 +2782,8 @@
             errorAlert.style.display = 'none';
             await sendDiscordNotification(data.name, driverStatus, gamertag, discordTag, firstname, lastname, newDriver.platform, newDriver.device, newDriver.asysty, newDriver.reserveWantsMain, false, null, driverSplit, newDriver.birthdate);
             document.getElementById('registrationForm').reset();
-            // reset() przywraca domyślny split i rolę — dopasowujemy je z powrotem do tego, co jest otwarte.
+            // reset() przywraca domyślny split i rolę — zostajemy w tej samej zakładce i dopasowujemy rolę.
+            document.getElementById('driverSplit').value = driverSplit;
             updateGridSlotsTracker();
             document.getElementById('driverRole').dispatchEvent(new Event('change'));
             fetchDriversFromFirebase();
@@ -3229,9 +3388,15 @@
         lblRole: "Rola — etykieta",
         optMain: "Rola — opcja: kierowca podstawowy",
         optReserve: "Rola — opcja: kierowca rezerwowy",
-        lblSplit: "Split — etykieta",
-        optSplit1: "Split — opcja 1",
-        optSplit2: "Split — opcja 2",
+        lblSplit: "Zakładki zapisów — etykieta",
+        tabSplit1: "Zakładka Split 1 — nazwa",
+        tabSplit2: "Zakładka Split 2 — nazwa",
+        tabMainFree: "Zakładka — skład główny ma wolne miejsca ({wolne} = liczba)",
+        tabMainFull: "Zakładka — skład główny pełny",
+        tabMainClosed: "Zakładka — skład główny zamknięty",
+        tabReserveOpen: "Zakładka — rezerwa otwarta",
+        tabReserveClosed: "Zakładka — rezerwa zamknięta",
+        tabClosed: "Zakładka — split całkiem zamknięty",
         reserveOnlyInfo: "Info, gdy w wybranym splicie otwarta jest tylko rezerwa",
         lblFirstname: "Imię — etykieta",
         phFirstname: "Imię — podpowiedź w polu",
