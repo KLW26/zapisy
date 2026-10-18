@@ -193,7 +193,7 @@
             margin-bottom: 8px;
         }
 
-        .split-tracker-block:nth-of-type(2) .split-tracker-heading {
+        #split2TrackerBlock .split-tracker-heading {
             color: #5bb0ff;
         }
 
@@ -1013,7 +1013,199 @@
         .btn-ghost:disabled { opacity: 0.3; cursor: default; transform: none; background: transparent; border-color: var(--glass-border); }
         .cell-na { color: var(--text-muted); font-size: 0.8rem; padding-left: 10px; }
 
+        /* ===== Formularz jako siatka ramek ===== */
+        #registrationForm {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 25px;
+            row-gap: 0;
+            align-items: start;
+        }
+        #registrationForm > * { grid-column: 1 / -1; min-width: 0; }
+        #registrationForm > .half { grid-column: auto; }
+        #registrationForm > .checkbox-group { margin-top: 10px; }
+        #registrationForm > .submit-block .btn-submit { margin-top: 30px; }
+
+        /* Czekamy na własne teksty/układ z bazy, żeby nie mignęła wersja domyślna. */
+        body.page-loading #publicArea { opacity: 0; }
+        #publicArea { transition: opacity 0.25s ease; }
+
+        /* ===== Tryb edycji strony ===== */
+        body.page-edit-mode #adminPanel { display: none !important; }
+        body.page-edit-mode .container { padding-bottom: 120px; }
+        body.page-edit-mode [data-block] {
+            position: relative;
+            outline: 2px dashed rgba(0, 99, 229, 0.45);
+            outline-offset: 6px;
+            border-radius: 8px;
+        }
+        body.page-edit-mode [data-block] [data-block] { outline-color: rgba(0, 99, 229, 0.3); }
+        body.page-edit-mode #publicArea > [data-block] { margin-top: 30px; }
+        body.page-edit-mode #registrationForm > [data-block] { margin-top: 26px; }
+        body.page-edit-mode [data-block].block-dragging {
+            outline: 2px solid var(--admin-blue);
+            background: rgba(0, 99, 229, 0.08);
+            opacity: 0.85;
+            z-index: 20;
+        }
+
+        /* Elementy widoczne normalnie tylko w określonych sytuacjach — w edycji pokazujemy je, żeby dało się je ustawić. */
+        body.page-edit-mode #registrationForm { display: grid !important; }
+        body.page-edit-mode #split1TrackerBlock,
+        body.page-edit-mode #split2TrackerBlock,
+        body.page-edit-mode #driverSplitGroup,
+        body.page-edit-mode #reserveOnlyNotice,
+        body.page-edit-mode #allClosedNotice { display: block !important; }
+        body.page-edit-mode #reserveInterestGroup { display: flex !important; }
+        body.page-edit-mode #registrationForm > .half { grid-column: auto !important; }
+        body.page-edit-mode #registrationForm > :not(.half) { grid-column: 1 / -1 !important; }
+        body.page-edit-mode .alerts-block:empty,
+        body.page-edit-mode .alerts-block { min-height: 20px; }
+
+        .block-tools {
+            position: absolute;
+            top: -19px;
+            right: 6px;
+            z-index: 15;
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            font-family: 'Inter', sans-serif;
+            text-transform: none;
+            letter-spacing: 0;
+            -webkit-text-fill-color: initial;
+        }
+        .block-tools > * {
+            background: var(--admin-blue);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1;
+            padding: 5px 8px;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+        .block-tools .bt-handle { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+        .block-tools .bt-width { cursor: pointer; background: #334155; }
+        .block-tools .bt-width:hover { background: #1e293b; }
+        .block-tools .bt-note { background: #b45309; font-weight: 600; }
+        body.is-dragging-block, body.is-dragging-block * { cursor: grabbing !important; user-select: none !important; -webkit-user-select: none !important; }
+
+        body.page-edit-mode .inline-editable {
+            outline: 1px dashed rgba(225, 6, 0, 0.55);
+            outline-offset: 2px;
+            border-radius: 4px;
+            cursor: text;
+            caret-color: var(--f1-red);
+            min-width: 1ch;
+        }
+        body.page-edit-mode .inline-editable:hover { background-color: rgba(225, 6, 0, 0.06); }
+        body.page-edit-mode .inline-editable:focus {
+            outline: 2px solid var(--f1-red);
+            background-color: rgba(225, 6, 0, 0.08);
+        }
+        body.page-edit-mode header h1.inline-editable:focus { -webkit-text-fill-color: var(--text-light); }
+        body.page-edit-mode #publicArea select,
+        body.page-edit-mode #publicArea input[data-ph-key],
+        body.page-edit-mode #submitBtn { pointer-events: none; }
+        body.page-edit-mode .popover-editable {
+            cursor: pointer !important;
+            outline: 2px dashed rgba(225, 6, 0, 0.55) !important;
+            outline-offset: 2px;
+        }
+
+        .page-editor-bar {
+            display: none;
+            position: fixed;
+            left: 50%;
+            bottom: 16px;
+            transform: translateX(-50%);
+            z-index: 1500;
+            width: calc(100% - 32px);
+            max-width: 980px;
+            background: var(--admin-card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-top: 3px solid var(--admin-blue);
+            border-radius: 14px;
+            padding: 12px 16px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        body.page-edit-mode .page-editor-bar { display: flex; }
+        .page-editor-bar .peb-info { flex: 1 1 260px; font-size: 0.8rem; color: var(--text-muted); font-weight: 500; line-height: 1.5; }
+        .page-editor-bar .peb-info strong { color: var(--text-light); }
+        .page-editor-bar .btn-admin { padding: 10px 14px; font-size: 0.72rem; }
+        .page-editor-bar .btn-ghost { background: transparent; border: 1px solid var(--glass-border); color: var(--text-light); }
+
+        .text-popover {
+            display: none;
+            position: fixed;
+            z-index: 1600;
+            width: min(420px, calc(100vw - 24px));
+            background: var(--admin-card-bg);
+            border: 1px solid var(--glass-border);
+            border-top: 3px solid var(--f1-red);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+        }
+        .text-popover.visible { display: block; }
+        .text-popover h4 { font-family: 'Orbitron', sans-serif; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+        .text-popover .tp-field { margin-bottom: 10px; }
+        .text-popover .tp-field span { display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
+        .text-popover input[type="text"] { padding: 10px 12px; font-size: 0.9rem; border-radius: 8px; }
+        .text-popover .tp-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+        .text-popover .tp-actions .btn-admin { padding: 9px 14px; font-size: 0.72rem; }
+
+        .texts-drawer {
+            display: none;
+            position: fixed;
+            top: 0; right: 0; bottom: 0;
+            z-index: 1550;
+            width: min(460px, 100vw);
+            background: var(--admin-card-bg);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-left: 1px solid var(--glass-border);
+            box-shadow: -12px 0 40px rgba(0, 0, 0, 0.35);
+            flex-direction: column;
+        }
+        .texts-drawer.visible { display: flex; }
+        .texts-drawer .td-head { padding: 18px 18px 12px; border-bottom: 1px solid var(--glass-border); }
+        .texts-drawer .td-head h3 { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .texts-drawer .td-head p { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px; }
+        .texts-drawer .td-head input { padding: 10px 12px; font-size: 0.85rem; border-radius: 8px; }
+        .texts-drawer .td-list { overflow-y: auto; padding: 12px 18px 90px; flex: 1; }
+        .texts-drawer .td-item { margin-bottom: 14px; }
+        .texts-drawer .td-item span { display: block; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; }
+        .texts-drawer .td-item span em { font-style: normal; color: #fb923c; font-weight: 600; }
+        .texts-drawer textarea {
+            width: 100%;
+            min-height: 42px;
+            resize: vertical;
+            padding: 9px 11px;
+            border-radius: 8px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-light);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            line-height: 1.45;
+        }
+        .texts-drawer textarea:focus { outline: none; border-color: var(--admin-blue); box-shadow: 0 0 0 3px rgba(0, 99, 229, 0.25); }
+        .texts-drawer .td-item.changed textarea { border-color: rgba(251, 146, 60, 0.6); }
+        .td-close { background: transparent; border: 1px solid var(--glass-border); color: var(--text-light); border-radius: 8px; padding: 4px 10px; cursor: pointer; font-size: 0.9rem; }
+
         @media (max-width: 768px) {
+            #registrationForm { grid-template-columns: 1fr; }
+            #registrationForm > *,
+            body.page-edit-mode #registrationForm > .half { grid-column: 1 / -1 !important; }
             .grid-2 { grid-template-columns: 1fr; gap: 0; }
             .container { padding: 25px; margin: 20px auto; }
             header h1 { font-size: 1.9rem; }
@@ -1025,7 +1217,7 @@
         }
     </style>
 </head>
-<body>
+<body class="page-loading">
 
 <div class="container">
     <div style="position: absolute; top: 20px; right: 25px; z-index: 10; display: flex; gap: 10px;">
@@ -1037,13 +1229,14 @@
         </button>
     </div>
 
-    <header>
+    <div id="publicArea" data-zone="page">
+    <header data-block="header" data-block-name="Nagłówek">
         <h1 data-i18n="headerTitle">Formularz Zgłoszeniowy</h1>
         <p data-i18n="headerSubtitle">Oficjalne zapisy do nowego sezonu ligowego F1 2026/27</p>
     </header>
 
-    <div class="grid-status-tracker">
-        <div class="split-tracker-block" id="split1TrackerBlock" style="display:none;">
+    <div class="grid-status-tracker" data-block="tracker" data-block-name="Paski wolnych miejsc" data-zone="tracker">
+        <div class="split-tracker-block" id="split1TrackerBlock" style="display:none;" data-block="trackerS1" data-block-name="Split 1" data-edit-note="widoczny, gdy Split 1 jest włączony">
             <div class="split-tracker-heading" data-i18n="split1Heading">🔴 Split 1</div>
             <div class="tracker-info">
                 <span data-i18n="trackerLabel">Fotele w składzie głównym</span>
@@ -1053,7 +1246,7 @@
                 <div id="liveTrackerBarS1" class="tracker-bar-fill"></div>
             </div>
         </div>
-        <div class="split-tracker-block" id="split2TrackerBlock">
+        <div class="split-tracker-block" id="split2TrackerBlock" data-block="trackerS2" data-block-name="Split 2" data-edit-note="widoczny, gdy Split 2 jest włączony">
             <div class="split-tracker-heading" data-i18n="split2Heading">🔵 Split 2</div>
             <div class="tracker-info">
                 <span data-i18n="trackerLabel">Fotele w składzie głównym</span>
@@ -1065,63 +1258,61 @@
         </div>
     </div>
 
-    <div id="successAlert" class="success-message"></div>
-    <div id="errorAlert" class="error-message"></div>
-    <div id="infoAlert" class="info-message"></div>
-    <div class="error-message" id="allClosedNotice" data-i18n="allClosedInfo" style="display:none;">🔒 Zapisy są obecnie zamknięte. Żadna rola (Split 1 / Split 2 / Rezerwa) nie jest teraz dostępna.</div>
+    <div class="alerts-block" data-block="alerts" data-block-name="Komunikaty">
+        <div id="successAlert" class="success-message"></div>
+        <div id="errorAlert" class="error-message"></div>
+        <div id="infoAlert" class="info-message"></div>
+        <div class="error-message" id="allClosedNotice" data-i18n="allClosedInfo" style="display:none;">🔒 Zapisy są obecnie zamknięte. Żadna rola (Split 1 / Split 2 / Rezerwa) nie jest teraz dostępna.</div>
+    </div>
 
-    <form id="registrationForm">
-        <div class="grid-2">
-            <div class="form-group" id="driverRoleGroup">
-                <label for="driverRole" data-i18n="lblRole">Typ Zgłoszenia / Rola</label>
-                <select id="driverRole" required>
-                    <option value="Główny" data-i18n="optMain">Kierowca Podstawowy (Stały etat)</option>
-                    <option value="Rezerwowy" data-i18n="optReserve" id="driverRoleOptionReserve">Kierowca Rezerwowy (Okazyjne starty)</option>
-                </select>
-            </div>
-            <div class="form-group" id="driverSplitGroup">
-                <label for="driverSplit" data-i18n="lblSplit">Split</label>
-                <select id="driverSplit" required>
-                    <option value="Split 1" data-i18n="optSplit1" id="driverSplitOption1" hidden disabled>Split 1</option>
-                    <option value="Split 2" data-i18n="optSplit2" id="driverSplitOption2">Split 2</option>
-                </select>
-            </div>
+    <!-- Formularz to jedna siatka 2-kolumnowa: każda ramka ma szerokość ½ (klasa "half") albo pełną. -->
+    <form id="registrationForm" data-block="form" data-block-name="Formularz" data-zone="form">
+        <div class="form-group half" id="driverRoleGroup" data-block="role" data-block-name="Rola">
+            <label for="driverRole" data-i18n="lblRole">Typ Zgłoszenia / Rola</label>
+            <select id="driverRole" required>
+                <option value="Główny" data-i18n="optMain">Kierowca Podstawowy (Stały etat)</option>
+                <option value="Rezerwowy" data-i18n="optReserve" id="driverRoleOptionReserve">Kierowca Rezerwowy (Okazyjne starty)</option>
+            </select>
         </div>
-        <div class="info-message" id="reserveOnlyNotice" data-i18n="reserveOnlyInfo" style="display:none; margin-bottom: 18px;">⭐ Obecnie otwarte są zapisy wyłącznie na Kierowcę Rezerwowego. Jeżeli ktoś poda nieprawidłowe imię i nazwisko, zgłoszenie zostanie automatycznie odrzucone. Taki kierowca musi liczyć się również z możliwością usunięcia z ligi KLW.</div>
-
-        <div class="grid-2">
-            <div class="form-group">
-                <label for="firstname" data-i18n="lblFirstname">Imię</label>
-                <input type="text" id="firstname" placeholder="np. Jan" required minlength="2">
-            </div>
-            <div class="form-group">
-                <label for="lastname" data-i18n="lblLastname">Nazwisko</label>
-                <input type="text" id="lastname" placeholder="np. Kowalski" required minlength="2">
-            </div>
-        </div>
-
-        <div class="grid-2">
-            <div class="form-group">
-                <label for="gamertag" data-i18n="lblGamertag">Nick / Gamertag (w grze)</label>
-                <input type="text" id="gamertag" placeholder="np. DriverX_F1" required>
-            </div>
-            <div class="form-group">
-                <label for="discordTag" data-i18n="lblDiscord">Discord ID</label>
-                <input type="text" id="discordTag" placeholder="Skopiuj numeryczne ID (np. 511295...)" required pattern="[0-9]+" title="Tylko cyfry z Twojego Discord ID">
-            </div>
-        </div>
-
-        <div class="form-group" id="platformContainer">
-            <label for="platform" data-i18n="lblPlatform">Platforma</label>
-            <select id="platform" required>
-                <option value="" disabled selected data-i18n="optPlatformDef">Gdzie grasz?</option>
-                <option value="PC">PC (Steam / EA App)</option>
-                <option value="PS5">PlayStation 5</option>
-                <option value="Xbox">Xbox Series X/S</option>
+        <div class="form-group half" id="driverSplitGroup" data-block="split" data-block-name="Split">
+            <label for="driverSplit" data-i18n="lblSplit">Split</label>
+            <select id="driverSplit" required>
+                <option value="Split 1" data-i18n="optSplit1" id="driverSplitOption1" hidden disabled>Split 1</option>
+                <option value="Split 2" data-i18n="optSplit2" id="driverSplitOption2">Split 2</option>
             </select>
         </div>
 
-        <div class="form-group">
+        <div class="info-message" id="reserveOnlyNotice" style="display:none; margin-bottom: 18px;" data-block="reserveOnlyNotice" data-block-name="Info: tylko rezerwa" data-edit-note="widoczne, gdy otwarta jest tylko rezerwa"><span data-i18n="reserveOnlyInfo">⭐ Obecnie otwarte są zapisy wyłącznie na Kierowcę Rezerwowego. Jeżeli ktoś poda nieprawidłowe imię i nazwisko, zgłoszenie zostanie automatycznie odrzucone. Taki kierowca musi liczyć się również z możliwością usunięcia z ligi KLW.</span></div>
+
+        <div class="form-group half" data-block="firstname" data-block-name="Imię">
+            <label for="firstname" data-i18n="lblFirstname">Imię</label>
+            <input type="text" id="firstname" data-ph-key="phFirstname" placeholder="np. Jan" required minlength="2">
+        </div>
+        <div class="form-group half" data-block="lastname" data-block-name="Nazwisko">
+            <label for="lastname" data-i18n="lblLastname">Nazwisko</label>
+            <input type="text" id="lastname" data-ph-key="phLastname" placeholder="np. Kowalski" required minlength="2">
+        </div>
+
+        <div class="form-group half" data-block="gamertag" data-block-name="Gamertag">
+            <label for="gamertag" data-i18n="lblGamertag">Nick / Gamertag (w grze)</label>
+            <input type="text" id="gamertag" data-ph-key="phGamertag" placeholder="np. DriverX_F1" required>
+        </div>
+        <div class="form-group half" data-block="discord" data-block-name="Discord ID">
+            <label for="discordTag" data-i18n="lblDiscord">Discord ID</label>
+            <input type="text" id="discordTag" data-ph-key="phDiscord" placeholder="Skopiuj numeryczne ID (np. 511295...)" required pattern="[0-9]+" title="Tylko cyfry z Twojego Discord ID">
+        </div>
+
+        <div class="form-group" id="platformContainer" data-block="platform" data-block-name="Platforma">
+            <label for="platform" data-i18n="lblPlatform">Platforma</label>
+            <select id="platform" required>
+                <option value="" disabled selected data-i18n="optPlatformDef">Gdzie grasz?</option>
+                <option value="PC" data-i18n="optPC">PC (Steam / EA App)</option>
+                <option value="PS5" data-i18n="optPS5">PlayStation 5</option>
+                <option value="Xbox" data-i18n="optXbox">Xbox Series X/S</option>
+            </select>
+        </div>
+
+        <div class="form-group" data-block="assists" data-block-name="Asysty">
             <label for="asysty" data-i18n="lblAssists">Poziom asyst</label>
             <select id="asysty" required>
                 <option value="Brak" data-i18n="optAssistsNone">Brak asyst (Hardcore)</option>
@@ -1130,7 +1321,7 @@
             </select>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" data-block="device" data-block-name="Kontroler">
             <label data-i18n="lblDevice">Kontroler</label>
             <div class="radio-group">
                 <label class="radio-option">
@@ -1142,20 +1333,23 @@
             </div>
         </div>
 
-<div class="checkbox-group">
+        <div class="checkbox-group" data-block="rules" data-block-name="Regulamin">
             <input type="checkbox" id="rulesAccept" required>
             <label for="rulesAccept" data-i18n="lblRules">Akceptuję regulamin ligi i zobowiązuję się do czystej jazdy na torze. Rozumiem, że celowe powodowanie kolizji grozi dyskwalifikacją.</label>
         </div>
 
-        <div class="reserve-interest-group" id="reserveInterestGroup">
+        <div class="reserve-interest-group" id="reserveInterestGroup" data-block="reserveInterest" data-block-name="Rezerwa: chęć jazdy w gł. splicie" data-edit-note="widoczne po wybraniu roli Rezerwowy">
             <input type="checkbox" id="reserveInterestMain">
             <label for="reserveInterestMain"><span class="reserve-interest-badge" data-i18n="reserveBadge">Opcjonalne</span> <span data-i18n="lblReserveInterest">Jestem zainteresowany/a jazdą w głównym splicie, jeśli zwolni się miejsce w składzie podstawowym.</span></label>
         </div>
 
-        <button type="submit" id="submitBtn" class="btn-submit" data-i18n="btnSubmit">Wyślij zgłoszenie</button>
+        <div class="submit-block" data-block="submit" data-block-name="Przycisk wysyłania">
+            <button type="submit" id="submitBtn" class="btn-submit" data-i18n="btnSubmit">Wyślij zgłoszenie</button>
+        </div>
     </form>
 
-    <div class="admin-trigger" onclick="toggleAdminPanel()" data-i18n="adminTrigger">Zarządzanie Ligą (Tylko Admin)</div>
+    <div class="admin-trigger" onclick="toggleAdminPanel()" data-block="adminTrigger" data-block-name="Link do panelu admina"><span data-i18n="adminTrigger">Zarządzanie Ligą (Tylko Admin)</span></div>
+    </div>
 
     <div id="adminPanel" class="admin-section">
         <div class="admin-card">
@@ -1228,7 +1422,8 @@
                 </table>
             </div>
 
-            <div class="admin-actions">
+            <div class="admin-actions" style="flex-wrap:wrap;">
+                <button class="btn-admin" style="background:#e10600;" onclick="enterPageEditMode()">🎨 Edytuj stronę (teksty i ramki)</button>
                 <button class="btn-admin" onclick="exportToTXT()">Eksportuj do .txt</button>
                 <button class="btn-admin btn-danger" onclick="clearAllDrivers()">Reset Sezonu</button>
             </div>
@@ -1383,6 +1578,36 @@
         </div>
 </div>
 
+<!-- ===== Edytor strony (widoczny tylko w trybie edycji) ===== -->
+<div class="page-editor-bar" id="pageEditorBar">
+    <div class="peb-info">
+        🎨 <strong>Tryb edycji strony</strong> · język: <strong id="pebLang">PL</strong><br>
+        Kliknij napis, by go zmienić. Listy, pola i przycisk edytujesz kliknięciem. Ramki przesuwasz za „⠿”.
+    </div>
+    <button type="button" class="btn-admin btn-ghost" onclick="openTextsDrawer()">📝 Wszystkie teksty</button>
+    <button type="button" class="btn-admin btn-ghost" onclick="resetPageToDefaults()">↺ Domyślne</button>
+    <button type="button" class="btn-admin btn-ghost" onclick="cancelPageEdit()">Anuluj</button>
+    <button type="button" class="btn-admin" id="pebSaveBtn" onclick="savePageEdit()">💾 Zapisz</button>
+</div>
+
+<div class="text-popover" id="textPopover">
+    <h4 id="tpTitle">Edycja</h4>
+    <div id="tpFields"></div>
+    <div class="tp-actions">
+        <button type="button" class="btn-admin btn-ghost" onclick="closeTextPopover()">Anuluj</button>
+        <button type="button" class="btn-admin" onclick="applyTextPopover()">Zastosuj</button>
+    </div>
+</div>
+
+<div class="texts-drawer" id="textsDrawer">
+    <div class="td-head">
+        <h3><span>📝 Wszystkie teksty · <span id="tdLang">PL</span></span><button type="button" class="td-close" onclick="closeTextsDrawer()">✕</button></h3>
+        <p>Także komunikaty, które pojawiają się tylko w niektórych sytuacjach. Fragmenty w {nawiasach} są podmieniane automatycznie — zostaw je w tekście. Wersję angielską edytujesz po przełączeniu języka 🌐.</p>
+        <input type="text" id="tdSearch" placeholder="Szukaj tekstu..." oninput="renderTextsDrawer()">
+    </div>
+    <div class="td-list" id="tdList"></div>
+</div>
+
 <script>
     const webhookUrl = "https://discord.com/api/webhooks/1540403339328487585/83HdiHFlKGqnVVMNw0bcsukU8MJ_k_ABjF0cWSNl9xJ8ZZh-uoCcA4isxEFZWAA8kptD";
     const countdownWebhookUrl = "https://discord.com/api/webhooks/1512476781502791780/3UgyLFL65LlUTKhPBIbFqYzHuwtlfG1FEKKpTqowpVtI7mA9F6qf1dyYKLd0v3PQ2MTR";
@@ -1417,6 +1642,10 @@
             optAssistsNone: "Brak asyst (Hardcore)",
             optAssistsPart: "Dozwolone częściowe (ABS / Średnia trakcja)",
             optAssistsFull: "Pełne asysty (Casual)",
+            optPC: "PC (Steam / EA App)",
+            optPS5: "PlayStation 5",
+            optXbox: "Xbox Series X/S",
+            errConnection: "❌ Wystąpił nieoczekiwany problem z łącznością. Dane nie zostały wysłane.",
             lblDevice: "Kontroler",
             lblWheel: "Kierownica",
             lblPad: "Pad",
@@ -1474,6 +1703,10 @@
             optAssistsNone: "No assists (Hardcore)",
             optAssistsPart: "Partial allowed (ABS / Medium traction)",
             optAssistsFull: "Full assists (Casual)",
+            optPC: "PC (Steam / EA App)",
+            optPS5: "PlayStation 5",
+            optXbox: "Xbox Series X/S",
+            errConnection: "❌ An unexpected connection issue occurred. Data was not sent.",
             lblDevice: "Input Device",
             lblWheel: "Wheel",
             lblPad: "Pad",
@@ -1521,6 +1754,7 @@
             updateLanguageUI();
             updateGridSlotsTracker();
             checkRegistrationLock();
+            if (pageEditMode) onEditorLanguageChanged();
         });
     }
 
@@ -1534,10 +1768,10 @@
             }
         });
 
-        document.getElementById('firstname').placeholder = langData[currentLang].phFirstname;
-        document.getElementById('lastname').placeholder = langData[currentLang].phLastname;
-        document.getElementById('gamertag').placeholder = langData[currentLang].phGamertag;
-        document.getElementById('discordTag').placeholder = langData[currentLang].phDiscord;
+        document.querySelectorAll('[data-ph-key]').forEach(el => {
+            const val = langData[currentLang][el.dataset.phKey];
+            if (val != null) el.placeholder = val;
+        });
     }
 
     function initTheme() {
@@ -2042,10 +2276,16 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
         initTheme();
+        capturePageDefaults();
         initLanguage();
-        document.getElementById('liveTrackerTextS2').innerHTML = `<span style="color:var(--text-muted);">${langData[currentLang].statusFetching}</span>`;
-        document.getElementById('liveTrackerTextS1').innerHTML = `<span style="color:var(--text-muted);">${langData[currentLang].statusFetching}</span>`;
-        const settings = await fetchAllSectionSettings();
+        // Strona jest ukryta (klasa page-loading), dopóki nie wczytają się własne teksty i układ z bazy — max 3 s.
+        const revealTimer = setTimeout(() => document.body.classList.remove('page-loading'), 3000);
+        const [settings, pageCustom] = await Promise.all([fetchAllSectionSettings(), fetchPageCustom()]);
+        applyPageCustom(pageCustom);
+        clearTimeout(revealTimer);
+        document.body.classList.remove('page-loading');
+        document.getElementById('liveTrackerTextS2').innerHTML = `<span style="color:var(--text-muted);">${escapeHtml(langData[currentLang].statusFetching)}</span>`;
+        document.getElementById('liveTrackerTextS1').innerHTML = `<span style="color:var(--text-muted);">${escapeHtml(langData[currentLang].statusFetching)}</span>`;
         applySectionSettingsUI(settings);
         fetchDriversFromFirebase();
         checkRegistrationLock();
@@ -2086,9 +2326,9 @@
         if (bar) bar.style.width = `${stats.percentage}%`;
         if (text) {
             if (stats.freeSlots <= 0) {
-                text.innerHTML = `<span style="color:var(--f1-red); font-weight:700;">${langData[currentLang].statusFull}</span>`;
+                text.innerHTML = `<span style="color:var(--f1-red); font-weight:700;">${escapeHtml(langData[currentLang].statusFull)}</span>`;
             } else {
-                text.innerHTML = `<span style="color:var(--success-green); font-weight:700;">${langData[currentLang].statusLeft.replace('{wolne}', stats.freeSlots)}</span>`;
+                text.innerHTML = `<span style="color:var(--success-green); font-weight:700;">${escapeHtml(langData[currentLang].statusLeft.replace('{wolne}', stats.freeSlots))}</span>`;
             }
         }
         return stats;
@@ -2124,6 +2364,7 @@
 
     document.getElementById('registrationForm').addEventListener('submit', async function(e) {
         e.preventDefault();
+        if (pageEditMode) return;
         const submitBtn = document.getElementById('submitBtn');
         const successAlert = document.getElementById('successAlert');
         const errorAlert = document.getElementById('errorAlert');
@@ -2197,7 +2438,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         })
         .catch(() => {
-            errorAlert.innerText = currentLang === 'pl' ? "❌ Wystąpił nieoczekiwany problem z łącznością. Dane nie zostały wysłane." : "❌ An unexpected connection issue occurred. Data was not sent.";
+            errorAlert.innerText = langData[currentLang].errConnection;
             errorAlert.style.display = 'block';
         })
         .finally(() => {
@@ -2208,6 +2449,7 @@
     });
 
     function toggleAdminPanel() {
+        if (pageEditMode) return;
         const panel = document.getElementById('adminPanel');
         const container = document.querySelector('.container');
         if (panel.style.display === 'block') { panel.style.display = 'none'; container.classList.remove('admin-wide'); }
@@ -2722,6 +2964,575 @@
             txt += `${i + 1}. Status: ${d.driverStatus} | Split: ${split} | Nick: ${d.gamertag} | ID: ${d.discordTag} | ${d.firstname} ${d.lastname} | ${d.platform} (${d.device}) | Asysty: ${d.asysty}${wantsMain}\n`;
         });
         const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain;charset=utf-8' })); link.download = 'lista_kierowcow.txt'; link.click();
+    }
+
+    // =====================================================================
+    //  EDYCJA STRONY — teksty i ramki (dostępna z panelu admina)
+    //  Zapis w Firebase: settings/pageCustom = {
+    //     texts:  { pl: { klucz: "tekst" }, en: { ... } },     // tylko teksty różne od domyślnych
+    //     layout: { page: [...], tracker: [...], form: [...] }, // kolejność ramek w każdej strefie
+    //     widths: { idRamki: "half" | "full" }                  // szerokość ramek formularza
+    //  }
+    // =====================================================================
+    function escapeHtml(str) {
+        return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    const DEFAULT_TEXTS = JSON.parse(JSON.stringify(langData));
+    let DEFAULT_LAYOUT = {};
+    let DEFAULT_WIDTHS = {};
+    let savedPageCustom = { texts: { pl: {}, en: {} }, layout: {}, widths: {} };
+    let pageEditMode = false;
+    let pageDraft = null;
+    let pageDraftStart = '';
+
+    // Opisy tekstów w panelu „Wszystkie teksty” (kolejność = kolejność na liście).
+    const TEXT_DESCRIPTIONS = {
+        headerTitle: "Nagłówek — tytuł",
+        headerSubtitle: "Nagłówek — podtytuł",
+        split1Heading: "Pasek miejsc — nagłówek Split 1",
+        split2Heading: "Pasek miejsc — nagłówek Split 2",
+        trackerLabel: "Pasek miejsc — opis",
+        statusFetching: "Pasek miejsc — podczas wczytywania",
+        statusLeft: "Pasek miejsc — są wolne miejsca ({wolne} = liczba)",
+        statusFull: "Pasek miejsc — skład pełny",
+        lblRole: "Rola — etykieta",
+        optMain: "Rola — opcja: kierowca podstawowy",
+        optReserve: "Rola — opcja: kierowca rezerwowy",
+        lblSplit: "Split — etykieta",
+        optSplit1: "Split — opcja 1",
+        optSplit2: "Split — opcja 2",
+        reserveOnlyInfo: "Info, gdy otwarta jest tylko rezerwa",
+        lblFirstname: "Imię — etykieta",
+        phFirstname: "Imię — podpowiedź w polu",
+        lblLastname: "Nazwisko — etykieta",
+        phLastname: "Nazwisko — podpowiedź w polu",
+        lblGamertag: "Gamertag — etykieta",
+        phGamertag: "Gamertag — podpowiedź w polu",
+        lblDiscord: "Discord ID — etykieta",
+        phDiscord: "Discord ID — podpowiedź w polu",
+        lblPlatform: "Platforma — etykieta",
+        optPlatformDef: "Platforma — tekst przed wyborem",
+        optPC: "Platforma — opcja PC",
+        optPS5: "Platforma — opcja PS5",
+        optXbox: "Platforma — opcja Xbox",
+        lblAssists: "Asysty — etykieta",
+        optAssistsNone: "Asysty — opcja: brak",
+        optAssistsPart: "Asysty — opcja: częściowe",
+        optAssistsFull: "Asysty — opcja: pełne",
+        lblDevice: "Kontroler — etykieta",
+        lblWheel: "Kontroler — kierownica",
+        lblPad: "Kontroler — pad",
+        lblRules: "Regulamin — tekst zgody",
+        reserveBadge: "Rezerwa — plakietka „Opcjonalne”",
+        lblReserveInterest: "Rezerwa — chęć jazdy w głównym splicie",
+        btnSubmit: "Przycisk wysyłania",
+        btnSaving: "Przycisk podczas wysyłania",
+        successReg: "Komunikat — zapisano ({rola}, {split})",
+        successRegNoSplit: "Komunikat — zapisano bez splitu ({rola})",
+        errGamer: "Błąd — zajęty gamertag",
+        errDiscord: "Błąd — Discord ID już zgłoszone",
+        errConnection: "Błąd — problem z połączeniem",
+        infoFull: "Komunikat — pełny skład w splicie ({split})",
+        allClosedInfo: "Komunikat — wszystkie zapisy zamknięte",
+        adminTrigger: "Link do panelu admina"
+    };
+
+    const publicArea = document.getElementById('publicArea');
+
+    // ---------- strefy i ramki ----------
+    function getZones() { return [...document.querySelectorAll('[data-zone]')]; }
+    function zoneBlocks(zone) { return [...zone.children].filter(el => el.hasAttribute('data-block')); }
+    function formZone() { return document.querySelector('[data-zone="form"]'); }
+
+    function readLayout() {
+        const layout = {};
+        getZones().forEach(z => { layout[z.dataset.zone] = zoneBlocks(z).map(b => b.dataset.block); });
+        return layout;
+    }
+    function readWidths() {
+        const widths = {};
+        zoneBlocks(formZone()).forEach(b => { widths[b.dataset.block] = b.classList.contains('half') ? 'half' : 'full'; });
+        return widths;
+    }
+    function capturePageDefaults() {
+        DEFAULT_LAYOUT = readLayout();
+        DEFAULT_WIDTHS = readWidths();
+    }
+
+    function applyLayout(layout = {}, widths = {}) {
+        getZones().forEach(zone => {
+            const name = zone.dataset.zone;
+            const blocks = zoneBlocks(zone);
+            const defaultOrder = DEFAULT_LAYOUT[name] || [];
+            const wanted = Array.isArray(layout[name]) ? layout[name] : defaultOrder;
+            const byId = new Map(blocks.map(b => [b.dataset.block, b]));
+            const sorted = [];
+            wanted.forEach(id => { const b = byId.get(id); if (b && !sorted.includes(b)) sorted.push(b); });
+            // Ramki spoza zapisanego układu (np. dodane w nowszej wersji strony) trafiają w swoje domyślne miejsce.
+            blocks.filter(b => !sorted.includes(b)).forEach(b => {
+                const di = defaultOrder.indexOf(b.dataset.block);
+                let at = 0;
+                sorted.forEach((x, i) => { if (defaultOrder.indexOf(x.dataset.block) < di) at = i + 1; });
+                sorted.splice(at, 0, b);
+            });
+            sorted.forEach(b => zone.appendChild(b));
+        });
+        zoneBlocks(formZone()).forEach(b => {
+            const w = widths[b.dataset.block] || DEFAULT_WIDTHS[b.dataset.block] || 'full';
+            b.classList.toggle('half', w === 'half');
+        });
+        document.querySelectorAll('.bt-width').forEach(btn => btn._update && btn._update());
+    }
+
+    // ---------- teksty ----------
+    function applyTexts(texts = {}) {
+        Object.keys(DEFAULT_TEXTS).forEach(lang => {
+            langData[lang] = { ...DEFAULT_TEXTS[lang], ...((texts && texts[lang]) || {}) };
+        });
+    }
+
+    function normalizeCustom(raw) {
+        const out = { texts: { pl: {}, en: {} }, layout: {}, widths: {} };
+        if (!raw || typeof raw !== 'object') return out;
+        Object.keys(out.texts).forEach(lang => {
+            const t = raw.texts && raw.texts[lang];
+            if (t && typeof t === 'object') {
+                Object.entries(t).forEach(([k, v]) => { if (typeof v === 'string' && v.trim() && k in DEFAULT_TEXTS[lang]) out.texts[lang][k] = v; });
+            }
+        });
+        if (raw.layout && typeof raw.layout === 'object') {
+            Object.entries(raw.layout).forEach(([zone, ids]) => {
+                const arr = Array.isArray(ids) ? ids : (ids && typeof ids === 'object' ? Object.values(ids) : null);
+                if (arr) out.layout[zone] = arr.filter(x => typeof x === 'string');
+            });
+        }
+        if (raw.widths && typeof raw.widths === 'object') {
+            Object.entries(raw.widths).forEach(([id, w]) => { if (w === 'half' || w === 'full') out.widths[id] = w; });
+        }
+        return out;
+    }
+
+    async function fetchPageCustom() {
+        try {
+            const res = await fetch(`${firebaseBaseUrl}settings/pageCustom.json`);
+            return await res.json();
+        } catch { return null; }
+    }
+
+    function applyPageCustom(raw) {
+        savedPageCustom = normalizeCustom(raw);
+        applyTexts(savedPageCustom.texts);
+        applyLayout(savedPageCustom.layout, savedPageCustom.widths);
+        updateLanguageUI();
+    }
+
+    // Zmiana jednego tekstu w bieżącym języku (szkic — widać od razu, zapis po kliknięciu „Zapisz”).
+    function setDraftText(key, value) {
+        if (!pageDraft || !(key in DEFAULT_TEXTS[currentLang])) return;
+        const lang = currentLang;
+        if (value === DEFAULT_TEXTS[lang][key]) delete pageDraft.texts[lang][key];
+        else pageDraft.texts[lang][key] = value;
+        langData[lang][key] = value;
+    }
+
+    // Odświeża wszystkie miejsca, gdzie występuje dany tekst (poza elementem, w którym właśnie piszesz).
+    function syncTextKey(key, sourceEl) {
+        const val = langData[currentLang][key];
+        document.querySelectorAll(`[data-i18n="${key}"]`).forEach(el => {
+            if (el !== sourceEl && el !== document.activeElement && el.textContent !== val) el.textContent = val;
+        });
+        document.querySelectorAll(`[data-ph-key="${key}"]`).forEach(el => { el.placeholder = val; });
+        updateGridSlotsTracker();
+    }
+
+    // ---------- wejście / wyjście z trybu edycji ----------
+    function draftSnapshot() {
+        return JSON.stringify({ texts: pageDraft.texts, layout: readLayout(), widths: readWidths() });
+    }
+
+    function enterPageEditMode() {
+        if (pageEditMode) return;
+        pageEditMode = true;
+        pageDraft = {
+            texts: JSON.parse(JSON.stringify(savedPageCustom.texts)),
+            layout: readLayout(),
+            widths: readWidths()
+        };
+        if (!pageDraft.texts.pl) pageDraft.texts.pl = {};
+        if (!pageDraft.texts.en) pageDraft.texts.en = {};
+        document.body.classList.add('page-edit-mode');
+        document.querySelector('.container').classList.remove('admin-wide');
+        setupEditables();
+        injectBlockTools();
+        updateEditorLangLabels();
+        pageDraftStart = draftSnapshot();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function exitPageEditMode() {
+        pageEditMode = false;
+        closeTextPopover();
+        closeTextsDrawer();
+        document.querySelectorAll('.inline-editable').forEach(el => {
+            el.classList.remove('inline-editable');
+            el.removeAttribute('contenteditable');
+            el.removeAttribute('spellcheck');
+        });
+        document.querySelectorAll('.popover-editable').forEach(el => {
+            el.classList.remove('popover-editable');
+            if (el.tagName === 'INPUT') el.readOnly = false;
+        });
+        document.querySelectorAll('.block-tools').forEach(t => t.remove());
+        document.body.classList.remove('page-edit-mode');
+        pageDraft = null;
+        updateLanguageUI();
+        updateGridSlotsTracker();
+        const panel = document.getElementById('adminPanel');
+        if (panel.style.display === 'block') {
+            document.querySelector('.container').classList.add('admin-wide');
+            panel.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    function blurActiveEditable() {
+        const a = document.activeElement;
+        if (a && a.classList && a.classList.contains('inline-editable')) a.blur();
+    }
+
+    async function savePageEdit() {
+        if (!pageEditMode) return;
+        blurActiveEditable();
+        closeTextPopover();
+        const payload = { texts: pageDraft.texts, layout: readLayout(), widths: readWidths() };
+        const btn = document.getElementById('pebSaveBtn');
+        btn.disabled = true;
+        btn.textContent = 'Zapisywanie...';
+        try {
+            const res = await fetch(`${firebaseBaseUrl}settings/pageCustom.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!res.ok) throw new Error();
+            savedPageCustom = normalizeCustom(payload);
+            exitPageEditMode();
+            alert("✅ Zmiany strony zapisane — widzi je każdy odwiedzający.");
+        } catch {
+            alert("❌ Nie udało się zapisać zmian strony w bazie danych.");
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '💾 Zapisz';
+        }
+    }
+
+    function cancelPageEdit() {
+        if (!pageEditMode) return;
+        blurActiveEditable();
+        if (draftSnapshot() !== pageDraftStart && !confirm("Odrzucić niezapisane zmiany strony?")) return;
+        applyTexts(savedPageCustom.texts);
+        applyLayout(savedPageCustom.layout, savedPageCustom.widths);
+        exitPageEditMode();
+    }
+
+    function resetPageToDefaults() {
+        if (!pageEditMode) return;
+        if (!confirm("Przywrócić domyślne teksty (PL i EN) oraz domyślny układ ramek?\nOdwiedzający zobaczą to dopiero po kliknięciu „Zapisz”.")) return;
+        blurActiveEditable();
+        closeTextPopover();
+        pageDraft.texts = { pl: {}, en: {} };
+        applyTexts(pageDraft.texts);
+        applyLayout(DEFAULT_LAYOUT, DEFAULT_WIDTHS);
+        updateLanguageUI();
+        updateGridSlotsTracker();
+        if (document.getElementById('textsDrawer').classList.contains('visible')) renderTextsDrawer();
+    }
+
+    function updateEditorLangLabels() {
+        const l = currentLang.toUpperCase();
+        document.getElementById('pebLang').textContent = l;
+        document.getElementById('tdLang').textContent = l;
+    }
+
+    function onEditorLanguageChanged() {
+        updateEditorLangLabels();
+        closeTextPopover();
+        if (document.getElementById('textsDrawer').classList.contains('visible')) renderTextsDrawer();
+    }
+
+    // ---------- napisy edytowane w miejscu ----------
+    function setupEditables() {
+        publicArea.querySelectorAll('[data-i18n]').forEach(el => {
+            if (el.tagName === 'OPTION' || el.tagName === 'BUTTON') return;
+            el.classList.add('inline-editable');
+            try { el.contentEditable = 'plaintext-only'; } catch { el.contentEditable = 'true'; }
+            if (el.contentEditable !== 'plaintext-only') el.contentEditable = 'true';
+            el.spellcheck = false;
+        });
+        publicArea.querySelectorAll('input[data-ph-key], select, #submitBtn').forEach(el => {
+            el.classList.add('popover-editable');
+            if (el.tagName === 'INPUT') el.readOnly = true;
+        });
+    }
+
+    function editableFrom(target) {
+        return target && target.closest ? target.closest('.inline-editable') : null;
+    }
+
+    publicArea.addEventListener('focusin', e => {
+        const el = editableFrom(e.target);
+        if (pageEditMode && el) el.dataset.before = el.textContent;
+    });
+    publicArea.addEventListener('input', e => {
+        const el = editableFrom(e.target);
+        if (!pageEditMode || !el) return;
+        const txt = el.textContent.replace(/\s+/g, ' ');
+        if (txt.trim()) setDraftText(el.dataset.i18n, txt);
+    });
+    publicArea.addEventListener('focusout', e => {
+        const el = editableFrom(e.target);
+        if (!pageEditMode || !el) return;
+        const key = el.dataset.i18n;
+        let txt = el.textContent.replace(/\s+/g, ' ').trim();
+        if (!txt) txt = DEFAULT_TEXTS[currentLang][key]; // pusty napis zniknąłby ze strony — wraca domyślny
+        if (el.textContent !== txt) el.textContent = txt;
+        setDraftText(key, txt);
+        syncTextKey(key, el);
+    });
+    publicArea.addEventListener('keydown', e => {
+        const el = editableFrom(e.target);
+        if (!pageEditMode || !el) return;
+        if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+        else if (e.key === 'Escape') {
+            e.preventDefault();
+            if (el.dataset.before != null) el.textContent = el.dataset.before;
+            el.blur();
+        }
+    });
+    publicArea.addEventListener('paste', e => {
+        const el = editableFrom(e.target);
+        if (!pageEditMode || !el) return;
+        e.preventDefault();
+        const text = ((e.clipboardData || window.clipboardData).getData('text') || '').replace(/\s+/g, ' ');
+        document.execCommand('insertText', false, text);
+    });
+    publicArea.addEventListener('drop', e => { if (pageEditMode) e.preventDefault(); });
+
+    // Klik w trybie edycji: listy, pola i przycisk otwierają okienko; klik w napis w etykiecie nie zaznacza pola.
+    publicArea.addEventListener('click', e => {
+        if (!pageEditMode) return;
+        if (e.target.closest('.block-tools')) return;
+        const hit = [...publicArea.querySelectorAll('.popover-editable')].find(el => {
+            const r = el.getBoundingClientRect();
+            return r.width > 0 && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+        });
+        if (hit) { e.preventDefault(); e.stopPropagation(); openPopoverFor(hit); return; }
+        const el = editableFrom(e.target);
+        if (el && el.closest('label')) e.preventDefault();
+    }, true);
+
+    // ---------- okienko edycji (opcje list, podpowiedzi pól, przycisk) ----------
+    let popoverFields = [];
+    function openPopoverFor(el) {
+        blurActiveEditable();
+        const blockName = (el.closest('[data-block]') || {}).dataset?.blockName || '';
+        let title;
+        if (el.tagName === 'SELECT') {
+            title = `Opcje listy · ${blockName}`;
+            popoverFields = [...el.options].filter(o => o.dataset.i18n).map((o, i) => ({
+                key: o.dataset.i18n,
+                label: `Opcja ${i + 1}${o.hidden ? ' (teraz ukryta — split wyłączony)' : ''}`
+            }));
+        } else if (el.tagName === 'INPUT') {
+            title = `Podpowiedź w polu · ${blockName}`;
+            popoverFields = [{ key: el.dataset.phKey, label: 'Szary tekst widoczny w pustym polu' }];
+        } else {
+            title = 'Napis na przycisku';
+            popoverFields = [{ key: 'btnSubmit', label: 'Przycisk' }, { key: 'btnSaving', label: 'Podczas wysyłania' }];
+        }
+        document.getElementById('tpTitle').textContent = title;
+        const box = document.getElementById('tpFields');
+        box.innerHTML = '';
+        popoverFields.forEach(f => {
+            const wrap = document.createElement('label');
+            wrap.className = 'tp-field';
+            const span = document.createElement('span');
+            span.textContent = f.label;
+            const inp = document.createElement('input');
+            inp.type = 'text';
+            inp.value = langData[currentLang][f.key] ?? '';
+            inp.dataset.key = f.key;
+            inp.addEventListener('keydown', ev => {
+                if (ev.key === 'Enter') { ev.preventDefault(); applyTextPopover(); }
+                if (ev.key === 'Escape') { ev.preventDefault(); closeTextPopover(); }
+            });
+            wrap.append(span, inp);
+            box.appendChild(wrap);
+        });
+        const pop = document.getElementById('textPopover');
+        pop.classList.add('visible');
+        const r = el.getBoundingClientRect();
+        const pw = pop.offsetWidth, ph = pop.offsetHeight;
+        let top = r.bottom + 8;
+        if (top + ph > window.innerHeight - 100) top = Math.max(12, r.top - ph - 8);
+        const left = Math.min(Math.max(12, r.left), window.innerWidth - pw - 12);
+        pop.style.top = `${top}px`;
+        pop.style.left = `${left}px`;
+        const first = box.querySelector('input');
+        if (first) { first.focus(); first.select(); }
+    }
+    function applyTextPopover() {
+        document.querySelectorAll('#tpFields input').forEach(inp => {
+            const key = inp.dataset.key;
+            const v = inp.value.replace(/\s+/g, ' ').trim() || DEFAULT_TEXTS[currentLang][key];
+            setDraftText(key, v);
+            syncTextKey(key, null);
+        });
+        updateLanguageUI();
+        closeTextPopover();
+    }
+    function closeTextPopover() {
+        document.getElementById('textPopover').classList.remove('visible');
+        popoverFields = [];
+    }
+    document.addEventListener('mousedown', e => {
+        const pop = document.getElementById('textPopover');
+        if (pop.classList.contains('visible') && !pop.contains(e.target)) closeTextPopover();
+    });
+
+    // ---------- panel „Wszystkie teksty” ----------
+    function openTextsDrawer() {
+        blurActiveEditable();
+        closeTextPopover();
+        document.getElementById('tdSearch').value = '';
+        renderTextsDrawer();
+        document.getElementById('textsDrawer').classList.add('visible');
+    }
+    function closeTextsDrawer() { document.getElementById('textsDrawer').classList.remove('visible'); }
+
+    function renderTextsDrawer() {
+        if (!pageDraft) return;
+        const list = document.getElementById('tdList');
+        const q = document.getElementById('tdSearch').value.trim().toLowerCase();
+        list.innerHTML = '';
+        Object.entries(TEXT_DESCRIPTIONS).forEach(([key, desc]) => {
+            if (!(key in DEFAULT_TEXTS[currentLang])) return;
+            const val = langData[currentLang][key] ?? '';
+            if (q && !(`${desc} ${val}`).toLowerCase().includes(q)) return;
+            const item = document.createElement('div');
+            item.className = 'td-item';
+            const label = document.createElement('span');
+            const markChanged = () => {
+                const changed = key in pageDraft.texts[currentLang];
+                item.classList.toggle('changed', changed);
+                label.innerHTML = `${escapeHtml(desc)}${changed ? ' <em>· zmienione</em>' : ''}`;
+            };
+            const ta = document.createElement('textarea');
+            ta.value = val;
+            ta.rows = Math.min(5, Math.max(1, Math.ceil(val.length / 48)));
+            ta.addEventListener('input', () => {
+                const v = ta.value.replace(/\s+/g, ' ');
+                if (v.trim()) { setDraftText(key, v); syncTextKey(key, null); }
+                markChanged();
+            });
+            ta.addEventListener('change', () => {
+                if (!ta.value.trim()) { ta.value = DEFAULT_TEXTS[currentLang][key]; setDraftText(key, ta.value); syncTextKey(key, null); markChanged(); }
+            });
+            markChanged();
+            item.append(label, ta);
+            list.appendChild(item);
+        });
+        if (!list.children.length) list.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">Brak tekstów pasujących do wyszukiwania.</div>';
+    }
+
+    // ---------- ramki: uchwyty, szerokość, przeciąganie ----------
+    function injectBlockTools() {
+        publicArea.querySelectorAll('[data-block]').forEach(block => {
+            if (block.querySelector(':scope > .block-tools')) return;
+            const tools = document.createElement('div');
+            tools.className = 'block-tools';
+            tools.contentEditable = 'false';
+
+            const handle = document.createElement('span');
+            handle.className = 'bt-handle';
+            handle.textContent = `⠿ ${block.dataset.blockName || ''}`.trim();
+            handle.title = 'Przeciągnij, aby przesunąć ramkę';
+            tools.appendChild(handle);
+
+            if (block.parentElement && block.parentElement.dataset.zone === 'form') {
+                const w = document.createElement('button');
+                w.type = 'button';
+                w.className = 'bt-width';
+                w.title = 'Zmień szerokość ramki (połowa / cały wiersz)';
+                w._update = () => { w.textContent = block.classList.contains('half') ? '↔ ½' : '↔ pełna'; };
+                w._update();
+                w.addEventListener('click', e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    block.classList.toggle('half');
+                    w._update();
+                });
+                tools.appendChild(w);
+            }
+            if (block.dataset.editNote) {
+                const note = document.createElement('span');
+                note.className = 'bt-note';
+                note.textContent = `👁 ${block.dataset.editNote}`;
+                tools.appendChild(note);
+            }
+            block.insertBefore(tools, block.firstChild);
+            attachBlockDrag(handle, block);
+        });
+    }
+
+    function attachBlockDrag(handle, block) {
+        handle.addEventListener('pointerdown', e => {
+            if (e.button !== 0 || !pageEditMode) return;
+            e.preventDefault();
+            e.stopPropagation();
+            blurActiveEditable();
+            closeTextPopover();
+            const zone = block.parentElement;
+            const isGrid = zone.dataset.zone === 'form';
+            const pointerId = e.pointerId;
+            let anchor = { x: e.clientX, y: e.clientY };
+            block.classList.add('block-dragging');
+            document.body.classList.add('is-dragging-block');
+
+            const onMove = ev => {
+                if (ev.pointerId !== pointerId) return;
+                ev.preventDefault();
+                const x = ev.clientX, y = ev.clientY;
+                const edge = 70;
+                if (y < edge) window.scrollBy(0, -16);
+                else if (y > window.innerHeight - edge) window.scrollBy(0, 16);
+                // Mały próg po każdym przesunięciu — siatka się przelicza i bez niego ramka "skakałaby".
+                if (Math.abs(x - anchor.x) < 6 && Math.abs(y - anchor.y) < 6) return;
+                const others = zoneBlocks(zone).filter(b => b !== block && b.offsetParent !== null);
+                if (!others.length) return;
+                const zoneWidth = zone.getBoundingClientRect().width;
+                const before = others.find(b => {
+                    const r = b.getBoundingClientRect();
+                    if (!isGrid || r.width > zoneWidth * 0.6) return y < r.top + r.height / 2;
+                    return y < r.top || (y <= r.bottom && x < r.left + r.width / 2);
+                });
+                let moved = false;
+                if (before) {
+                    if (block.nextElementSibling !== before) { zone.insertBefore(block, before); moved = true; }
+                } else {
+                    const last = others[others.length - 1];
+                    if (last.nextElementSibling !== block) { last.after(block); moved = true; }
+                }
+                if (moved) anchor = { x, y };
+            };
+            const onEnd = ev => {
+                if (ev.pointerId !== pointerId) return;
+                window.removeEventListener('pointermove', onMove);
+                window.removeEventListener('pointerup', onEnd);
+                window.removeEventListener('pointercancel', onEnd);
+                block.classList.remove('block-dragging');
+                document.body.classList.remove('is-dragging-block');
+            };
+            window.addEventListener('pointermove', onMove, { passive: false });
+            window.addEventListener('pointerup', onEnd);
+            window.addEventListener('pointercancel', onEnd);
+        });
     }
 </script>
 
