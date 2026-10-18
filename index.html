@@ -1302,6 +1302,31 @@
         }
         .tp-add-opt:hover { border-color: #15803d; background: rgba(21, 128, 61, 0.12); }
 
+        /* ===== Komunikaty dodane przez admina ===== */
+        .custom-notice {
+            display: block;
+            padding: 18px 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.55;
+            white-space: pre-line;
+            overflow-wrap: anywhere;
+        }
+        #registrationForm > .custom-notice { margin-bottom: 25px; }
+        .custom-notice a { color: inherit; text-decoration: underline; }
+        .custom-notice.n-info { background: rgba(251, 146, 60, 0.15); border: 1px solid rgba(251, 146, 60, 0.3); color: #fb923c; }
+        .custom-notice.n-warn { background: rgba(225, 6, 0, 0.12); border: 1px solid rgba(225, 6, 0, 0.3); color: #ff8a8a; }
+        .custom-notice.n-ok { background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.3); color: var(--success-green); }
+        .custom-notice.n-blue { background: rgba(0, 99, 229, 0.12); border: 1px solid rgba(0, 99, 229, 0.35); color: #5bb0ff; }
+        [data-theme="light"] .custom-notice.n-info { background: #fff7ed; border: 1.5px solid #f97316; color: #9a3412; }
+        [data-theme="light"] .custom-notice.n-warn { background: #fef2f2; border: 1.5px solid #ef4444; color: #991b1b; }
+        [data-theme="light"] .custom-notice.n-ok { background: #f0fdf4; border: 1.5px solid #22c55e; color: #166534; }
+        [data-theme="light"] .custom-notice.n-blue { background: #eff6ff; border: 1.5px solid var(--admin-blue); color: #1e40af; }
+        body.page-edit-mode .custom-notice[data-notice] { cursor: pointer; }
+        .block-tools .bt-add-notice { background: #b45309; cursor: pointer; }
+
         /* ===== Pojedyncze elementy (tytuł, napisy, paski, zakładki…) ===== */
         body:not(.page-edit-mode) .part-removed { display: none !important; }
         body.page-edit-mode .part-removed { opacity: 0.28; }
@@ -1837,6 +1862,7 @@
         Rubryki i układ formularza edytujesz osobno dla każdego splitu — wybierz zakładkę Split 1 / Split 2. Teksty są wspólne.
     </div>
     <button type="button" class="btn-admin" style="background:#15803d;" onclick="openFieldDialog()">➕ Dodaj rubrykę</button>
+    <button type="button" class="btn-admin" style="background:#b45309;" onclick="openNoticeDialog()">📢 Dodaj komunikat</button>
     <button type="button" class="btn-admin btn-ghost" id="pebCopyBtn" onclick="copyFormFromOtherSplit()">⧉ Kopiuj rubryki z drugiego splitu</button>
     <button type="button" class="btn-admin btn-ghost" onclick="openTextsDrawer()">📝 Wszystkie teksty</button>
     <button type="button" class="btn-admin btn-ghost" onclick="resetPageToDefaults()">↺ Domyślne</button>
@@ -1855,6 +1881,46 @@
 
 <!-- Pływający przycisk do usuwania pojedynczych elementów (tryb edycji strony) -->
 <button type="button" id="partTool" class="part-tool"></button>
+
+<!-- Okno dodawania / ustawień komunikatu (tryb edycji strony) -->
+<div id="noticeModalOverlay" class="edit-modal-overlay" style="z-index:1700;">
+    <div class="edit-modal-box">
+        <h2 id="nmTitle">📢 Nowy komunikat</h2>
+        <div class="form-group">
+            <label for="nmTextPl">Treść (PL)</label>
+            <textarea id="nmTextPl" rows="4" maxlength="1500" placeholder="np. ⏰ Zapisy do Split 1 trwają do piątku 20:00. Pytania: https://discord.gg/…"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="nmTextEn">Treść (EN) — opcjonalnie</label>
+            <textarea id="nmTextEn" rows="3" maxlength="1500"></textarea>
+        </div>
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="nmStyle">Kolor</label>
+                <select id="nmStyle">
+                    <option value="info">🟠 Pomarańczowy — informacja</option>
+                    <option value="warn">🔴 Czerwony — ważne</option>
+                    <option value="ok">🟢 Zielony — dobra wiadomość</option>
+                    <option value="blue">🔵 Niebieski — neutralny</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="nmWhere">Gdzie</label>
+                <select id="nmWhere">
+                    <option value="page">Na stronie — widzą wszyscy</option>
+                    <option value="split" id="nmWhereSplit">Tylko w formularzu Split 1</option>
+                </select>
+            </div>
+        </div>
+        <label style="margin-bottom:8px;">Podgląd</label>
+        <div id="nmPreview" class="custom-notice n-info" style="margin-bottom:14px;"></div>
+        <div class="fm-hint">Linki (https://…) są klikalne, a nowe linie zostają. Odwiedzający zobaczą komunikat po kliknięciu „💾 Zapisz” na dolnym pasku; ramkę możesz potem przeciągnąć za „⠿”.</div>
+        <div class="edit-modal-actions" style="margin-top:18px;">
+            <button type="button" class="btn-cancel-edit" onclick="closeNoticeDialog()">Anuluj</button>
+            <button type="button" class="btn-submit" style="flex:1; margin-top:0;" onclick="saveNoticeDialog()">Zapisz komunikat</button>
+        </div>
+    </div>
+</div>
 
 <!-- Okno dodawania / ustawień własnej rubryki (tryb edycji strony) -->
 <div id="fieldModalOverlay" class="edit-modal-overlay" style="z-index:1700;">
@@ -3601,7 +3667,7 @@
     const DEFAULT_TEXTS = JSON.parse(JSON.stringify(langData));
     let DEFAULT_LAYOUT = {};
     let DEFAULT_WIDTHS = {};
-    let savedPageCustom = { texts: { pl: {}, en: {} }, layout: {}, splits: { s1: { layout: null, widths: {}, hidden: {}, options: {}, fields: [] }, s2: { layout: null, widths: {}, hidden: {}, options: {}, fields: [] } }, pageHidden: {}, pageHiddenParts: {} };
+    let savedPageCustom = { texts: { pl: {}, en: {} }, layout: {}, splits: { s1: { layout: null, widths: {}, hidden: {}, options: {}, fields: [] }, s2: { layout: null, widths: {}, hidden: {}, options: {}, fields: [] } }, pageHidden: {}, pageHiddenParts: {}, notices: [] };
     let pageEditMode = false;
     let pageDraft = null;
     let pageDraftStart = '';
@@ -3706,7 +3772,12 @@
         blocks.filter(b => !sorted.includes(b)).forEach(b => {
             const di = defaultOrder.indexOf(b.dataset.block);
             let at = 0;
-            if (di === -1) {
+            if (di === -1 && b.dataset.defaultAfter) {
+                // Nowy komunikat — za ramką odniesienia (i za komunikatami, które już tam są).
+                at = sorted.findIndex(x => x.dataset.block === b.dataset.defaultAfter);
+                at = at === -1 ? 0 : at + 1;
+                while (at < sorted.length && sorted[at].dataset.notice) at++;
+            } else if (di === -1) {
                 // Własna rubryka, której nie ma jeszcze w zapisanym układzie — przed regulaminem / przyciskiem.
                 at = sorted.findIndex(x => x.dataset.block === 'rules' || x.dataset.block === 'submit');
                 if (at === -1) at = sorted.length;
@@ -3747,7 +3818,7 @@
 
     function normalizeCustom(raw) {
         const out = { texts: { pl: {}, en: {} }, layout: {}, widths: {} };
-        if (!raw || typeof raw !== 'object') { out.splits = normalizeSplits(null); out.pageHidden = {}; out.pageHiddenParts = {}; return out; }
+        if (!raw || typeof raw !== 'object') { out.splits = normalizeSplits(null); out.pageHidden = {}; out.pageHiddenParts = {}; out.notices = []; return out; }
         Object.keys(out.texts).forEach(lang => {
             const t = raw.texts && raw.texts[lang];
             if (t && typeof t === 'object') {
@@ -3766,6 +3837,7 @@
         out.splits = normalizeSplits(raw); // rubryki i układ formularza — osobno dla Split 1 i Split 2
         out.pageHidden = normalizePageHidden(raw.pageHidden); // usunięte elementy wspólne dla całej strony
         out.pageHiddenParts = normalizePartsMap(raw.pageHiddenParts); // usunięte pojedyncze elementy poza formularzem
+        out.notices = normalizeNotices(raw.notices); // komunikaty na stronie (oba splity)
         return out;
     }
 
@@ -3804,7 +3876,7 @@
     // ---------- wejście / wyjście z trybu edycji ----------
     function draftSnapshot() {
         captureDraftForm(activeSplitKey());
-        return JSON.stringify({ texts: pageDraft.texts, layout: readPageLayout(), splits: pageDraft.splits, pageHidden: pageDraft.pageHidden, pageHiddenParts: pageDraft.pageHiddenParts });
+        return JSON.stringify({ texts: pageDraft.texts, layout: readPageLayout(), splits: pageDraft.splits, pageHidden: pageDraft.pageHidden, pageHiddenParts: pageDraft.pageHiddenParts, notices: pageDraft.notices });
     }
 
     function enterPageEditMode() {
@@ -3814,8 +3886,14 @@
             texts: JSON.parse(JSON.stringify(savedPageCustom.texts)),
             splits: clone(savedPageCustom.splits),
             pageHidden: clone(savedPageCustom.pageHidden || {}),
-            pageHiddenParts: clone(savedPageCustom.pageHiddenParts || {})
+            pageHiddenParts: clone(savedPageCustom.pageHiddenParts || {}),
+            notices: clone(savedPageCustom.notices || [])
         };
+        ['s1', 's2'].forEach(k => {
+            const c = pageDraft.splits[k] = { ...emptyFormConfig(), ...(pageDraft.splits[k] || {}) };
+            ['fields', 'notices'].forEach(x => { if (!Array.isArray(c[x])) c[x] = []; });
+        });
+        if (!Array.isArray(pageDraft.notices)) pageDraft.notices = [];
         if (!pageDraft.texts.pl) pageDraft.texts.pl = {};
         if (!pageDraft.texts.en) pageDraft.texts.en = {};
         document.body.classList.add('page-edit-mode');
@@ -3833,6 +3911,7 @@
         pageEditMode = false;
         closeTextPopover();
         closeFieldDialog();
+        closeNoticeDialog();
         hidePartTool();
         closeTextsDrawer();
         document.querySelectorAll('.inline-editable').forEach(el => {
@@ -3866,7 +3945,7 @@
         blurActiveEditable();
         closeTextPopover();
         captureDraftForm(activeSplitKey());
-        const payload = { texts: pageDraft.texts, layout: readPageLayout(), splits: pageDraft.splits, pageHidden: pageDraft.pageHidden, pageHiddenParts: pageDraft.pageHiddenParts };
+        const payload = { texts: pageDraft.texts, layout: readPageLayout(), splits: pageDraft.splits, pageHidden: pageDraft.pageHidden, pageHiddenParts: pageDraft.pageHiddenParts, notices: pageDraft.notices };
         const btn = document.getElementById('pebSaveBtn');
         btn.disabled = true;
         btn.textContent = 'Zapisywanie...';
@@ -3890,20 +3969,22 @@
         blurActiveEditable();
         if (draftSnapshot() !== pageDraftStart && !confirm("Odrzucić niezapisane zmiany strony?")) return;
         closeFieldDialog();
+        closeNoticeDialog();
         applyCustomState(savedPageCustom);
         exitPageEditMode();
     }
 
     function resetPageToDefaults() {
         if (!pageEditMode) return;
-        if (!confirm("Przywrócić domyślną stronę (oba splity)?\n• domyślne teksty (PL i EN) i układ ramek\n• przywrócenie usuniętych rubryk i opcji list\n• usunięcie dodanych rubryk\nOdwiedzający zobaczą to dopiero po kliknięciu „Zapisz”.")) return;
+        if (!confirm("Przywrócić domyślną stronę (oba splity)?\n• domyślne teksty (PL i EN) i układ ramek\n• przywrócenie usuniętych rubryk i opcji list\n• usunięcie dodanych rubryk i komunikatów\nOdwiedzający zobaczą to dopiero po kliknięciu „Zapisz”.")) return;
         blurActiveEditable();
         closeTextPopover();
         pageDraft.texts = { pl: {}, en: {} };
         pageDraft.splits = { s1: emptyFormConfig(), s2: emptyFormConfig() };
         pageDraft.pageHidden = {};
         pageDraft.pageHiddenParts = {};
-        applyCustomState({ texts: pageDraft.texts, layout: DEFAULT_LAYOUT, splits: pageDraft.splits, pageHidden: {}, pageHiddenParts: {} });
+        pageDraft.notices = [];
+        applyCustomState({ texts: pageDraft.texts, layout: DEFAULT_LAYOUT, splits: pageDraft.splits, pageHidden: {}, pageHiddenParts: {}, notices: [] });
         updateLanguageUI();
         updateGridSlotsTracker();
         if (document.getElementById('textsDrawer').classList.contains('visible')) renderTextsDrawer();
@@ -3985,6 +4066,8 @@
         if (e.target.closest('.block-tools')) return;
         const cf = e.target.closest('[data-custom-field]');
         if (cf) { e.preventDefault(); e.stopPropagation(); openFieldDialog(cf.dataset.customField); return; }
+        const nt = e.target.closest('[data-notice]');
+        if (nt) { e.preventDefault(); e.stopPropagation(); openNoticeDialog(nt.dataset.notice); return; }
         const hit = [...publicArea.querySelectorAll('.popover-editable')].find(el => {
             const r = el.getBoundingClientRect();
             return r.width > 0 && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
@@ -4270,7 +4353,7 @@
     const SPLIT_KEY = { "Split 1": 's1', "Split 2": 's2' };
     const SPLIT_BY_KEY = { s1: "Split 1", s2: "Split 2" };
 
-    function emptyFormConfig() { return { layout: null, widths: {}, hidden: {}, hiddenParts: {}, options: {}, fields: [] }; }
+    function emptyFormConfig() { return { layout: null, widths: {}, hidden: {}, hiddenParts: {}, options: {}, fields: [], notices: [] }; }
 
     // Usunięte pojedyncze elementy: { idElementu: true }.
     function normalizePartsMap(src) {
@@ -4291,6 +4374,7 @@
             Object.entries(src.hidden).forEach(([id, v]) => { if (v === true && id in HIDEABLE_BLOCKS) out.hidden[id] = true; });
         }
         out.hiddenParts = normalizePartsMap(src.hiddenParts);
+        out.notices = normalizeNotices(src.notices); // komunikaty tylko w formularzu tego splitu
         if (src.options && typeof src.options === 'object') {
             Object.keys(OPTION_FIELDS).forEach(field => {
                 const o = src.options[field];
@@ -4347,6 +4431,7 @@
         const src = source || currentCustom(); // source: np. zapisana wersja przy „Anuluj”
         const cfg = src.splits[key];
         renderCustomFields(cfg.fields);
+        renderNoticesIn(formZone(), cfg.notices || []);
         applyHiddenBlocks(cfg.hidden);
         applyHiddenParts(src.pageHiddenParts || {}, cfg.hiddenParts || {});
         applySelectOptions(cfg.options);
@@ -4358,6 +4443,7 @@
     // Wszystko, co admin ustawił w edycji strony, nakładane na stronę.
     function applyCustomState(c) {
         applyTexts(c.texts);
+        renderNoticesIn(pageZone(), c.notices || []); // przed ułożeniem strefy, żeby trafiły na swoje miejsca
         getZones().filter(z => z.dataset.zone !== 'form').forEach(z => applyZoneOrder(z, (c.layout || {})[z.dataset.zone]));
         applyPageHidden(c.pageHidden || {});
         syncSplitForm(true, c);
@@ -4366,6 +4452,8 @@
     // Po zmianie języka: napisy własnych rubryk i dodanych opcji list w bieżącym splicie.
     function refreshCustomLanguage() {
         const cfg = activeCfg();
+        renderNoticesIn(pageZone(), currentCustom().notices || []);
+        renderNoticesIn(formZone(), cfg.notices || []);
         renderCustomFields(cfg.fields);
         applySelectOptions(cfg.options);
     }
@@ -5004,6 +5092,18 @@
             };
             b._update();
         }
+        if (id === 'alerts') {
+            const a = mk('bt-add-notice', () => openNoticeDialog());
+            a.textContent = '📢 Dodaj komunikat';
+            a.title = 'Dodaj własny komunikat (np. termin zapisów, link do Discorda)';
+        }
+        if (block.dataset.notice) {
+            const g = mk('bt-gear', () => openNoticeDialog(id));
+            g.textContent = '⚙ Ustawienia';
+            const d = mk('bt-del', () => deleteNotice(id));
+            d.textContent = '🗑 Usuń';
+            d.title = 'Usuń ten komunikat';
+        }
         if (block.dataset.customField) {
             const o = mk('bt-opts', () => { closeTextPopover(); openCustomOptionsEditor(id); });
             o.textContent = '☰ Opcje';
@@ -5211,6 +5311,159 @@
     });
     window.addEventListener('scroll', () => { if (partToolTarget) showPartTool(partToolTarget); }, { passive: true });
     window.addEventListener('resize', () => { if (partToolTarget) showPartTool(partToolTarget); });
+
+    // =====================================================================
+    //  KOMUNIKATY dodawane przez admina
+    //  pageCustom.notices        — na stronie, widzą wszyscy (oba splity)
+    //  pageCustom.splits.sX.notices — tylko w formularzu danego splitu
+    //  Każdy: { id: "n_…", style: info | warn | ok | blue, pl, en }
+    // =====================================================================
+    const NOTICE_STYLES = { info: 'n-info', warn: 'n-warn', ok: 'n-ok', blue: 'n-blue' };
+
+    function normalizeNotices(src) {
+        return toArr(src)
+            .filter(n => n && typeof n.id === 'string' && /^n_[a-z0-9]+$/.test(n.id) && str(n.pl).trim())
+            .map(n => ({ id: n.id, style: n.style in NOTICE_STYLES ? n.style : 'info', pl: str(n.pl).trim(), en: str(n.en).trim() }));
+    }
+    function pageZone() { return document.querySelector('[data-zone="page"]'); }
+    function noticeText(n) { return (currentLang === 'en' && n.en) ? n.en : n.pl; }
+    // Tekst bezpiecznie (bez HTML), z klikalnymi linkami.
+    function linkify(text) {
+        return escapeHtml(text).replace(/(https?:\/\/[^\s<]+)/g, url => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+    }
+
+    function insertNoticeDefault(zone, block) {
+        const isForm = zone.dataset.zone === 'form';
+        const anchorId = isForm
+            ? ['reserveOnlyNotice', 'splitRole', 'splitTabs'].find(id => zone.querySelector(`:scope > [data-block="${id}"]`))
+            : 'alerts';
+        let ref = anchorId ? zone.querySelector(`:scope > [data-block="${anchorId}"]`) : null;
+        block.dataset.defaultAfter = anchorId || '';
+        if (!ref) { zone.prepend(block); return; }
+        while (ref.nextElementSibling && ref.nextElementSibling.dataset.notice) ref = ref.nextElementSibling;
+        ref.after(block);
+    }
+
+    // Tworzy / odświeża ramki komunikatów w strefie (bez gubienia pozycji i szerokości).
+    function renderNoticesIn(zone, notices = []) {
+        if (!zone) return;
+        const ids = new Set(notices.map(n => n.id));
+        zone.querySelectorAll(':scope > [data-notice]').forEach(b => { if (!ids.has(b.dataset.notice)) b.remove(); });
+        notices.forEach(n => {
+            let block = zone.querySelector(`:scope > [data-notice="${n.id}"]`);
+            if (!block) {
+                block = document.createElement('div');
+                block.dataset.notice = n.id;
+                block.dataset.block = n.id;
+                insertNoticeDefault(zone, block);
+            }
+            const half = block.classList.contains('half');
+            const dragging = block.classList.contains('block-dragging');
+            block.className = `custom-notice ${NOTICE_STYLES[n.style]}`;
+            block.classList.toggle('half', half);
+            block.classList.toggle('block-dragging', dragging);
+            block.dataset.blockName = 'Komunikat';
+            const tools = block.querySelector(':scope > .block-tools');
+            block.textContent = '';
+            const txt = document.createElement('div');
+            txt.className = 'notice-text';
+            txt.innerHTML = linkify(noticeText(n));
+            block.appendChild(txt);
+            if (tools) block.prepend(tools);
+        });
+    }
+
+    // ---------- okno komunikatu ----------
+    let editingNoticeId = null;
+
+    function findDraftNotice(id) {
+        const g = pageDraft.notices.find(n => n.id === id);
+        if (g) return { n: g, where: 'page' };
+        const sp = draftCfg().notices.find(n => n.id === id);
+        return sp ? { n: sp, where: 'split' } : null;
+    }
+
+    function updateNoticePreview() {
+        const prev = document.getElementById('nmPreview');
+        const style = document.getElementById('nmStyle').value;
+        prev.className = `custom-notice ${NOTICE_STYLES[style] || 'n-info'}`;
+        const text = document.getElementById(currentLang === 'en' ? 'nmTextEn' : 'nmTextPl').value.trim()
+            || document.getElementById('nmTextPl').value.trim()
+            || 'Tu pojawi się treść komunikatu.';
+        prev.innerHTML = linkify(text);
+    }
+    ['nmTextPl', 'nmTextEn', 'nmStyle'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateNoticePreview);
+        document.getElementById(id).addEventListener('change', updateNoticePreview);
+    });
+
+    function openNoticeDialog(id = null) {
+        if (!pageEditMode) return;
+        blurActiveEditable();
+        closeTextPopover();
+        editingNoticeId = id;
+        const found = id ? findDraftNotice(id) : null;
+        document.getElementById('nmTitle').textContent = found ? '⚙ Ustawienia komunikatu' : '📢 Nowy komunikat';
+        document.getElementById('nmTextPl').value = found ? found.n.pl : '';
+        document.getElementById('nmTextEn').value = found ? found.n.en : '';
+        document.getElementById('nmStyle').value = found ? found.n.style : 'info';
+        document.getElementById('nmWhere').value = found ? found.where : 'page';
+        document.getElementById('nmWhereSplit').textContent = `Tylko w formularzu ${SPLIT_BY_KEY[activeSplitKey()]}`;
+        updateNoticePreview();
+        document.getElementById('noticeModalOverlay').classList.add('visible');
+        setTimeout(() => document.getElementById('nmTextPl').focus(), 50);
+    }
+
+    function closeNoticeDialog() {
+        editingNoticeId = null;
+        document.getElementById('noticeModalOverlay').classList.remove('visible');
+    }
+
+    function saveNoticeDialog() {
+        if (!pageDraft) return;
+        const pl = document.getElementById('nmTextPl').value.trim();
+        const en = document.getElementById('nmTextEn').value.trim();
+        const style = document.getElementById('nmStyle').value;
+        const where = document.getElementById('nmWhere').value;
+        if (!pl) { alert('Wpisz treść komunikatu (PL).'); return; }
+
+        const found = editingNoticeId ? findDraftNotice(editingNoticeId) : null;
+        const id = editingNoticeId || `n_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+        const notice = { id, style, pl, en };
+        const listOf = w => w === 'page' ? pageDraft.notices : draftCfg().notices;
+        if (found && found.where === where) {
+            const list = listOf(where);
+            list.splice(list.findIndex(n => n.id === id), 1, notice); // ta sama pozycja
+        } else {
+            if (found) {
+                const old = listOf(found.where);
+                old.splice(old.findIndex(n => n.id === id), 1);
+                const oldBlock = document.querySelector(`[data-notice="${id}"]`);
+                if (oldBlock) oldBlock.remove(); // przenosimy do innej strefy — stanie na domyślnym miejscu
+            }
+            listOf(where).push(notice);
+        }
+        renderNoticesIn(pageZone(), pageDraft.notices);
+        renderNoticesIn(formZone(), draftCfg().notices);
+        injectBlockTools();
+        document.querySelectorAll('.bt-width').forEach(btn => btn._update && btn._update());
+        closeNoticeDialog();
+        const block = document.querySelector(`[data-notice="${id}"]`);
+        if (block && !found) block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function deleteNotice(id) {
+        if (!pageDraft || !findDraftNotice(id)) return;
+        if (!confirm('Usunąć ten komunikat?')) return;
+        pageDraft.notices = pageDraft.notices.filter(n => n.id !== id);
+        draftCfg().notices = draftCfg().notices.filter(n => n.id !== id);
+        renderNoticesIn(pageZone(), pageDraft.notices);
+        renderNoticesIn(formZone(), draftCfg().notices);
+    }
+
+    document.getElementById('noticeModalOverlay').addEventListener('mousedown', e => {
+        if (e.target.id === 'noticeModalOverlay') closeNoticeDialog();
+    });
 </script>
 
 </body>
