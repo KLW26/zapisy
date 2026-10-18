@@ -1740,6 +1740,29 @@
             </div>
 
             <div class="admin-unlock-section">
+                <h3>🔔 Powiadomienia Discord</h3>
+                <div class="webhook-block">
+                    <label for="whRegInput">Webhook — nowe zgłoszenia i ich edycje</label>
+                    <div class="unlock-controls">
+                        <div class="form-group"><input type="text" id="whRegInput" placeholder="https://discord.com/api/webhooks/…" spellcheck="false" autocomplete="off"></div>
+                        <button class="btn-set-unlock" onclick="saveWebhook('registrations')">Zapisz</button>
+                        <button class="btn-clear-unlock" style="color:var(--text-light);" onclick="testWebhook('registrations')">Wyślij test</button>
+                    </div>
+                    <div class="current-unlock-info" id="whRegInfo"></div>
+                </div>
+                <div class="webhook-block" style="margin-top:18px; padding-top:18px; border-top:1px solid var(--glass-border);">
+                    <label for="whAnnInput">Webhook — ogłoszenia (otwarcie / zamknięcie zapisów)</label>
+                    <div class="unlock-controls">
+                        <div class="form-group"><input type="text" id="whAnnInput" placeholder="https://discord.com/api/webhooks/…" spellcheck="false" autocomplete="off"></div>
+                        <button class="btn-set-unlock" onclick="saveWebhook('announcements')">Zapisz</button>
+                        <button class="btn-clear-unlock" style="color:var(--text-light);" onclick="testWebhook('announcements')">Wyślij test</button>
+                    </div>
+                    <div class="current-unlock-info" id="whAnnInfo"></div>
+                </div>
+                <div class="fm-hint" style="margin-top:14px;">⚠️ Nie wklejaj adresu webhooka do pliku strony na GitHubie — Discord automatycznie usuwa webhooki znalezione w publicznych repozytoriach. Adres zapisany tutaj trafia do bazy, nie do pliku. Nowy webhook utworzysz na Discordzie: Ustawienia kanału → Integracje → Webhooki → Nowy webhook → Kopiuj URL.</div>
+            </div>
+
+            <div class="admin-unlock-section">
                 <h3>⏱ Harmonogram Zapisów</h3>
                 <div class="unlock-controls">
                     <div class="form-group">
@@ -2009,8 +2032,11 @@
 </div>
 
 <script>
-    const webhookUrl = "https://discord.com/api/webhooks/1540403339328487585/83HdiHFlKGqnVVMNw0bcsukU8MJ_k_ABjF0cWSNl9xJ8ZZh-uoCcA4isxEFZWAA8kptD";
-    const countdownWebhookUrl = "https://discord.com/api/webhooks/1512476781502791780/3UgyLFL65LlUTKhPBIbFqYzHuwtlfG1FEKKpTqowpVtI7mA9F6qf1dyYKLd0v3PQ2MTR";
+    // Adresy webhooków ustawiasz w panelu admina (🔔 Powiadomienia Discord) — trzymane są w bazie, nie w tym pliku.
+    // Discord automatycznie usuwa webhooki, których adres znajdzie w publicznym repozytorium na GitHubie,
+    // dlatego poniższe adresy są tylko zapasem, używanym dopóki w panelu nic nie zapisano.
+    let webhookUrl = "https://discord.com/api/webhooks/1540403339328487585/83HdiHFlKGqnVVMNw0bcsukU8MJ_k_ABjF0cWSNl9xJ8ZZh-uoCcA4isxEFZWAA8kptD";
+    let countdownWebhookUrl = "https://discord.com/api/webhooks/1512476781502791780/3UgyLFL65LlUTKhPBIbFqYzHuwtlfG1FEKKpTqowpVtI7mA9F6qf1dyYKLd0v3PQ2MTR";
     const firebaseBaseUrl = "https://zapisy-4af51-default-rtdb.europe-west1.firebasedatabase.app/";
     const ADMIN_PASSWORD = "admin123";
 
@@ -2627,6 +2653,77 @@
         return role === "Rezerwowy" ? av.reserveAvail : av.mainAvail;
     }
 
+    // ---------- webhooki Discorda (settings/discordWebhooks = { registrations, announcements }) ----------
+    const WEBHOOK_RE = /^https:\/\/(?:canary\.|ptb\.)?discord(?:app)?\.com\/api\/webhooks\/\d+\/[\w-]+$/;
+    const WEBHOOKS = {
+        registrations: { input: 'whRegInput', info: 'whRegInfo', get: () => webhookUrl, set: v => { webhookUrl = v; } },
+        announcements: { input: 'whAnnInput', info: 'whAnnInfo', get: () => countdownWebhookUrl, set: v => { countdownWebhookUrl = v; } }
+    };
+    let webhooksFromDb = {};
+
+    function setWebhookInfo(kind, html) {
+        const el = document.getElementById(WEBHOOKS[kind].info);
+        if (el) el.innerHTML = html;
+    }
+    function renderWebhookInputs() {
+        Object.entries(WEBHOOKS).forEach(([kind, w]) => {
+            const inp = document.getElementById(w.input);
+            if (inp) inp.value = w.get();
+            setWebhookInfo(kind, webhooksFromDb[kind]
+                ? 'Aktualnie: <span>adres zapisany w bazie</span>'
+                : 'Aktualnie: <span>adres z pliku strony (zapasowy) — jeśli powiadomienia nie przychodzą, wklej nowy webhook i kliknij „Zapisz”</span>');
+        });
+    }
+    async function loadWebhooks() {
+        const v = await fetchSettingValue('discordWebhooks');
+        webhooksFromDb = {};
+        if (v && typeof v === 'object') {
+            Object.entries(WEBHOOKS).forEach(([kind, w]) => {
+                if (typeof v[kind] === 'string' && WEBHOOK_RE.test(v[kind])) { w.set(v[kind]); webhooksFromDb[kind] = true; }
+            });
+        }
+        renderWebhookInputs();
+    }
+    async function saveWebhook(kind) {
+        const w = WEBHOOKS[kind];
+        const url = document.getElementById(w.input).value.trim();
+        if (!WEBHOOK_RE.test(url)) { alert('To nie wygląda na adres webhooka Discorda.\nPowinien wyglądać tak: https://discord.com/api/webhooks/123456789/abcDEF…'); return; }
+        try {
+            const res = await fetch(`${firebaseBaseUrl}settings/discordWebhooks/${kind}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(url) });
+            if (!res.ok) throw new Error();
+            w.set(url);
+            webhooksFromDb[kind] = true;
+            renderWebhookInputs();
+            setWebhookInfo(kind, 'Aktualnie: <span>✅ adres zapisany w bazie — kliknij „Wyślij test”, żeby sprawdzić</span>');
+        } catch {
+            alert('❌ Błąd zapisu do bazy danych.');
+        }
+    }
+    // Wysyła wiadomość testową i pokazuje dokładną odpowiedź Discorda.
+    async function testWebhook(kind) {
+        const w = WEBHOOKS[kind];
+        const typed = document.getElementById(w.input).value.trim();
+        const url = WEBHOOK_RE.test(typed) ? typed : w.get();
+        setWebhookInfo(kind, 'Wysyłanie wiadomości testowej…');
+        try {
+            const res = await fetch(`${url}?wait=true`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: `🧪 Test powiadomień ze strony zapisów (${kind === 'registrations' ? 'zgłoszenia' : 'ogłoszenia'}) — działa!` })
+            });
+            if (res.ok) { setWebhookInfo(kind, 'Wynik testu: <span>✅ wiadomość dotarła na Discorda</span>'); return; }
+            const body = await res.json().catch(() => ({}));
+            const why = res.status === 404 || body.code === 10015
+                ? 'webhook nie istnieje (został usunięty) — utwórz nowy na Discordzie, wklej go tutaj i kliknij „Zapisz”'
+                : res.status === 401 ? 'nieprawidłowy adres webhooka (zły token)'
+                : res.status === 429 ? 'za dużo wiadomości naraz — spróbuj za chwilę'
+                : (body.message || 'nieznany błąd');
+            setWebhookInfo(kind, `Wynik testu: <span style="color:#ff8a8a;">❌ Discord odpowiedział ${res.status}: ${escapeHtml(why)}</span>`);
+        } catch {
+            setWebhookInfo(kind, 'Wynik testu: <span style="color:#ff8a8a;">❌ brak połączenia z Discordem (sprawdź internet albo blokadę reklam w przeglądarce)</span>');
+        }
+    }
+
     async function fetchSplitSeats() {
         const [s1, s2] = await Promise.all([fetchSettingValue('split1Seats'), fetchSettingValue('split2Seats')]);
         return { "Split 1": s1, "Split 2": s2 };
@@ -2929,7 +3026,7 @@
         initLanguage();
         // Strona jest ukryta (klasa page-loading), dopóki nie wczytają się własne teksty i układ z bazy — max 3 s.
         const revealTimer = setTimeout(() => document.body.classList.remove('page-loading'), 3000);
-        const [settings, pageCustom, seats] = await Promise.all([fetchAllSectionSettings(), fetchPageCustom(), fetchSplitSeats()]);
+        const [settings, pageCustom, seats] = await Promise.all([fetchAllSectionSettings(), fetchPageCustom(), fetchSplitSeats(), loadWebhooks()]);
         applySplitSeats(seats);
         applyPageCustom(pageCustom);
         clearTimeout(revealTimer);
@@ -3679,21 +3776,27 @@
 
         try {
             if (existingMessageId) {
-                // Istniejąca wiadomość już jest na Discordzie - edytujemy ją zamiast tworzyć nową.
-                await fetch(`${webhookUrl}/messages/${existingMessageId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) });
-            } else {
-                // Pierwsza wiadomość dla tego kierowcy (albo brak zapisanego ID) - tworzymy ją i zapamiętujemy jej ID w Firebase,
-                // żeby przyszłe edycje aktualizowały tę samą wiadomość zamiast tworzyć nowe.
-                const res = await fetch(`${webhookUrl}?wait=true`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) });
-                const msg = res.ok ? await res.json() : null;
-                if (msg && msg.id && driverId) {
-                    await fetch(`${firebaseBaseUrl}drivers/${driverId}/discordMessageId.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(msg.id) });
-                    const local = globalDriversList.find(x => x.id === driverId);
-                    if (local) local.discordMessageId = msg.id;
-                }
+                // Istniejąca wiadomość już jest na Discordzie — edytujemy ją zamiast tworzyć nową.
+                const r = await fetch(`${webhookUrl}/messages/${existingMessageId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) });
+                if (r.ok) return;
+                // Np. wiadomość wysłał stary (usunięty) webhook — wtedy wysyłamy nową i zapamiętujemy jej ID.
+                console.warn('Discord: nie udało się zaktualizować wiadomości', r.status, await r.text().catch(() => ''));
+            }
+            // Pierwsza wiadomość dla tego kierowcy (albo brak zapisanego ID) — tworzymy ją i zapamiętujemy jej ID w Firebase,
+            // żeby przyszłe edycje aktualizowały tę samą wiadomość zamiast tworzyć nowe.
+            const res = await fetch(`${webhookUrl}?wait=true`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) });
+            if (!res.ok) {
+                console.warn('Discord odrzucił powiadomienie o zgłoszeniu:', res.status, await res.text().catch(() => ''));
+                return;
+            }
+            const msg = await res.json().catch(() => null);
+            if (msg && msg.id && driverId) {
+                await fetch(`${firebaseBaseUrl}drivers/${driverId}/discordMessageId.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(msg.id) });
+                const local = globalDriversList.find(x => x.id === driverId);
+                if (local) local.discordMessageId = msg.id;
             }
         } catch (err) {
-            console.warn(err);
+            console.warn('Discord: błąd połączenia', err);
         }
     }
 
