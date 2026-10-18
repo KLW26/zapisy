@@ -658,6 +658,17 @@
             font-weight: 500;
             font-size: 0.9rem;
         }
+        .split-seats-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 2px 0 0;
+            padding-top: 12px;
+            border-top: 1px dashed var(--glass-border);
+            font-size: 0.8rem;
+        }
+        .split-seats-label input[type="number"] { width: 84px; padding: 8px 10px; border-radius: 8px; text-align: center; font-weight: 700; }
         .split-settings-card .split-toggle-label.whole {
             padding-bottom: 12px;
             border-bottom: 1px dashed var(--glass-border);
@@ -1471,23 +1482,23 @@
             <div class="split-tracker-heading" data-i18n="split1Heading" data-part="s1Heading" data-part-name="Nagłówek paska">🔴 Split 1</div>
             <div class="tracker-info">
                 <span data-i18n="trackerLabel" data-part="s1Label" data-part-name="Opis paska">Fotele w składzie głównym</span>
-                <span id="liveTrackerTextS1" data-part="s1Status" data-part-name="Liczba wolnych miejsc">Pobieranie statusu padoku...</span>
+                <span id="liveTrackerTextS1" data-text-keys="statusLeft,statusFull,statusMainClosed,statusFetching" data-part="s1Status" data-part-name="Liczba wolnych miejsc">Pobieranie statusu padoku...</span>
             </div>
             <div class="tracker-bar-bg" data-part="s1Bar" data-part-name="Pasek">
                 <div id="liveTrackerBarS1" class="tracker-bar-fill"></div>
             </div>
-            <div class="tracker-reserve" id="liveReserveS1" data-part="s1Reserve" data-part-name="Status rezerwy"></div>
+            <div class="tracker-reserve" id="liveReserveS1" data-text-keys="trackerReserveOpen,trackerReserveClosed" data-part="s1Reserve" data-part-name="Status rezerwy"></div>
         </div>
         <div class="split-tracker-block" id="split2TrackerBlock" data-block="trackerS2" data-block-name="Split 2" data-edit-note="widoczny, gdy w Split 2 otwarty jest skład główny lub rezerwa">
             <div class="split-tracker-heading" data-i18n="split2Heading" data-part="s2Heading" data-part-name="Nagłówek paska">🔵 Split 2</div>
             <div class="tracker-info">
                 <span data-i18n="trackerLabel" data-part="s2Label" data-part-name="Opis paska">Fotele w składzie głównym</span>
-                <span id="liveTrackerTextS2" data-part="s2Status" data-part-name="Liczba wolnych miejsc">Pobieranie statusu padoku...</span>
+                <span id="liveTrackerTextS2" data-text-keys="statusLeft,statusFull,statusMainClosed,statusFetching" data-part="s2Status" data-part-name="Liczba wolnych miejsc">Pobieranie statusu padoku...</span>
             </div>
             <div class="tracker-bar-bg" data-part="s2Bar" data-part-name="Pasek">
                 <div id="liveTrackerBarS2" class="tracker-bar-fill"></div>
             </div>
-            <div class="tracker-reserve" id="liveReserveS2" data-part="s2Reserve" data-part-name="Status rezerwy"></div>
+            <div class="tracker-reserve" id="liveReserveS2" data-text-keys="trackerReserveOpen,trackerReserveClosed" data-part="s2Reserve" data-part-name="Status rezerwy"></div>
         </div>
     </div>
 
@@ -1508,11 +1519,11 @@
             <div class="split-tabs" role="tablist">
                 <div class="split-tab s1" data-split="Split 1" data-part="tab1" data-part-name="Zakładka Split 1" role="tab" tabindex="0" aria-selected="false">
                     <span class="split-tab-title" data-i18n="tabSplit1">🔴 Split 1 + Rezerwa</span>
-                    <span class="split-tab-status" id="tabStatusS1" data-part="tab1Status" data-part-name="Status zakładki"></span>
+                    <span class="split-tab-status" id="tabStatusS1" data-text-keys="tabMainFree,tabMainFull,tabMainClosed,tabReserveOpen,tabReserveClosed,tabClosed" data-part="tab1Status" data-part-name="Status zakładki"></span>
                 </div>
                 <div class="split-tab s2" data-split="Split 2" data-part="tab2" data-part-name="Zakładka Split 2" role="tab" tabindex="0" aria-selected="false">
                     <span class="split-tab-title" data-i18n="tabSplit2">🔵 Split 2 + Rezerwa</span>
-                    <span class="split-tab-status" id="tabStatusS2" data-part="tab2Status" data-part-name="Status zakładki"></span>
+                    <span class="split-tab-status" id="tabStatusS2" data-text-keys="tabMainFree,tabMainFull,tabMainClosed,tabReserveOpen,tabReserveClosed,tabClosed" data-part="tab2Status" data-part-name="Status zakładki"></span>
                 </div>
             </div>
             <select id="driverSplit" hidden>
@@ -1701,6 +1712,10 @@
                             <input type="checkbox" id="split1ReserveToggle" onchange="setSectionEnabled('split1Reserve', this.checked)">
                             <span>⭐ Rezerwa Split 1</span>
                         </label>
+                        <label class="split-seats-label" for="split1SeatsInput">
+                            <span>🪑 Miejsc w składzie głównym</span>
+                            <input type="number" id="split1SeatsInput" min="1" max="99" value="22" onchange="setSplitSeats('Split 1', this.value)">
+                        </label>
                     </div>
                     <div class="split-settings-card s2">
                         <label class="split-toggle-label whole" for="split2AllToggle">
@@ -1714,6 +1729,10 @@
                         <label class="split-toggle-label sub" for="split2ReserveToggle">
                             <input type="checkbox" id="split2ReserveToggle" onchange="setSectionEnabled('split2Reserve', this.checked)">
                             <span>⭐ Rezerwa Split 2</span>
+                        </label>
+                        <label class="split-seats-label" for="split2SeatsInput">
+                            <span>🪑 Miejsc w składzie głównym</span>
+                            <input type="number" id="split2SeatsInput" min="1" max="99" value="22" onchange="setSplitSeats('Split 2', this.value)">
                         </label>
                     </div>
                 </div>
@@ -2056,13 +2075,13 @@
             phGamertag: "np. DriverX_F1",
             phDiscord: "Skopiuj numeryczne ID (np. 511295...)",
             statusFetching: "Pobieranie statusu padoku...",
-            statusFull: "Główny skład pełny (22/22)",
+            statusFull: "Główny skład pełny ({max}/{max})",
             statusLeft: "Zostało {wolne} wolnych etatów",
             statusMainClosed: "Zapisy do składu głównego zamknięte",
             trackerReserveOpen: "⭐ Rezerwa: zapisy otwarte",
             trackerReserveClosed: "⭐ Rezerwa: zapisy zamknięte",
-            infoFull: "📋 Wszystkie stałe etaty w {split} (22/22) zostały obsadzone. Rejestracja w tym splicie jest teraz otwarta wyłącznie dla kierowców rezerwowych.",
-            infoFullNoReserve: "📋 Wszystkie stałe etaty w {split} (22/22) zostały obsadzone, a zapisy na rezerwę w tym splicie są zamknięte.",
+            infoFull: "📋 Wszystkie stałe etaty w {split} ({max}/{max}) zostały obsadzone. Rejestracja w tym splicie jest teraz otwarta wyłącznie dla kierowców rezerwowych.",
+            infoFullNoReserve: "📋 Wszystkie stałe etaty w {split} ({max}/{max}) zostały obsadzone, a zapisy na rezerwę w tym splicie są zamknięte.",
             errRoleClosed: "❌ Zapisy na wybraną rolę w {split} są obecnie zamknięte.",
             counterFull: "(skład pełny · 0 wolnych miejsc)",
             counterLeft: "({wolne} wolnych miejsc w składzie podstawowym)",
@@ -2133,13 +2152,13 @@
             phGamertag: "e.g. DriverX_F1",
             phDiscord: "Copy numerical ID (e.g. 511295...)",
             statusFetching: "Fetching paddock status...",
-            statusFull: "Main lineup full (22/22)",
+            statusFull: "Main lineup full ({max}/{max})",
             statusLeft: "{wolne} free slots left",
             statusMainClosed: "Main lineup registration closed",
             trackerReserveOpen: "⭐ Reserve: registration open",
             trackerReserveClosed: "⭐ Reserve: registration closed",
-            infoFull: "📋 All full-time seats in {split} (22/22) are occupied. Registration in this split is currently open only for reserve drivers.",
-            infoFullNoReserve: "📋 All full-time seats in {split} (22/22) are occupied, and reserve registration for this split is closed.",
+            infoFull: "📋 All full-time seats in {split} ({max}/{max}) are occupied. Registration in this split is currently open only for reserve drivers.",
+            infoFullNoReserve: "📋 All full-time seats in {split} ({max}/{max}) are occupied, and reserve registration for this split is closed.",
             errRoleClosed: "❌ Registration for the selected role in {split} is currently closed.",
             counterFull: "(lineup full · 0 free slots)",
             counterLeft: "({wolne} free slots in main lineup)",
@@ -2502,7 +2521,14 @@
         fetch(countdownWebhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(discordPayload) }).catch(err => console.warn(err));
     }
 
-    const MAX_MAIN_SEATS = 22;
+    // Liczba miejsc w składzie głównym — osobno dla każdego splitu (settings/split1Seats, settings/split2Seats).
+    const DEFAULT_MAIN_SEATS = 22;
+    let splitSeats = { "Split 1": DEFAULT_MAIN_SEATS, "Split 2": DEFAULT_MAIN_SEATS };
+    function seatsFor(split) { return splitSeats[split] || DEFAULT_MAIN_SEATS; }
+    // Podmienia {wolne}, {max}, {split} w napisach.
+    function fillText(text, vars = {}) {
+        return String(text).replace(/\{(wolne|max|split)\}/g, (m, k) => (vars[k] != null ? vars[k] : m));
+    }
 
     // ===== Data urodzenia (opcjonalna) — w bazie jako "RRRR-MM-DD" albo "" =====
     function todayISO() {
@@ -2599,6 +2625,37 @@
         const role = document.getElementById('driverRole').value;
         const av = splitAvailability(split);
         return role === "Rezerwowy" ? av.reserveAvail : av.mainAvail;
+    }
+
+    async function fetchSplitSeats() {
+        const [s1, s2] = await Promise.all([fetchSettingValue('split1Seats'), fetchSettingValue('split2Seats')]);
+        return { "Split 1": s1, "Split 2": s2 };
+    }
+    function applySplitSeats(seats = {}) {
+        SPLITS.forEach(split => {
+            const n = parseInt(seats[split], 10);
+            if (n >= 1 && n <= 99) splitSeats[split] = n;
+            const inp = document.getElementById(`${split === "Split 1" ? 'split1' : 'split2'}SeatsInput`);
+            if (inp) inp.value = seatsFor(split);
+        });
+    }
+    async function setSplitSeats(split, value) {
+        const n = parseInt(value, 10);
+        const inp = document.getElementById(`${split === "Split 1" ? 'split1' : 'split2'}SeatsInput`);
+        if (!(n >= 1 && n <= 99)) { alert('Podaj liczbę miejsc od 1 do 99.'); if (inp) inp.value = seatsFor(split); return; }
+        try {
+            const res = await fetch(`${firebaseBaseUrl}settings/${split === "Split 1" ? 'split1Seats' : 'split2Seats'}.json`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(n)
+            });
+            if (!res.ok) throw new Error();
+            splitSeats[split] = n;
+            updateGridSlotsTracker();
+            calculateDashboardStats();
+            alert(`✅ ${split}: ${n} miejsc w składzie głównym.`);
+        } catch {
+            if (inp) inp.value = seatsFor(split);
+            alert("❌ Błąd zapisu ustawienia do bazy danych.");
+        }
     }
 
     async function fetchSettingValue(key) {
@@ -2714,7 +2771,7 @@
         if (reserveOnlyNotice) reserveOnlyNotice.style.display = (av.reserve && !av.main) ? 'block' : 'none';
         if (infoAlert) {
             if (av.main && av.full) {
-                infoAlert.innerText = (av.reserveAvail ? langData[currentLang].infoFull : langData[currentLang].infoFullNoReserve).replace('{split}', split);
+                infoAlert.innerText = fillText(av.reserveAvail ? langData[currentLang].infoFull : langData[currentLang].infoFullNoReserve, { split, max: seatsFor(split) });
                 infoAlert.style.display = 'block';
             } else {
                 infoAlert.style.display = 'none';
@@ -2744,7 +2801,7 @@
             if (!open) { status.textContent = t.tabClosed; return; }
             const main = !av.main ? t.tabMainClosed
                 : av.full ? t.tabMainFull
-                : t.tabMainFree.replace('{wolne}', getSplitStats(split).freeSlots);
+                : fillText(t.tabMainFree, { wolne: getSplitStats(split).freeSlots, max: seatsFor(split), split });
             status.textContent = `${main} · ${av.reserve ? t.tabReserveOpen : t.tabReserveClosed}`;
         });
         const form = document.getElementById('registrationForm');
@@ -2872,7 +2929,8 @@
         initLanguage();
         // Strona jest ukryta (klasa page-loading), dopóki nie wczytają się własne teksty i układ z bazy — max 3 s.
         const revealTimer = setTimeout(() => document.body.classList.remove('page-loading'), 3000);
-        const [settings, pageCustom] = await Promise.all([fetchAllSectionSettings(), fetchPageCustom()]);
+        const [settings, pageCustom, seats] = await Promise.all([fetchAllSectionSettings(), fetchPageCustom(), fetchSplitSeats()]);
+        applySplitSeats(seats);
         applyPageCustom(pageCustom);
         clearTimeout(revealTimer);
         document.body.classList.remove('page-loading');
@@ -2908,9 +2966,10 @@
 
     function getSplitStats(split) {
         const mainCount = globalDriversList.filter(d => d.driverStatus === "Główny" && d.split === split).length;
-        const freeSlots = Math.max(MAX_MAIN_SEATS - mainCount, 0);
-        const percentage = Math.min((mainCount / MAX_MAIN_SEATS) * 100, 100);
-        return { mainCount, freeSlots, percentage };
+        const max = seatsFor(split);
+        const freeSlots = Math.max(max - mainCount, 0);
+        const percentage = Math.min((mainCount / max) * 100, 100);
+        return { mainCount, freeSlots, percentage, max };
     }
 
     function renderSplitTracker(split) {
@@ -2926,9 +2985,9 @@
             if (!st.main) {
                 text.innerHTML = `<span style="color:var(--text-muted); font-weight:700;">${escapeHtml(t.statusMainClosed)}</span>`;
             } else if (stats.freeSlots <= 0) {
-                text.innerHTML = `<span style="color:var(--f1-red); font-weight:700;">${escapeHtml(t.statusFull)}</span>`;
+                text.innerHTML = `<span style="color:var(--f1-red); font-weight:700;">${escapeHtml(fillText(t.statusFull, { max: stats.max, split }))}</span>`;
             } else {
-                text.innerHTML = `<span style="color:var(--success-green); font-weight:700;">${escapeHtml(t.statusLeft.replace('{wolne}', stats.freeSlots))}</span>`;
+                text.innerHTML = `<span style="color:var(--success-green); font-weight:700;">${escapeHtml(fillText(t.statusLeft, { wolne: stats.freeSlots, max: stats.max, split }))}</span>`;
             }
         }
         if (reserveLine) {
@@ -3003,8 +3062,8 @@
             return;
         }
 
-        if (driverStatus === "Główny" && globalDriversList.filter(d => d.driverStatus === "Główny" && d.split === driverSplit).length >= MAX_MAIN_SEATS) {
-            errorAlert.innerText = langData[currentLang].infoFull.replace('{split}', driverSplit);
+        if (driverStatus === "Główny" && globalDriversList.filter(d => d.driverStatus === "Główny" && d.split === driverSplit).length >= seatsFor(driverSplit)) {
+            errorAlert.innerText = fillText(langData[currentLang].infoFull, { split: driverSplit, max: seatsFor(driverSplit) });
             errorAlert.style.display = 'block';
             updateGridSlotsTracker();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3088,10 +3147,10 @@
         document.getElementById('dashStatusSplit').innerText = `Główni: ${globalDriversList.filter(d => d.driverStatus === "Główny").length} / Rezerwa: ${globalDriversList.filter(d => d.driverStatus === "Rezerwowy").length}` + (noSplitReserve ? ` (bez splitu: ${noSplitReserve})` : '');
         const s1Main = globalDriversList.filter(d => d.driverStatus === "Główny" && d.split === "Split 1").length;
         const s1Reserve = globalDriversList.filter(d => d.driverStatus === "Rezerwowy" && d.split === "Split 1").length;
-        document.getElementById('dashSplit1').innerText = `${s1Main}/${MAX_MAIN_SEATS} · Rez: ${s1Reserve}`;
+        document.getElementById('dashSplit1').innerText = `${s1Main}/${seatsFor('Split 1')} · Rez: ${s1Reserve}`;
         const s2Main = globalDriversList.filter(d => d.driverStatus === "Główny" && d.split === "Split 2").length;
         const s2Reserve = globalDriversList.filter(d => d.driverStatus === "Rezerwowy" && d.split === "Split 2").length;
-        document.getElementById('dashSplit2').innerText = `${s2Main}/${MAX_MAIN_SEATS} · Rez: ${s2Reserve}`;
+        document.getElementById('dashSplit2').innerText = `${s2Main}/${seatsFor('Split 2')} · Rez: ${s2Reserve}`;
         document.getElementById('dashHardware').innerText = `Kierownica: ${globalDriversList.filter(d => d.device === "Kierownica").length} | Pad: ${globalDriversList.filter(d => d.device === "Pad").length}`;
         document.getElementById('dashPlatforms').innerText = `PC: ${globalDriversList.filter(d => d.platform === "PC").length} | PS5: ${globalDriversList.filter(d => d.platform === "PS5").length} | XBX: ${globalDriversList.filter(d => d.platform === "Xbox").length}`;
     }
@@ -3353,7 +3412,7 @@
         const nextSplit = 'split' in patch ? patch.split : splitOf(driver);
         if (('driverStatus' in patch || 'split' in patch) && nextStatus === "Główny" && nextSplit) {
             const taken = globalDriversList.filter(d => d.id !== id && d.driverStatus === "Główny" && splitOf(d) === nextSplit).length;
-            if (taken >= MAX_MAIN_SEATS && !confirm(`W ${nextSplit} jest już ${taken}/${MAX_MAIN_SEATS} kierowców głównych. Czy mimo to dodać tego kierowcę do składu głównego?`)) return false;
+            if (taken >= seatsFor(nextSplit) && !confirm(`W ${nextSplit} jest już ${taken}/${seatsFor(nextSplit)} kierowców głównych. Czy mimo to dodać tego kierowcę do składu głównego?`)) return false;
         }
         if (patch.driverStatus === "Główny") patch.reserveWantsMain = false;
 
@@ -3680,8 +3739,8 @@
         split2Heading: "Pasek miejsc — nagłówek Split 2",
         trackerLabel: "Pasek miejsc — opis",
         statusFetching: "Pasek miejsc — podczas wczytywania",
-        statusLeft: "Pasek miejsc — są wolne miejsca ({wolne} = liczba)",
-        statusFull: "Pasek miejsc — skład pełny",
+        statusLeft: "Pasek miejsc — są wolne miejsca ({wolne} = wolne, {max} = wszystkie)",
+        statusFull: "Pasek miejsc — skład pełny ({max} = liczba miejsc)",
         statusMainClosed: "Pasek miejsc — skład główny zamknięty",
         trackerReserveOpen: "Pasek miejsc — rezerwa otwarta",
         trackerReserveClosed: "Pasek miejsc — rezerwa zamknięta",
@@ -3691,7 +3750,7 @@
         lblSplit: "Zakładki zapisów — etykieta",
         tabSplit1: "Zakładka Split 1 — nazwa",
         tabSplit2: "Zakładka Split 2 — nazwa",
-        tabMainFree: "Zakładka — skład główny ma wolne miejsca ({wolne} = liczba)",
+        tabMainFree: "Zakładka — skład główny ma wolne miejsca ({wolne} = wolne, {max} = wszystkie)",
         tabMainFull: "Zakładka — skład główny pełny",
         tabMainClosed: "Zakładka — skład główny zamknięty",
         tabReserveOpen: "Zakładka — rezerwa otwarta",
@@ -3732,8 +3791,8 @@
         errBirthdate: "Błąd — nieprawidłowa data urodzenia",
         errMultiRequired: "Błąd — nic nie zaznaczono w obowiązkowej rubryce „kilka opcji” ({pole} = nazwa)",
         errRoleClosed: "Błąd — wybrana rola w splicie zamknięta ({split})",
-        infoFull: "Komunikat — pełny skład w splicie ({split})",
-        infoFullNoReserve: "Komunikat — pełny skład i zamknięta rezerwa ({split})",
+        infoFull: "Komunikat — pełny skład w splicie ({split}, {max})",
+        infoFullNoReserve: "Komunikat — pełny skład i zamknięta rezerwa ({split}, {max})",
         allClosedInfo: "Komunikat — wszystkie zapisy zamknięte",
         adminTrigger: "Link do panelu admina"
     };
@@ -4011,7 +4070,7 @@
             if (el.contentEditable !== 'plaintext-only') el.contentEditable = 'true';
             el.spellcheck = false;
         });
-        publicArea.querySelectorAll('input[data-ph-key], select, #submitBtn').forEach(el => {
+        publicArea.querySelectorAll('input[data-ph-key], select, #submitBtn, [data-text-keys]').forEach(el => {
             el.classList.add('popover-editable');
             if (el.tagName === 'INPUT') el.readOnly = true;
         });
@@ -4095,6 +4154,10 @@
                 key: o.dataset.i18n,
                 label: `Opcja ${i + 1}${o.hidden ? ' (teraz ukryta — zapisy zamknięte)' : ''}`
             }));
+        } else if (el.dataset.textKeys) {
+            // Napisy wstawiane automatycznie (liczba miejsc, status rezerwy, status zakładki) — wszystkie warianty naraz.
+            title = 'Napisy zmieniane automatycznie';
+            popoverFields = el.dataset.textKeys.split(',').map(key => ({ key, label: TEXT_DESCRIPTIONS[key] || key }));
         } else if (el.tagName === 'INPUT') {
             title = `Podpowiedź w polu · ${blockName}`;
             popoverFields = [{ key: el.dataset.phKey, label: 'Szary tekst widoczny w pustym polu' }];
@@ -5257,8 +5320,10 @@
         partTool.classList.add('visible');
         const r = el.getBoundingClientRect();
         const tw = partTool.offsetWidth, th = partTool.offsetHeight;
-        const top = Math.max(4, Math.min(window.innerHeight - th - 4, r.top + Math.min(r.height, 30) / 2 - th / 2));
-        const left = Math.max(4, Math.min(window.innerWidth - tw - 4, r.right - tw));
+        // Nad elementem, przy jego lewej krawędzi — nie zasłania samego elementu (da się w niego kliknąć, by zmienić napis).
+        let top = r.top - th - 3;
+        if (top < 4) top = r.bottom + 3;
+        const left = Math.max(4, Math.min(window.innerWidth - tw - 4, r.left));
         partTool.style.top = `${top}px`;
         partTool.style.left = `${left}px`;
     }
