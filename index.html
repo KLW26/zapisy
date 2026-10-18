@@ -1339,6 +1339,7 @@
         body.page-edit-mode .custom-field select,
         body.page-edit-mode .custom-field textarea { pointer-events: none; }
         textarea.cf-input { resize: vertical; min-height: 90px; line-height: 1.5; }
+        .cf-choices { flex-wrap: wrap; row-gap: 12px; }
         #registrationForm > .checkbox-group.cf-check {
             margin-top: 0;
             margin-bottom: 25px;
@@ -1878,6 +1879,8 @@
                     <option value="number">Liczba</option>
                     <option value="date">Data</option>
                     <option value="select">Lista wyboru</option>
+                    <option value="radio">Wybór jednej opcji (przyciski)</option>
+                    <option value="multi">Wybór kilku opcji (pola do zaznaczenia)</option>
                     <option value="checkbox">Pole do zaznaczenia (tak / nie)</option>
                 </select>
             </div>
@@ -1891,11 +1894,11 @@
         </div>
         <div id="fmOptionsGroup">
             <div class="form-group">
-                <label for="fmOptionsPl">Opcje listy (PL) — każda w osobnej linii</label>
+                <label for="fmOptionsPl">Opcje (PL) — każda w osobnej linii</label>
                 <textarea id="fmOptionsPl" rows="4" placeholder="np.&#10;Tak&#10;Nie&#10;Jeszcze nie wiem"></textarea>
             </div>
             <div class="form-group">
-                <label for="fmOptionsEn">Opcje listy (EN) — opcjonalnie, w tej samej kolejności</label>
+                <label for="fmOptionsEn">Opcje (EN) — opcjonalnie, w tej samej kolejności</label>
                 <textarea id="fmOptionsEn" rows="3"></textarea>
             </div>
         </div>
@@ -1948,6 +1951,7 @@
             lblLastname: "Nazwisko",
             lblBirthdate: "Data urodzenia (opcjonalnie)",
             errBirthdate: "❌ Podaj prawidłową datę urodzenia albo zostaw to pole puste.",
+            errMultiRequired: "❌ Zaznacz co najmniej jedną opcję w rubryce „{pole}”.",
             lblGamertag: "Nick / Gamertag (w grze)",
             lblDiscord: "Discord ID",
             lblPlatform: "Platforma",
@@ -2024,6 +2028,7 @@
             lblLastname: "Last Name",
             lblBirthdate: "Date of birth (optional)",
             errBirthdate: "❌ Enter a valid date of birth or leave this field empty.",
+            errMultiRequired: "❌ Select at least one option in “{pole}”.",
             lblGamertag: "Nick / Gamertag (in-game)",
             lblDiscord: "Discord ID",
             lblPlatform: "Platform",
@@ -2893,6 +2898,16 @@
             return;
         }
 
+        // „Wybór kilku opcji” oznaczony jako obowiązkowy — przeglądarka sama tego nie sprawdzi.
+        const missingMulti = (savedPageCustom.splits[activeSplitKey()].fields || [])
+            .find(f => f.type === 'multi' && f.required && !(readCustomValue(f) || []).length);
+        if (missingMulti) {
+            errorAlert.innerText = langData[currentLang].errMultiRequired.replace('{pole}', cfLabel(missingMulti));
+            errorAlert.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
         // Rubryki usunięte przez admina w edycji strony zapisują się jako puste.
         const val = (block, id) => isBlockRemoved(block) ? '' : document.getElementById(id).value.trim();
         const firstname = val('firstname', 'firstname');
@@ -3649,6 +3664,7 @@
         errDiscord: "Błąd — Discord ID już zgłoszone",
         errConnection: "Błąd — problem z połączeniem",
         errBirthdate: "Błąd — nieprawidłowa data urodzenia",
+        errMultiRequired: "Błąd — nic nie zaznaczono w obowiązkowej rubryce „kilka opcji” ({pole} = nazwa)",
         errRoleClosed: "Błąd — wybrana rola w splicie zamknięta ({split})",
         infoFull: "Komunikat — pełny skład w splicie ({split})",
         infoFullNoReserve: "Komunikat — pełny skład i zamknięta rezerwa ({split})",
@@ -4036,6 +4052,7 @@
     }
     function applyTextPopover() {
         if (popoverMode === 'options') return applyOptionsPopover();
+        if (popoverMode === 'customOptions') return applyCustomOptionsPopover();
         document.querySelectorAll('#tpFields input').forEach(inp => {
             const key = inp.dataset.key;
             const v = inp.value.replace(/\s+/g, ' ').trim() || DEFAULT_TEXTS[currentLang][key];
@@ -4235,7 +4252,8 @@
         asysty:   { kind: 'select', id: 'asysty',   block: 'assists' },
         device:   { kind: 'radio',  name: 'input_device', block: 'device' }
     };
-    const FIELD_TYPES = { text: 'Tekst (krótki)', textarea: 'Tekst (dłuższy)', number: 'Liczba', date: 'Data', select: 'Lista wyboru', checkbox: 'Pole do zaznaczenia' };
+    const FIELD_TYPES = { text: 'Tekst (krótki)', textarea: 'Tekst (dłuższy)', number: 'Liczba', date: 'Data', select: 'Lista wyboru', radio: 'Wybór jednej opcji', multi: 'Wybór kilku opcji', checkbox: 'Pole do zaznaczenia' };
+    const CHOICE_TYPES = ['select', 'radio', 'multi']; // rubryki z opcjami (można je dodawać / usuwać przez ☰ Opcje)
     const OPTIONAL_SUFFIX = { pl: ' (opcjonalnie)', en: ' (optional)' };
     const CHOOSE_PLACEHOLDER = { pl: 'Wybierz…', en: 'Choose…' };
 
@@ -4292,11 +4310,11 @@
                 pl: f.pl.trim(),
                 en: str(f.en).trim(),
                 required: f.required === true,
-                options: f.type === 'select'
+                options: CHOICE_TYPES.includes(f.type)
                     ? toArr(f.options).filter(o => o && str(o.pl).trim()).map(o => ({ pl: o.pl.trim(), en: str(o.en).trim() }))
                     : []
             }))
-            .filter(f => f.type !== 'select' || f.options.length);
+            .filter(f => !CHOICE_TYPES.includes(f.type) || f.options.length);
         return out;
     }
 
@@ -4532,6 +4550,29 @@
             frag.append(inp, lab);
             return frag;
         }
+        if (f.type === 'radio' || f.type === 'multi') {
+            const lab = document.createElement('label');
+            lab.textContent = cfLabel(f) + (f.required ? '' : OPTIONAL_SUFFIX[currentLang]);
+            const group = document.createElement('div');
+            group.className = 'radio-group cf-choices';
+            group.id = id;
+            f.options.forEach(o => {
+                const l = document.createElement('label');
+                l.className = 'radio-option';
+                const inp = document.createElement('input');
+                inp.type = f.type === 'radio' ? 'radio' : 'checkbox';
+                inp.name = id;
+                inp.value = o.pl;
+                inp.className = 'cf-input';
+                if (f.type === 'radio' && f.required) inp.required = true;
+                const span = document.createElement('span');
+                span.textContent = cfOptionLabel(o);
+                l.append(inp, ' ', span);
+                group.appendChild(l);
+            });
+            frag.append(lab, group);
+            return frag;
+        }
         const lab = document.createElement('label');
         lab.htmlFor = id;
         lab.textContent = cfLabel(f) + (f.required ? '' : OPTIONAL_SUFFIX[currentLang]);
@@ -4570,7 +4611,18 @@
         const el = document.getElementById(`cf_${f.id}`);
         if (!el) return undefined;
         if (f.type === 'checkbox') return el.checked;
+        if (f.type === 'radio') { const c = el.querySelector('input:checked'); return c ? c.value : ''; }
+        if (f.type === 'multi') return [...el.querySelectorAll('input:checked')].map(i => i.value);
         return el.value.trim();
+    }
+    function writeCustomValue(f, v) {
+        const el = document.getElementById(`cf_${f.id}`);
+        if (!el || v === undefined) return;
+        if (f.type === 'checkbox') el.checked = !!v;
+        else if (f.type === 'radio' || f.type === 'multi') {
+            const set = new Set(Array.isArray(v) ? v : [v]);
+            el.querySelectorAll('input').forEach(i => { i.checked = set.has(i.value); });
+        } else el.value = v;
     }
 
     // Tworzy / odświeża ramki własnych rubryk w formularzu (bez gubienia pozycji, szerokości i wpisanych wartości).
@@ -4587,9 +4639,8 @@
                 block.dataset.block = f.id;
                 const before = zone.querySelector(':scope > [data-block="rules"]') || zone.querySelector(':scope > [data-block="submit"]');
                 zone.insertBefore(block, before);
-            } else {
-                const old = document.getElementById(`cf_${f.id}`);
-                if (old && block.dataset.type === f.type) prev = f.type === 'checkbox' ? old.checked : old.value;
+            } else if (block.dataset.type === f.type) {
+                prev = readCustomValue(f); // zachowaj to, co ktoś już wpisał / zaznaczył
             }
             const half = block.classList.contains('half');
             const dragging = block.classList.contains('block-dragging');
@@ -4605,11 +4656,10 @@
                 block.prepend(tools);
                 const handle = tools.querySelector('.bt-handle');
                 if (handle) handle.textContent = `⠿ ${block.dataset.blockName}`;
+                const opts = tools.querySelector('[data-cf-opts]');
+                if (opts) opts.style.display = CHOICE_TYPES.includes(f.type) ? '' : 'none';
             }
-            if (prev !== undefined) {
-                const el = document.getElementById(`cf_${f.id}`);
-                if (f.type === 'checkbox') el.checked = prev; else el.value = prev;
-            }
+            writeCustomValue(f, prev);
         });
     }
 
@@ -4617,6 +4667,7 @@
     function formatCustomValue(f, v) {
         if (v === undefined || v === null || v === '') return '';
         if (f.type === 'checkbox') return v ? '✅ Tak' : '❌ Nie';
+        if (Array.isArray(v) || (typeof v === 'object')) return toArr(v).join(', ');
         if (f.type === 'date') return formatBirthdate(String(v));
         return String(v);
     }
@@ -4626,6 +4677,7 @@
             const v = readCustomValue(f);
             if (v === undefined) return;
             if (f.type === 'checkbox') extra[f.id] = v;
+            else if (Array.isArray(v)) { if (v.length) extra[f.id] = v; }
             else if (v !== '') extra[f.id] = v;
         });
         return extra;
@@ -4636,9 +4688,10 @@
 
     function updateFieldDialogType() {
         const type = document.getElementById('fmType').value;
-        document.getElementById('fmOptionsGroup').style.display = type === 'select' ? '' : 'none';
+        document.getElementById('fmOptionsGroup').style.display = CHOICE_TYPES.includes(type) ? '' : 'none';
         document.getElementById('fmRequiredText').textContent = type === 'checkbox'
             ? 'Obowiązkowe zaznaczenie (np. zgoda — bez zaznaczenia nie da się wysłać)'
+            : type === 'multi' ? 'Obowiązkowe — trzeba zaznaczyć co najmniej jedną opcję'
             : 'Pole obowiązkowe';
     }
 
@@ -4680,7 +4733,7 @@
         if (!pl) { alert('Podaj nazwę rubryki (PL).'); return; }
 
         let options = [];
-        if (type === 'select') {
+        if (CHOICE_TYPES.includes(type)) {
             const linesPl = document.getElementById('fmOptionsPl').value.split('\n').map(x => x.trim());
             const linesEn = document.getElementById('fmOptionsEn').value.split('\n').map(x => x.trim());
             const seen = new Set();
@@ -4734,7 +4787,7 @@
         inp.value = text;
         inp.placeholder = 'Nazwa opcji';
         inp.addEventListener('keydown', ev => {
-            if (ev.key === 'Enter') { ev.preventDefault(); applyOptionsPopover(); }
+            if (ev.key === 'Enter') { ev.preventDefault(); applyTextPopover(); }
             if (ev.key === 'Escape') { ev.preventDefault(); closeTextPopover(); }
         });
         const btn = document.createElement('button');
@@ -4827,6 +4880,61 @@
         closeTextPopover();
     }
 
+    // Opcje dodanej rubryki (lista / jedna opcja / kilka opcji): zmiana nazw, ✕ usuwanie, ➕ dodawanie.
+    function openCustomOptionsEditor(id) {
+        const f = draftCfg().fields.find(x => x.id === id);
+        if (!f || !CHOICE_TYPES.includes(f.type)) return;
+        popoverMode = 'customOptions';
+        popoverOptionsField = id;
+        document.getElementById('tpTitle').textContent = `Opcje · Rubryka: ${f.pl}`;
+        const box = document.getElementById('tpFields');
+        box.innerHTML = '';
+        const hint = document.createElement('div');
+        hint.className = 'tp-hint';
+        hint.textContent = `Napisy zmieniasz w języku ${currentLang.toUpperCase()}. ✕ usuwa opcję, ➕ dodaje nową. Odpowiedzi, które kierowcy już wysłali, zostają w bazie.`;
+        box.appendChild(hint);
+        f.options.forEach((o, i) => box.appendChild(makeOptionRow({ text: cfOptionLabel(o), extraV: String(i) })));
+        const add = document.createElement('button');
+        add.type = 'button';
+        add.className = 'tp-add-opt';
+        add.textContent = '➕ Dodaj opcję';
+        add.addEventListener('click', () => {
+            const row = makeOptionRow({ text: '' });
+            box.insertBefore(row, add);
+            row.querySelector('input').focus();
+        });
+        box.appendChild(add);
+        positionPopover(document.querySelector(`[data-custom-field="${id}"]`));
+    }
+
+    function applyCustomOptionsPopover() {
+        const f = draftCfg().fields.find(x => x.id === popoverOptionsField);
+        if (!f) { closeTextPopover(); return; }
+        const next = [];
+        const seen = new Set();
+        document.querySelectorAll('#tpFields .tp-opt-row').forEach(r => {
+            const txt = r.querySelector('input').value.replace(/\s+/g, ' ').trim();
+            if (!txt) return; // pusta = usunięta
+            let o;
+            if (r.dataset.extraV != null) {
+                o = { ...f.options[Number(r.dataset.extraV)] };
+                if (currentLang === 'en') o.en = txt; else o.pl = txt;
+            } else {
+                o = { pl: txt, en: currentLang === 'en' ? txt : '' };
+            }
+            if (seen.has(o.pl)) return;
+            seen.add(o.pl);
+            next.push(o);
+        });
+        if (!next.length) {
+            alert('Musi zostać co najmniej jedna opcja. Jeśli chcesz pozbyć się całej rubryki, użyj „🗑 Usuń” na jej ramce.');
+            return;
+        }
+        f.options = next;
+        renderCustomFields(draftCfg().fields);
+        closeTextPopover();
+    }
+
     function positionPopover(el) {
         const pop = document.getElementById('textPopover');
         pop.classList.add('visible');
@@ -4897,6 +5005,11 @@
             b._update();
         }
         if (block.dataset.customField) {
+            const o = mk('bt-opts', () => { closeTextPopover(); openCustomOptionsEditor(id); });
+            o.textContent = '☰ Opcje';
+            o.title = 'Dodaj, usuń albo zmień opcje tej rubryki';
+            o.dataset.cfOpts = '1';
+            o.style.display = CHOICE_TYPES.includes(block.dataset.type) ? '' : 'none';
             const g = mk('bt-gear', () => openFieldDialog(id));
             g.textContent = '⚙ Ustawienia';
             const d = mk('bt-del', () => deleteCustomField(id));
@@ -4918,7 +5031,24 @@
             lab.textContent = f.pl;
             let inp;
             const v = extra[f.id];
-            if (f.type === 'select' || f.type === 'checkbox') {
+            if (f.type === 'multi') {
+                inp = document.createElement('div');
+                inp.className = 'radio-group cf-choices';
+                const chosen = new Set(toArr(v));
+                const vals = [...f.options.map(o => o.pl), ...[...chosen].filter(x => !f.options.some(o => o.pl === x))];
+                vals.forEach(val => {
+                    const l = document.createElement('label');
+                    l.className = 'radio-option';
+                    const c = document.createElement('input');
+                    c.type = 'checkbox';
+                    c.value = val;
+                    c.checked = chosen.has(val);
+                    const span = document.createElement('span');
+                    span.textContent = val;
+                    l.append(c, ' ', span);
+                    inp.appendChild(l);
+                });
+            } else if (f.type === 'select' || f.type === 'radio' || f.type === 'checkbox') {
                 inp = document.createElement('select');
                 const opts = f.type === 'checkbox'
                     ? [['', '—'], ['tak', '✅ Tak'], ['nie', '❌ Nie']]
@@ -4949,6 +5079,11 @@
         allCustomFields().forEach(f => {
             const el = document.getElementById(`edit_cf_${f.id}`);
             if (!el) return;
+            if (f.type === 'multi') {
+                const vals = [...el.querySelectorAll('input:checked')].map(c => c.value);
+                if (vals.length) extra[f.id] = vals; else delete extra[f.id];
+                return;
+            }
             const raw = el.value.trim();
             if (f.type === 'checkbox') {
                 if (raw === 'tak') extra[f.id] = true;
